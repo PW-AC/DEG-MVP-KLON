@@ -111,11 +111,14 @@ backend:
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: true
         agent: "main"
         comment: "Enhanced contract creation with automatic VU assignment. POST /api/vertraege creates contracts with VU matching based on gesellschaft field and assigns vu_internal_id for relations"
+      - working: true
+        agent: "testing"
+        comment: "COMPREHENSIVE CONTRACT CREATION TESTING COMPLETE: ✅ Contract creation with Allianz gesellschaft auto-assigns VU-001 ✅ Contract creation with Dialog gesellschaft auto-assigns VU-003 ✅ Contract creation with unknown company creates contract without VU assignment ✅ All contract fields properly validated and stored ✅ VU matching logic working perfectly (exact name, kurzbezeichnung, partial, reverse partial, no match scenarios) ✅ Contract-customer relationships maintained correctly"
   
   - task: "Contract Document Storage"
     implemented: true
@@ -123,11 +126,14 @@ backend:
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: true
         agent: "main"
         comment: "Document model already supports vertrag_id field. Documents can be linked to specific contracts via vertrag_id parameter in document creation and retrieval"
+      - working: true
+        agent: "testing"
+        comment: "CONTRACT DOCUMENT MANAGEMENT TESTING COMPLETE: ✅ Document upload to specific contracts via POST /api/documents with vertrag_id ✅ Document upload via POST /api/documents/upload endpoint with vertrag_id parameter ✅ Document retrieval filtered by vertrag_id via GET /api/documents?vertrag_id={id} ✅ Multiple document types supported (PDF, Word, Excel) ✅ Document-contract relationships maintained with integrity ✅ Document CRUD operations working ✅ Document statistics endpoint functional ✅ All 10/10 document management tests passed"
 
 frontend:
   - task: "Contract Creation Form"

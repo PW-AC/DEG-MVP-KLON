@@ -1330,6 +1330,7 @@ const App = () => {
                           </button>
                           <button 
                             className="customer-action-btn edit-btn"
+                            onClick={() => openCustomerEditForm(kunde)}
                             data-testid={`customer-edit-btn-${kunde.id}`}
                           >
                             ✏️ Bearbeiten

@@ -580,24 +580,34 @@ const App = () => {
                                     <div className="empty-text">Keine Dokumente vorhanden</div>
                                   </div>
                                 ) : (
-                                  <div className="documents-list">
-                                    {customerDocuments.map((doc) => (
-                                      <div key={doc.id} className="document-tree-item" data-testid={`doc-item-${doc.id}`}>
-                                        <div className="document-icon">
-                                          {doc.document_type === 'pdf' && '📄'}
-                                          {doc.document_type === 'email' && '✉️'}
-                                          {doc.document_type === 'word' && '📝'}
-                                          {doc.document_type === 'excel' && '📊'}
-                                          {doc.document_type === 'image' && '🖼️'}
-                                          {doc.document_type === 'other' && '📁'}
-                                        </div>
-                                        <div className="document-info-compact">
-                                          <div className="document-filename">
-                                            {doc.filename} ({new Date(doc.created_at).toLocaleDateString('de-DE')})
+                                  <div className="documents-table">
+                                    {/* Table Header */}
+                                    <div className="documents-table-header">
+                                      <div className="doc-header-cell doc-name-col">Name</div>
+                                      <div className="doc-header-cell doc-date-col">Eingepflegt am</div>
+                                    </div>
+                                    
+                                    {/* Table Body */}
+                                    <div className="documents-table-body">
+                                      {customerDocuments.map((doc) => (
+                                        <div key={doc.id} className="document-row" data-testid={`doc-item-${doc.id}`}>
+                                          <div className="doc-cell doc-name-cell">
+                                            <div className="document-icon">
+                                              {doc.document_type === 'pdf' && '📄'}
+                                              {doc.document_type === 'email' && '✉️'}
+                                              {doc.document_type === 'word' && '📝'}
+                                              {doc.document_type === 'excel' && '📊'}
+                                              {doc.document_type === 'image' && '🖼️'}
+                                              {doc.document_type === 'other' && '📁'}
+                                            </div>
+                                            <span className="document-filename">{doc.filename}</span>
+                                          </div>
+                                          <div className="doc-cell doc-date-cell">
+                                            {new Date(doc.created_at).toLocaleDateString('de-DE')}
                                           </div>
                                         </div>
-                                      </div>
-                                    ))}
+                                      ))}
+                                    </div>
                                   </div>
                                 )}
                               </div>

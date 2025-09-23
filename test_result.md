@@ -135,6 +135,18 @@ backend:
         agent: "testing"
         comment: "CONTRACT DOCUMENT MANAGEMENT TESTING COMPLETE: ✅ Document upload to specific contracts via POST /api/documents with vertrag_id ✅ Document upload via POST /api/documents/upload endpoint with vertrag_id parameter ✅ Document retrieval filtered by vertrag_id via GET /api/documents?vertrag_id={id} ✅ Multiple document types supported (PDF, Word, Excel) ✅ Document-contract relationships maintained with integrity ✅ Document CRUD operations working ✅ Document statistics endpoint functional ✅ All 10/10 document management tests passed"
 
+  - task: "Customer Creation API Validation"
+    implemented: true
+    working: false
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: false
+        agent: "testing"
+        comment: "CUSTOMER CREATION VALIDATION ISSUE IDENTIFIED: ❌ Frontend sends exact payload: {'anrede': '', 'titel': '', 'vorname': 'Test', 'name': 'Customer', 'kunde_id': '', 'strasse': 'Test Str', 'plz': '12345', 'ort': 'Test City', 'telefon': {'telefon_privat': '123456', 'email': 'test@test.com'}, 'persoenliche_daten': {'geburtsdatum': '1990-01-01'}, 'bemerkung': 'Test'} ❌ Backend returns HTTP 422: 'Input should be Herr, Frau or Firma' for empty anrede field ✅ Backend validation is working correctly ✅ Two solutions work: 1) Frontend sends null instead of empty string for anrede, 2) Frontend sends valid enum value ('Herr', 'Frau', 'Firma'). Root cause: Frontend-Backend data contract mismatch on anrede field validation."
+
 frontend:
   - task: "Contract Creation Form"
     implemented: true

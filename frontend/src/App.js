@@ -1631,7 +1631,7 @@ const App = () => {
         <div className="sidebar">
           <button 
             className={`sidebar-item ${selectedSidebarItem === 'search' ? 'selected' : ''}`}
-            onClick={() => {setSelectedSidebarItem('search'); setSearchWindow(prev => ({...prev, visible: true}));}}
+            onClick={() => {setSelectedSidebarItem('search'); openSearchWithNewTab();}}
             data-testid="search-sidebar-btn"
           >
             🔍 Suchen

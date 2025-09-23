@@ -382,8 +382,11 @@ const App = () => {
 
   // Handle customer editing
   const openCustomerEditForm = (kunde) => {
+    console.log('Öffne Bearbeitungsformular für Kunde:', kunde);
     setEditingCustomer(kunde);
-    setEditCustomerData({
+    
+    // Ensure all nested objects have proper structure, even if empty
+    const formData = {
       anrede: kunde.anrede || '',
       titel: kunde.titel || '',
       vorname: kunde.vorname || '',
@@ -401,12 +404,14 @@ const App = () => {
       betreuer_firma: kunde.betreuer_firma || '',
       bemerkung: kunde.bemerkung || '',
       selektion: kunde.selektion || '',
+      // Ensure bankverbindung object exists
       bankverbindung: {
         iban: kunde.bankverbindung?.iban || '',
         bic: kunde.bankverbindung?.bic || '',
         bank: kunde.bankverbindung?.bank || '',
         kontoinhaber: kunde.bankverbindung?.kontoinhaber || ''
       },
+      // Ensure telefon object exists  
       telefon: {
         telefon_privat: kunde.telefon?.telefon_privat || '',
         telefax_privat: kunde.telefon?.telefax_privat || '',
@@ -417,6 +422,7 @@ const App = () => {
         email: kunde.telefon?.email || '',
         internet_adresse: kunde.telefon?.internet_adresse || ''
       },
+      // Ensure persoenliche_daten object exists
       persoenliche_daten: {
         geburtsdatum: kunde.persoenliche_daten?.geburtsdatum || '',
         geburtsname: kunde.persoenliche_daten?.geburtsname || '',
@@ -424,15 +430,17 @@ const App = () => {
         familienstand: kunde.persoenliche_daten?.familienstand || '',
         nationalitaet: kunde.persoenliche_daten?.nationalitaet || ''
       },
+      // Ensure arbeitgeber object exists
       arbeitgeber: {
-        firma: kunde.arbeitgeber?.firma || '',
-        strasse: kunde.arbeitgeber?.strasse || '',
-        plz: kunde.arbeitgeber?.plz || '',
-        ort: kunde.arbeitgeber?.ort || '',
+        firmenname: kunde.arbeitgeber?.firmenname || '',
         telefon: kunde.arbeitgeber?.telefon || '',
-        ansprechpartner: kunde.arbeitgeber?.ansprechpartner || ''
+        telefax: kunde.arbeitgeber?.telefax || '',
+        personalnummer: kunde.arbeitgeber?.personalnummer || ''
       }
-    });
+    };
+    
+    console.log('Formular-Daten strukturiert:', formData);
+    setEditCustomerData(formData);
     setCustomerEditFormVisible(true);
   };
 

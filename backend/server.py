@@ -1316,13 +1316,6 @@ async def create_contract_from_pdf(
         logger.error(f"Error creating contract from PDF: {e}")
         raise HTTPException(status_code=500, detail=f"Error creating contract: {str(e)}")
 
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
-logger = logging.getLogger(__name__)
-
 @app.on_event("shutdown")
 async def shutdown_db_client():
     client.close()

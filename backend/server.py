@@ -51,6 +51,11 @@ class Vertragsstatus(str, Enum):
     STORNIERT = "storniert"
 
 
+class VUStatus(str, Enum):
+    VU = "VU"
+    POOL = "Pool"
+
+
 class DocumentType(str, Enum):
     PDF = "pdf"
     EMAIL = "email"

@@ -832,23 +832,25 @@ class InsuranceBrokerAPITester:
         
         print("\n🔍 Testing Contract-Document Relationship Integrity...")
         
-        # Get all documents
-        status_code, all_documents = self.make_request('GET', 'documents')
-        if status_code != 200:
-            return self.log_test("Contract-Document Relationship", False, f"Failed to get documents: {status_code}")
+        # Get documents created in this test session that have vertrag_id
+        test_contract_documents = []
+        for doc_id in self.created_documents:
+            status_code, doc = self.make_request('GET', f'documents/{doc_id}')
+            if status_code == 200 and doc.get('vertrag_id') is not None:
+                test_contract_documents.append(doc)
         
-        # Check that contract documents have proper vertrag_id
-        contract_documents = [doc for doc in all_documents if doc.get('vertrag_id') is not None]
+        if not test_contract_documents:
+            return self.log_test("Contract-Document Relationship", False, "No contract documents created in this test")
         
-        # Verify each contract document has a valid contract reference
+        # Verify each test contract document has a valid contract reference
         valid_relationships = 0
-        for doc in contract_documents:
+        for doc in test_contract_documents:
             vertrag_id = doc.get('vertrag_id')
             if vertrag_id in self.created_contracts:
                 valid_relationships += 1
         
-        success = len(contract_documents) > 0 and valid_relationships == len(contract_documents)
-        details = f"Contract documents: {len(contract_documents)}, Valid relationships: {valid_relationships}"
+        success = valid_relationships == len(test_contract_documents)
+        details = f"Test contract documents: {len(test_contract_documents)}, Valid relationships: {valid_relationships}"
         
         return self.log_test("Contract-Document Relationship", success, details)
 

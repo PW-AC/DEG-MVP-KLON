@@ -378,6 +378,161 @@ textarea {
   margin-top: 2px;
 }
 
+.result-actions {
+  margin-top: 5px;
+  display: flex;
+  gap: 5px;
+}
+
+.result-btn {
+  padding: 2px 8px;
+  font-size: 8px;
+  border: 1px outset #ECE9D8;
+  background: linear-gradient(to bottom, #F0F0F0, #E0E0E0);
+  cursor: pointer;
+  font-family: Tahoma, Arial, sans-serif;
+}
+
+.result-btn:hover {
+  background: linear-gradient(to bottom, #E0E0E0, #D0D0D0);
+}
+
+/* Document Management Styles */
+.documents-content {
+  padding: 15px;
+  max-height: 600px;
+  overflow-y: auto;
+}
+
+.upload-section {
+  border-bottom: 1px solid #ACA899;
+  padding-bottom: 15px;
+  margin-bottom: 15px;
+}
+
+.upload-section h3 {
+  font-size: 12px;
+  margin-bottom: 10px;
+  color: #000;
+  font-weight: bold;
+}
+
+.upload-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  align-items: end;
+}
+
+.upload-form .form-group:nth-child(2) {
+  grid-column: 1 / -1;
+}
+
+.upload-form .form-group:nth-child(4),
+.upload-form .form-group:nth-child(5) {
+  grid-column: 1 / -1;
+}
+
+.upload-btn {
+  grid-column: 1 / -1;
+  justify-self: end;
+  margin-top: 10px;
+}
+
+.upload-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.documents-list h3 {
+  font-size: 12px;
+  margin-bottom: 10px;
+  color: #000;
+  font-weight: bold;
+}
+
+.no-documents {
+  text-align: center;
+  color: #666;
+  font-style: italic;
+  padding: 20px;
+  border: 1px dashed #ACA899;
+  background-color: #F8F9FA;
+}
+
+.documents-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.document-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px;
+  border: 1px solid #ACA899;
+  background-color: white;
+  border-radius: 3px;
+}
+
+.document-item:hover {
+  background-color: #F0F0F0;
+}
+
+.document-icon {
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.document-details {
+  flex: 1;
+}
+
+.document-title {
+  font-weight: bold;
+  font-size: 10px;
+  margin-bottom: 2px;
+}
+
+.document-filename {
+  font-size: 9px;
+  color: #666;
+  margin-bottom: 2px;
+}
+
+.document-meta {
+  font-size: 8px;
+  color: #999;
+  margin-bottom: 4px;
+}
+
+.document-tags {
+  display: flex;
+  gap: 3px;
+  flex-wrap: wrap;
+}
+
+.tag {
+  font-size: 7px;
+  background-color: #E3F2FD;
+  color: #001f3c;
+  padding: 1px 4px;
+  border-radius: 2px;
+  border: 1px solid #001f3c;
+}
+
+input[type="file"] {
+  border: 1px inset #ECE9D8;
+  padding: 2px;
+  font-size: 9px;
+  background-color: white;
+  font-family: Tahoma, Arial, sans-serif;
+  width: 100%;
+}
+
 .status-bar {
   height: 20px;
   background: linear-gradient(to bottom, #F0F0F0, #E0E0E0);

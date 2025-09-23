@@ -650,6 +650,118 @@ textarea {
   width: 40px;
 }
 
+.all-customers-btn {
+  margin-left: 10px;
+  font-size: 9px;
+  padding: 3px 8px;
+}
+
+/* All Customers Tab Styles */
+.all-customers-tab-content {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 8px;
+}
+
+.all-customers-header {
+  margin-bottom: 12px;
+  padding: 8px;
+  background: linear-gradient(to bottom, #E1DDD9, #D4CDCA);
+  border: 1px solid #ACA899;
+}
+
+.all-customers-header h3 {
+  font-size: 12px;
+  color: #000;
+  margin: 0;
+}
+
+.all-customers-table {
+  flex: 1;
+  border: 1px solid #ACA899;
+  background-color: white;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.all-customers-table-header {
+  background: linear-gradient(to bottom, #E1DDD9, #D4CDCA);
+  border-bottom: 2px solid #ACA899;
+}
+
+.all-customers-header-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1.5fr 80px 1.2fr 100px;
+  min-height: 24px;
+}
+
+.all-customers-header-cell {
+  padding: 4px 8px;
+  font-size: 10px;
+  font-weight: bold;
+  color: #000;
+  border-right: 1px solid #ACA899;
+  display: flex;
+  align-items: center;
+  background: inherit;
+}
+
+.all-customers-header-cell:last-child {
+  border-right: none;
+}
+
+.all-customers-table-body {
+  flex: 1;
+  overflow-y: auto;
+  max-height: 500px;
+}
+
+.all-customers-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1.5fr 80px 1.2fr 100px;
+  border-bottom: 1px solid #E0E0E0;
+  min-height: 26px;
+  cursor: pointer;
+}
+
+.all-customers-row:hover {
+  background-color: #E3F2FD;
+}
+
+.all-customers-row:nth-child(even) {
+  background-color: #F8F9FA;
+}
+
+.all-customers-row:nth-child(even):hover {
+  background-color: #E3F2FD;
+}
+
+.all-customers-cell {
+  padding: 3px 8px;
+  font-size: 9px;
+  color: #333;
+  border-right: 1px solid #E0E0E0;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.all-customers-cell:last-child {
+  border-right: none;
+}
+
+.no-customers-message {
+  padding: 20px;
+  text-align: center;
+  color: #666;
+  font-style: italic;
+  font-size: 10px;
+}
+
 .form-buttons {
   display: flex;
   gap: 10px;

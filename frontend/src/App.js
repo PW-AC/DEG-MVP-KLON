@@ -293,10 +293,10 @@ const App = () => {
     loadCustomerContracts(kunde.id);
   };
 
-  // Load all customers (filtered by search criteria)
-  const loadAllCustomers = async () => {
+  // Intelligent search - show overview for multiple results, direct customer for single result
+  const performIntelligentSearch = async () => {
     try {
-      // Use the same search logic as performSearch but show all results
+      // Use the same search logic as before
       const searchParams = new URLSearchParams();
       Object.entries(searchForm).forEach(([key, value]) => {
         if (value && key !== 'maxResults') {
@@ -311,35 +311,83 @@ const App = () => {
 
       const response = await axios.get(`${API}/kunden/search?${searchParams.toString()}`);
       const results = response.data;
-      setAllCustomers(results);
       
-      // Create "All Customers" tab with search results
-      const allCustomersTab = {
-        id: 'tab-all-customers',
-        title: `Alle Kunden (${results.length})`,
-        type: 'all-customers'
-      };
-
-      // Check if tab already exists and update it
-      const existingTabIndex = openTabs.findIndex(tab => tab.id === 'tab-all-customers');
-      if (existingTabIndex !== -1) {
-        // Update existing tab title
-        setOpenTabs(prev => {
-          const newTabs = [...prev];
-          newTabs[existingTabIndex] = allCustomersTab;
-          return newTabs;
-        });
-      } else {
-        // Add new tab
-        setOpenTabs(prev => [...prev, allCustomersTab]);
+      if (results.length === 0) {
+        alert('Keine Kunden gefunden.');
+        return;
       }
       
-      setActiveTab('tab-all-customers');
-      setSearchWindow(prev => ({ ...prev, visible: false }));
+      if (results.length === 1) {
+        // Single customer found - open direct customer view
+        alert('Kunde gefunden - öffne Gesamtübersicht');
+        const customer = results[0];
+        openCustomerTab(customer);
+        setSearchWindow(prev => ({ ...prev, visible: false }));
+        
+        // Clear search form
+        setSearchForm({
+          vorname: '',
+          name: '',
+          strasse: '',
+          plz: '',
+          ort: '',
+          vertragsnummer: '',
+          kundennummer: '',
+          geburtsdatum: '',
+          kfz_kennzeichen: '',
+          antragsnummer: '',
+          schadenummer: '',
+          gesellschaft: '',
+          maxResults: '60'
+        });
+        
+      } else {
+        // Multiple customers found - open customer overview
+        alert(`Mehrere Datensätze gefunden (${results.length}) - öffne Kundenübersicht`);
+        setAllCustomers(results);
+        
+        // Create/update "All Customers" tab
+        const allCustomersTab = {
+          id: 'tab-all-customers',
+          title: `Alle Kunden (${results.length})`,
+          type: 'all-customers'
+        };
+
+        const existingTabIndex = openTabs.findIndex(tab => tab.id === 'tab-all-customers');
+        if (existingTabIndex !== -1) {
+          setOpenTabs(prev => {
+            const newTabs = [...prev];
+            newTabs[existingTabIndex] = allCustomersTab;
+            return newTabs;
+          });
+        } else {
+          setOpenTabs(prev => [...prev, allCustomersTab]);
+        }
+        
+        setActiveTab('tab-all-customers');
+        setSearchWindow(prev => ({ ...prev, visible: false }));
+        
+        // Clear search form
+        setSearchForm({
+          vorname: '',
+          name: '',
+          strasse: '',
+          plz: '',
+          ort: '',
+          vertragsnummer: '',
+          kundennummer: '',
+          geburtsdatum: '',
+          kfz_kennzeichen: '',
+          antragsnummer: '',
+          schadenummer: '',
+          gesellschaft: '',
+          maxResults: '60'
+        });
+      }
       
     } catch (error) {
-      console.error('Fehler beim Laden der Kunden:', error);
-      alert('Fehler beim Laden der Kunden: ' + (error.response?.data?.detail || error.message));
+      console.error('Fehler bei der Suche:', error);
+      alert('Fehler bei der Suche: ' + (error.response?.data?.detail || error.message));
     }
   };
 

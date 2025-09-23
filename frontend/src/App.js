@@ -48,6 +48,34 @@ const App = () => {
     tags: '',
     file: null
   });
+  // VU Management State
+  const [allVUs, setAllVUs] = useState([]);
+  const [vuSearchForm, setVuSearchForm] = useState({
+    name: '',
+    kurzbezeichnung: '',
+    status: '',
+    ort: '',
+    telefon: '',
+    email: ''
+  });
+  const [vuFormVisible, setVuFormVisible] = useState(false);
+  const [newVU, setNewVU] = useState({
+    name: '',
+    kurzbezeichnung: '',
+    status: 'VU',
+    strasse: '',
+    plz: '',
+    ort: '',
+    telefon: '',
+    telefax: '',
+    email_zentrale: '',
+    email_schaden: '',
+    internet_adresse: '',
+    ansprechpartner: '',
+    acencia_vermittlernummer: '',
+    vu_id: '',
+    bemerkung: ''
+  });
   const [newCustomer, setNewCustomer] = useState({
     anrede: '',
     titel: '',

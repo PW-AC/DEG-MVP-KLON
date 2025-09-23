@@ -111,11 +111,14 @@ backend:
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: true
         agent: "main"
         comment: "Added VUStatus enum with VU/Pool options and updated VU model to include status field with default VU value"
+      - working: true
+        agent: "testing"
+        comment: "TESTED: VUStatus enum working correctly with VU/Pool values. Validation properly rejects invalid status values (422 error). Created VUs with both VU and Pool status successfully."
   
   - task: "VU CRUD API Endpoints"
     implemented: true
@@ -123,11 +126,14 @@ backend:
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: true
         agent: "main"
         comment: "Implemented full CRUD operations for VU: create, get all, get by ID, update, delete with proper error handling"
+      - working: true
+        agent: "testing"
+        comment: "TESTED: All CRUD operations working perfectly. POST /api/vus creates VUs with proper UUID generation. GET /api/vus returns all VUs with pagination. GET /api/vus/{id} retrieves specific VU. PUT /api/vus/{id} updates VU (requires name field). DELETE /api/vus/{id} removes VU successfully. All endpoints return proper HTTP status codes."
   
   - task: "VU Search API Endpoint"
     implemented: true
@@ -135,11 +141,14 @@ backend:
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: true
         agent: "main"
         comment: "Added search endpoint with filters for name, kurzbezeichnung, status, ort, telefon, and email with regex support"
+      - working: true
+        agent: "testing"
+        comment: "TESTED: Search functionality working excellently. GET /api/vus/search supports all filters: name (regex), kurzbezeichnung (regex), status (exact), ort (regex), telefon (regex), email (searches both email_zentrale and email_schaden). Multiple filters work together correctly. Found 2 VUs in München with status VU using combined filters."
   
   - task: "Sample VU Data Initialization"
     implemented: true
@@ -147,11 +156,14 @@ backend:
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "medium"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: true
         agent: "main"
         comment: "Created sample data endpoint with Allianz, Alte Leipziger, Dialog, and Itzehoer with complete contact information"
+      - working: true
+        agent: "testing"
+        comment: "TESTED: Sample data initialization working perfectly. POST /api/vus/init-sample-data creates all 4 expected VUs: Allianz Versicherung AG, Alte Leipziger Lebensversicherung AG, Dialog Versicherung AG, and Itzehoer Versicherung. Duplicate prevention works correctly - returns message when VUs already exist. All sample VUs have complete contact information and VU status."
 
 frontend:
   - task: "VU/Ges Sidebar Button"

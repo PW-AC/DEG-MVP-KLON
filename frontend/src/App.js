@@ -1717,6 +1717,217 @@ const App = () => {
             </div>
           )}
 
+          {/* VU Form Window */}
+          {vuFormVisible && (
+            <div 
+              className="search-window"
+              style={{ 
+                left: `100px`, 
+                top: `80px`,
+                width: '800px'
+              }}
+            >
+              <div className="window-title">
+                📄 Neue VU / Gesellschaft anlegen
+                <div className="window-controls">
+                  <div className="window-control">_</div>
+                  <div className="window-control">□</div>
+                  <div className="window-control" onClick={() => setVuFormVisible(false)}>✕</div>
+                </div>
+              </div>
+              
+              <div className="form-content customer-form">
+                <div className="form-group">
+                  <label>Name *</label>
+                  <input 
+                    type="text" 
+                    value={newVU.name}
+                    onChange={(e) => handleVuChange('name', e.target.value)}
+                    placeholder="Vollständiger Gesellschaftsname"
+                    data-testid="vu-name-input"
+                  />
+                </div>
+                
+                <div className="form-group">
+                  <label>Kürzel</label>
+                  <input 
+                    type="text" 
+                    value={newVU.kurzbezeichnung}
+                    onChange={(e) => handleVuChange('kurzbezeichnung', e.target.value)}
+                    placeholder="Kurze Bezeichnung"
+                    data-testid="vu-kurzel-input"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>Status</label>
+                  <select 
+                    value={newVU.status}
+                    onChange={(e) => handleVuChange('status', e.target.value)}
+                    data-testid="vu-status-select"
+                  >
+                    <option value="VU">VU (Versicherungsunternehmen)</option>
+                    <option value="Pool">Pool</option>
+                  </select>
+                </div>
+
+                <div className="form-row-address">
+                  <div className="form-group">
+                    <label>Straße</label>
+                    <input 
+                      type="text" 
+                      value={newVU.strasse}
+                      onChange={(e) => handleVuChange('strasse', e.target.value)}
+                      placeholder="Straße und Hausnummer"
+                      data-testid="vu-strasse-input"
+                    />
+                  </div>
+                  
+                  <div className="form-group">
+                    <label>PLZ</label>
+                    <input 
+                      type="text" 
+                      value={newVU.plz}
+                      onChange={(e) => handleVuChange('plz', e.target.value)}
+                      placeholder="PLZ"
+                      data-testid="vu-plz-input"
+                    />
+                  </div>
+                  
+                  <div className="form-group">
+                    <label>Ort</label>
+                    <input 
+                      type="text" 
+                      value={newVU.ort}
+                      onChange={(e) => handleVuChange('ort', e.target.value)}
+                      placeholder="Ort"
+                      data-testid="vu-ort-input"
+                    />
+                  </div>
+                </div>
+
+                <div className="form-group">
+                  <label>Telefon</label>
+                  <input 
+                    type="text" 
+                    value={newVU.telefon}
+                    onChange={(e) => handleVuChange('telefon', e.target.value)}
+                    placeholder="Telefonnummer"
+                    data-testid="vu-telefon-input"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>Telefax</label>
+                  <input 
+                    type="text" 
+                    value={newVU.telefax}
+                    onChange={(e) => handleVuChange('telefax', e.target.value)}
+                    placeholder="Faxnummer"
+                    data-testid="vu-telefax-input"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>Internet</label>
+                  <input 
+                    type="text" 
+                    value={newVU.internet_adresse}
+                    onChange={(e) => handleVuChange('internet_adresse', e.target.value)}
+                    placeholder="www.beispiel.de"
+                    data-testid="vu-internet-input"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>E-Mail Zentrale</label>
+                  <input 
+                    type="email" 
+                    value={newVU.email_zentrale}
+                    onChange={(e) => handleVuChange('email_zentrale', e.target.value)}
+                    placeholder="info@gesellschaft.de"
+                    data-testid="vu-email-zentrale-input"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>E-Mail Schaden</label>
+                  <input 
+                    type="email" 
+                    value={newVU.email_schaden}
+                    onChange={(e) => handleVuChange('email_schaden', e.target.value)}
+                    placeholder="schaden@gesellschaft.de"
+                    data-testid="vu-email-schaden-input"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>Ansprechpartner</label>
+                  <input 
+                    type="text" 
+                    value={newVU.ansprechpartner}
+                    onChange={(e) => handleVuChange('ansprechpartner', e.target.value)}
+                    placeholder="Name des Ansprechpartners"
+                    data-testid="vu-ansprechpartner-input"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>Vermittlernummer</label>
+                  <input 
+                    type="text" 
+                    value={newVU.acencia_vermittlernummer}
+                    onChange={(e) => handleVuChange('acencia_vermittlernummer', e.target.value)}
+                    placeholder="Acencia Vermittlernummer"
+                    data-testid="vu-vermittler-input"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>VU-ID</label>
+                  <input 
+                    type="text" 
+                    value={newVU.vu_id}
+                    onChange={(e) => handleVuChange('vu_id', e.target.value)}
+                    placeholder="Eindeutige VU-ID"
+                    data-testid="vu-id-input"
+                  />
+                </div>
+
+                <div className="form-group full-width">
+                  <label>Bemerkung</label>
+                  <textarea 
+                    value={newVU.bemerkung}
+                    onChange={(e) => handleVuChange('bemerkung', e.target.value)}
+                    placeholder="Zusätzliche Bemerkungen"
+                    data-testid="vu-bemerkung-input"
+                  />
+                </div>
+              </div>
+              
+              <div className="form-bottom">
+                <div></div>
+                <div className="form-buttons">
+                  <button 
+                    className="btn" 
+                    onClick={createVU}
+                    disabled={!newVU.name}
+                    data-testid="create-vu-btn"
+                  >
+                    Erstellen
+                  </button>
+                  <button 
+                    className="btn" 
+                    onClick={() => setVuFormVisible(false)}
+                    data-testid="cancel-vu-btn"
+                  >
+                    Abbrechen
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Document Management Window */}
           {documentsVisible && selectedCustomerId && (
             <div 

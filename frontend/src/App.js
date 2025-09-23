@@ -120,6 +120,8 @@ const App = () => {
   const [customerEditFormVisible, setCustomerEditFormVisible] = useState(false);
   const [editCustomerData, setEditCustomerData] = useState({});
   const [lastUpdate, setLastUpdate] = useState(Date.now());
+  // Dragging state for windows
+  const [dragging, setDragging] = useState({ isDragging: false, windowId: null, offset: { x: 0, y: 0 } });
   // Contract editing state
   const [editingContract, setEditingContract] = useState(null);
   const [contractEditFormVisible, setContractEditFormVisible] = useState(false);

@@ -1220,7 +1220,7 @@ const App = () => {
                     disabled={isSearching}
                     data-testid="search-ok-btn"
                   >
-                    {isSearching ? 'Suche...' : 'OK'}
+                    {isSearching ? 'Suche...' : 'Vertrag Suchen'}
                   </button>
                   <button className="btn" onClick={closeSearch} data-testid="search-cancel-btn">
                     Abbrechen

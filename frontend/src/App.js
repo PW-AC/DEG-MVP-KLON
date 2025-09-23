@@ -196,6 +196,10 @@ const App = () => {
     const timer = setInterval(() => {
       setCurrentTime(new Date());
     }, 1000);
+
+    // Open dashboard on app load
+    openDashboardTab();
+
     return () => clearInterval(timer);
   }, []);
 

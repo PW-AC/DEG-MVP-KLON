@@ -1252,23 +1252,16 @@ const App = () => {
                     data-testid="max-results-input"
                   /> 
                   Datensätze abrufen
-                  <button 
-                    className="btn all-customers-btn"
-                    onClick={loadAllCustomers}
-                    data-testid="all-customers-btn"
-                  >
-                    Kunden anzeigen
-                  </button>
                 </div>
                 
                 <div className="form-buttons">
                   <button 
                     className="btn" 
-                    onClick={performSearch}
+                    onClick={performIntelligentSearch}
                     disabled={isSearching}
-                    data-testid="search-ok-btn"
+                    data-testid="search-btn"
                   >
-                    {isSearching ? 'Suche...' : 'Vertrag Suchen'}
+                    {isSearching ? 'Suche...' : 'Suchen'}
                   </button>
                   <button className="btn" onClick={closeSearch} data-testid="search-cancel-btn">
                     Abbrechen

@@ -119,6 +119,7 @@ const App = () => {
   const [editingCustomer, setEditingCustomer] = useState(null);
   const [customerEditFormVisible, setCustomerEditFormVisible] = useState(false);
   const [editCustomerData, setEditCustomerData] = useState({});
+  const [lastUpdate, setLastUpdate] = useState(Date.now());
 
   // Update time every second
   useEffect(() => {

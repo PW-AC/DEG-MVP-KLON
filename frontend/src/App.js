@@ -455,7 +455,7 @@ const App = () => {
           ...prev,
           [field]: value
         };
-        console.log('Aktualisierte Formulardaten:', updated);
+        console.log('Aktualisierte Formulardaten (einfach):', field, '=', value);
         return updated;
       });
     } else {
@@ -464,11 +464,11 @@ const App = () => {
         const updated = {
           ...prev,
           [fieldParts[0]]: {
-            ...prev[fieldParts[0]],
+            ...(prev[fieldParts[0]] || {}),
             [fieldParts[1]]: value
           }
         };
-        console.log('Aktualisierte Formulardaten (nested):', updated);
+        console.log('Aktualisierte Formulardaten (nested):', `${fieldParts[0]}.${fieldParts[1]}`, '=', value);
         return updated;
       });
     }

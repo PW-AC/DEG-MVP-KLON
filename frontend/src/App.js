@@ -1398,7 +1398,11 @@ const App = () => {
                         <div className="contracts-section">
                           <div className="section-header">
                             <h3>Verträge ({contracts.length})</h3>
-                            <button className="btn add-contract-btn" data-testid={`add-contract-btn-${kunde.id}`}>
+                            <button 
+                              className="btn add-contract-btn" 
+                              onClick={() => openContractForm(kunde.id)}
+                              data-testid={`add-contract-btn-${kunde.id}`}
+                            >
                               ➕ Neuer Vertrag
                             </button>
                           </div>

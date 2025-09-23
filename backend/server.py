@@ -229,6 +229,7 @@ class VertragCreate(BaseModel):
     interne_vertragsnummer: Optional[str] = None
     kunde_id: Optional[str] = None
     vu_id: Optional[str] = None
+    vu_internal_id: Optional[str] = None
     gesellschaft: Optional[str] = None
     kfz_kennzeichen: Optional[str] = None
     produkt_sparte: Optional[str] = None

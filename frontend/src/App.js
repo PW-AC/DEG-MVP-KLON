@@ -375,6 +375,126 @@ const App = () => {
     loadAllVUs();
   };
 
+  // Handle contract form changes
+  const handleContractChange = (field, value) => {
+    setNewContract(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  // Open contract creation form
+  const openContractForm = (kundeId) => {
+    setContractFormCustomerId(kundeId);
+    setNewContract({
+      vertragsnummer: '',
+      interne_vertragsnummer: '',
+      gesellschaft: '',
+      kfz_kennzeichen: '',
+      produkt_sparte: '',
+      tarif: '',
+      zahlungsweise: '',
+      beitrag_brutto: '',
+      beitrag_netto: '',
+      vertragsstatus: 'aktiv',
+      beginn: '',
+      ablauf: ''
+    });
+    setContractFormVisible(true);
+  };
+
+  // Create new contract
+  const createContract = async () => {
+    try {
+      const contractData = {
+        ...newContract,
+        kunde_id: contractFormCustomerId,
+        beginn: newContract.beginn || null,
+        ablauf: newContract.ablauf || null,
+        beitrag_brutto: newContract.beitrag_brutto ? parseFloat(newContract.beitrag_brutto) : null,
+        beitrag_netto: newContract.beitrag_netto ? parseFloat(newContract.beitrag_netto) : null
+      };
+      
+      const response = await axios.post(`${API}/vertraege`, contractData);
+      alert('Vertrag erfolgreich erstellt!');
+      setContractFormVisible(false);
+      setContractFormCustomerId(null);
+      
+      // Reload customer contracts
+      if (contractFormCustomerId) {
+        await loadCustomerContracts(contractFormCustomerId);
+      }
+      
+    } catch (error) {
+      console.error('Fehler beim Erstellen des Vertrags:', error);
+      alert('Fehler beim Erstellen: ' + (error.response?.data?.detail || error.message));
+    }
+  };
+
+  // Load contract documents
+  const loadContractDocuments = async (contractId) => {
+    try {
+      const response = await axios.get(`${API}/documents?vertrag_id=${contractId}`);
+      setContractDocuments(prev => ({
+        ...prev,
+        [contractId]: response.data
+      }));
+    } catch (error) {
+      console.error('Fehler beim Laden der Vertragsdokumente:', error);
+      setContractDocuments(prev => ({
+        ...prev,
+        [contractId]: []
+      }));
+    }
+  };
+
+  // Upload contract document
+  const uploadContractDocument = async (contractId) => {
+    if (!uploadForm.file) {
+      alert('Bitte wählen Sie eine Datei aus.');
+      return;
+    }
+
+    try {
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        const base64Content = btoa(e.target.result);
+        
+        const formData = new FormData();
+        formData.append('vertrag_id', contractId);
+        formData.append('title', uploadForm.title || uploadForm.file.name);
+        formData.append('description', uploadForm.description);
+        formData.append('tags', uploadForm.tags);
+        formData.append('file_content', base64Content);
+
+        const response = await axios.post(`${API}/documents/upload`, formData);
+        alert('Vertragsdokument erfolgreich hochgeladen!');
+        
+        // Reset form
+        setUploadForm({ title: '', description: '', tags: '', file: null });
+        
+        // Reload contract documents
+        await loadContractDocuments(contractId);
+      };
+      reader.readAsBinaryString(uploadForm.file);
+    } catch (error) {
+      console.error('Fehler beim Hochladen:', error);
+      alert('Fehler beim Hochladen: ' + (error.response?.data?.detail || error.message));
+    }
+  };
+
+  // Toggle contract documents view
+  const toggleContractDocuments = (contractId) => {
+    setContractDocumentsVisible(prev => ({
+      ...prev,
+      [contractId]: !prev[contractId]
+    }));
+    
+    if (!contractDocumentsVisible[contractId]) {
+      loadContractDocuments(contractId);
+    }
+  };
+
   // Handle customer form changes
   const handleCustomerChange = (field, value) => {
     if (field.includes('.')) {

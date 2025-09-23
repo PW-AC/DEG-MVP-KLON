@@ -236,12 +236,36 @@ const App = () => {
     }
   };
 
-  // Handle document result click
+  // Handle document result click - now opens documents in tab
   const handleDocumentResultClick = (kunde) => {
-    setSelectedCustomerId(kunde.id);
-    setDocumentsVisible(true);
-    loadCustomerDocuments(kunde.id);
-    setSearchWindow(prev => ({ ...prev, visible: false }));
+    // Find the tab for this customer
+    const existingTab = openTabs.find(tab => tab.kunde && tab.kunde.id === kunde.id);
+    if (existingTab) {
+      // Switch to documents view in this tab
+      setTabDocumentsView(prev => ({
+        ...prev,
+        [existingTab.id]: true
+      }));
+      setActiveTab(existingTab.id);
+      loadCustomerDocuments(kunde.id);
+    }
+  };
+
+  // Handle documents button in customer header
+  const openDocumentsInTab = (tabId, kundeId) => {
+    setTabDocumentsView(prev => ({
+      ...prev,
+      [tabId]: true
+    }));
+    loadCustomerDocuments(kundeId);
+  };
+
+  // Close documents view in tab
+  const closeDocumentsInTab = (tabId) => {
+    setTabDocumentsView(prev => ({
+      ...prev,
+      [tabId]: false
+    }));
   };
 
   // Open customer in new tab

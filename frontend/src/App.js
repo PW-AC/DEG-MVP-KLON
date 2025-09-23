@@ -456,6 +456,40 @@ const App = () => {
     }
   };
 
+  // Reload customer data from backend
+  const reloadCustomerData = async (customerId) => {
+    try {
+      const response = await axios.get(`${API}/kunden/${customerId}`);
+      const updatedCustomer = response.data;
+      
+      // Update customer in all tabs that show this customer
+      setOpenTabs(prev => prev.map(tab => 
+        tab.type === 'customer-detail' && tab.kunde.id === customerId
+          ? { 
+              ...tab, 
+              kunde: updatedCustomer, 
+              title: `${updatedCustomer.vorname} ${updatedCustomer.name}` 
+            }
+          : tab
+      ));
+      
+      // Update customer in search results if they exist
+      setSearchResults(prev => prev.map(kunde => 
+        kunde.id === customerId ? updatedCustomer : kunde
+      ));
+      
+      // Update customer in all customers list if it exists
+      setAllCustomers(prev => prev.map(kunde => 
+        kunde.id === customerId ? updatedCustomer : kunde
+      ));
+      
+      return updatedCustomer;
+    } catch (error) {
+      console.error('Fehler beim Laden der Kundendaten:', error);
+      return null;
+    }
+  };
+
   // Update existing customer
   const updateCustomer = async () => {
     if (!editingCustomer) return;

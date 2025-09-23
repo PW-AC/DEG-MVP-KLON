@@ -149,6 +149,60 @@ const App = () => {
     }
   };
 
+  // Load customer documents
+  const loadCustomerDocuments = async (kundeId) => {
+    try {
+      const response = await axios.get(`${API}/kunden/${kundeId}/documents`);
+      setCustomerDocuments(response.data);
+    } catch (error) {
+      console.error('Fehler beim Laden der Dokumente:', error);
+      setCustomerDocuments([]);
+    }
+  };
+
+  // Upload document
+  const uploadDocument = async (kundeId) => {
+    if (!uploadForm.file) {
+      alert('Bitte wählen Sie eine Datei aus.');
+      return;
+    }
+
+    try {
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        const base64Content = btoa(e.target.result);
+        
+        const formData = new FormData();
+        formData.append('kunde_id', kundeId);
+        formData.append('title', uploadForm.title || uploadForm.file.name);
+        formData.append('description', uploadForm.description);
+        formData.append('tags', uploadForm.tags);
+        formData.append('file_content', base64Content);
+
+        const response = await axios.post(`${API}/documents/upload`, formData);
+        alert('Dokument erfolgreich hochgeladen!');
+        
+        // Reset form
+        setUploadForm({ title: '', description: '', tags: '', file: null });
+        
+        // Reload documents
+        await loadCustomerDocuments(kundeId);
+      };
+      reader.readAsBinaryString(uploadForm.file);
+    } catch (error) {
+      console.error('Fehler beim Hochladen:', error);
+      alert('Fehler beim Hochladen: ' + (error.response?.data?.detail || error.message));
+    }
+  };
+
+  // Handle document result click
+  const handleDocumentResultClick = (kunde) => {
+    setSelectedCustomerId(kunde.id);
+    setDocumentsVisible(true);
+    loadCustomerDocuments(kunde.id);
+    setSearchWindow(prev => ({ ...prev, visible: false }));
+  };
+
   // Close search window
   const closeSearch = () => {
     setSearchWindow(prev => ({ ...prev, visible: false }));

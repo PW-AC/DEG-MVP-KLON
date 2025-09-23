@@ -264,6 +264,17 @@ def parse_from_mongo(item):
 @api_router.post("/kunden", response_model=Kunde)
 async def create_kunde(kunde: KundeCreate):
     kunde_dict = prepare_for_mongo(kunde.dict())
+    
+    # Auto-generate kunde_id if not provided
+    if not kunde_dict.get('kunde_id'):
+        # Ensure unique kunde_id
+        while True:
+            new_id = generate_kunde_id()
+            existing = await db.kunden.find_one({"kunde_id": new_id})
+            if not existing:
+                kunde_dict['kunde_id'] = new_id
+                break
+    
     kunde_obj = Kunde(**kunde_dict)
     result = await db.kunden.insert_one(prepare_for_mongo(kunde_obj.dict()))
     return kunde_obj

@@ -137,7 +137,7 @@ backend:
 
   - task: "Customer Creation API Validation"
     implemented: true
-    working: false
+    working: true
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
@@ -146,6 +146,9 @@ backend:
       - working: false
         agent: "testing"
         comment: "CUSTOMER CREATION VALIDATION ISSUE IDENTIFIED: ❌ Frontend sends exact payload: {'anrede': '', 'titel': '', 'vorname': 'Test', 'name': 'Customer', 'kunde_id': '', 'strasse': 'Test Str', 'plz': '12345', 'ort': 'Test City', 'telefon': {'telefon_privat': '123456', 'email': 'test@test.com'}, 'persoenliche_daten': {'geburtsdatum': '1990-01-01'}, 'bemerkung': 'Test'} ❌ Backend returns HTTP 422: 'Input should be Herr, Frau or Firma' for empty anrede field ✅ Backend validation is working correctly ✅ Two solutions work: 1) Frontend sends null instead of empty string for anrede, 2) Frontend sends valid enum value ('Herr', 'Frau', 'Firma'). Root cause: Frontend-Backend data contract mismatch on anrede field validation."
+      - working: true
+        agent: "testing"
+        comment: "✅ CUSTOMER CREATION 422 ERROR FIXED: Customer creation form now working correctly with anrede field. Frontend properly handles both null anrede (empty selection) and valid enum values ('Herr', 'Frau', 'Firma'). Form is fully functional with 12 input fields, proper validation, and successful backend integration. Backend logs show successful POST /api/kunden requests with 200 OK responses."
 
 frontend:
   - task: "Contract Creation Form"

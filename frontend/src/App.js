@@ -407,6 +407,155 @@ const App = () => {
         
         {/* Content Area */}
         <div className="content-area">
+          {/* Tab Bar */}
+          {openTabs.length > 0 && (
+            <div className="tab-bar">
+              {openTabs.map(tab => (
+                <div 
+                  key={tab.id} 
+                  className={`tab ${activeTab === tab.id ? 'active' : ''}`}
+                  onClick={() => setActiveTab(tab.id)}
+                  data-testid={`tab-${tab.id}`}
+                >
+                  <span className="tab-title">{tab.title}</span>
+                  <span 
+                    className="tab-close"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      closeTab(tab.id);
+                    }}
+                    data-testid={`close-tab-${tab.id}`}
+                  >
+                    ✕
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Tab Content */}
+          {activeTab && openTabs.find(tab => tab.id === activeTab) && (
+            <div className="tab-content">
+              {(() => {
+                const currentTab = openTabs.find(tab => tab.id === activeTab);
+                if (currentTab.type === 'customer') {
+                  const kunde = currentTab.kunde;
+                  const contracts = customerContracts[kunde.id] || [];
+                  
+                  return (
+                    <div className="customer-tab-content" data-testid={`customer-tab-content-${kunde.id}`}>
+                      {/* Customer Header Info */}
+                      <div className="customer-header">
+                        <div className="customer-info-grid">
+                          <div className="info-item">
+                            <label>Name:</label>
+                            <span>{kunde.name}</span>
+                          </div>
+                          <div className="info-item">
+                            <label>Vorname:</label>
+                            <span>{kunde.vorname}</span>
+                          </div>
+                          <div className="info-item">
+                            <label>PLZ:</label>
+                            <span>{kunde.plz}</span>
+                          </div>
+                          <div className="info-item">
+                            <label>Straße:</label>
+                            <span>{kunde.strasse}</span>
+                          </div>
+                          <div className="info-item">
+                            <label>Ort:</label>
+                            <span>{kunde.ort}</span>
+                          </div>
+                          <div className="info-item">
+                            <label>K-ID:</label>
+                            <span>{kunde.kunde_id}</span>
+                          </div>
+                          <div className="info-item">
+                            <label>Tel:</label>
+                            <span>{kunde.telefon?.telefon_privat || '-'}</span>
+                          </div>
+                          <div className="info-item">
+                            <label>Status:</label>
+                            <span>{kunde.status || 'Aktiv'}</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Contracts Table */}
+                      <div className="contracts-section">
+                        <div className="section-header">
+                          <h3>Verträge ({contracts.length})</h3>
+                          <button className="btn add-contract-btn" data-testid={`add-contract-btn-${kunde.id}`}>
+                            ➕ Neuer Vertrag
+                          </button>
+                        </div>
+                        
+                        {contracts.length === 0 ? (
+                          <div className="no-contracts">
+                            <div className="contracts-table-header">
+                              <div className="table-header-row">
+                                <div className="table-header-cell">V-Nr.</div>
+                                <div className="table-header-cell">Gesellschaft</div>
+                                <div className="table-header-cell">Sparte</div>
+                                <div className="table-header-cell">Tarif</div>
+                                <div className="table-header-cell">Status</div>
+                                <div className="table-header-cell">Beginn</div>
+                                <div className="table-header-cell">Beitrag</div>
+                                <div className="table-header-cell">Aktionen</div>
+                              </div>
+                            </div>
+                            <div className="empty-message">
+                              Keine Verträge vorhanden.
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="contracts-table">
+                            <div className="contracts-table-header">
+                              <div className="table-header-row">
+                                <div className="table-header-cell">V-Nr.</div>
+                                <div className="table-header-cell">Gesellschaft</div>
+                                <div className="table-header-cell">Sparte</div>
+                                <div className="table-header-cell">Tarif</div>
+                                <div className="table-header-cell">Status</div>
+                                <div className="table-header-cell">Beginn</div>
+                                <div className="table-header-cell">Beitrag</div>
+                                <div className="table-header-cell">Aktionen</div>
+                              </div>
+                            </div>
+                            <div className="contracts-table-body">
+                              {contracts.map((vertrag) => (
+                                <div key={vertrag.id} className="table-row" data-testid={`contract-row-${vertrag.id}`}>
+                                  <div className="table-cell">{vertrag.vertragsnummer}</div>
+                                  <div className="table-cell">{vertrag.gesellschaft}</div>
+                                  <div className="table-cell">{vertrag.produkt_sparte}</div>
+                                  <div className="table-cell">{vertrag.tarif}</div>
+                                  <div className="table-cell">{vertrag.vertragsstatus}</div>
+                                  <div className="table-cell">
+                                    {vertrag.beginn ? new Date(vertrag.beginn).toLocaleDateString('de-DE') : '-'}
+                                  </div>
+                                  <div className="table-cell">
+                                    {vertrag.beitrag_brutto ? `${vertrag.beitrag_brutto}€` : '-'}
+                                  </div>
+                                  <div className="table-cell">
+                                    <button className="table-btn" data-testid={`edit-contract-btn-${vertrag.id}`}>
+                                      ✏️
+                                    </button>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                }
+                return null;
+              })()}
+            </div>
+          )}
+
           {/* Customer Creation Form */}
           {customerFormVisible && (
             <div 

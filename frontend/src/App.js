@@ -2629,7 +2629,7 @@ const App = () => {
                         <div className="dashboard-stat-card">
                           <div className="stat-icon">🏢</div>
                           <div className="stat-content">
-                            <div className="stat-number">{vus.length}</div>
+                            <div className="stat-number">{allVUs.length}</div>
                             <div className="stat-label">Versicherer</div>
                           </div>
                         </div>

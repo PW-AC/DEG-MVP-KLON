@@ -206,6 +206,57 @@ const App = () => {
     setSearchWindow(prev => ({ ...prev, visible: false }));
   };
 
+  // Open customer in new tab
+  const openCustomerTab = (kunde) => {
+    // Check if tab is already open
+    const existingTab = openTabs.find(tab => tab.kunde.id === kunde.id);
+    if (existingTab) {
+      setActiveTab(existingTab.id);
+      return;
+    }
+
+    // Create new tab
+    const newTab = {
+      id: `tab-${kunde.id}`,
+      kunde: kunde,
+      title: `${kunde.vorname} ${kunde.name}`,
+      type: 'customer'
+    };
+
+    setOpenTabs(prev => [...prev, newTab]);
+    setActiveTab(newTab.id);
+    setSearchWindow(prev => ({ ...prev, visible: false }));
+    
+    // Load customer contracts
+    loadCustomerContracts(kunde.id);
+  };
+
+  // Load customer contracts
+  const loadCustomerContracts = async (kundeId) => {
+    try {
+      const response = await axios.get(`${API}/vertraege/kunde/${kundeId}`);
+      setCustomerContracts(prev => ({
+        ...prev,
+        [kundeId]: response.data
+      }));
+    } catch (error) {
+      console.error('Fehler beim Laden der Verträge:', error);
+      setCustomerContracts(prev => ({
+        ...prev,
+        [kundeId]: []
+      }));
+    }
+  };
+
+  // Close tab
+  const closeTab = (tabId) => {
+    setOpenTabs(prev => prev.filter(tab => tab.id !== tabId));
+    if (activeTab === tabId) {
+      const remainingTabs = openTabs.filter(tab => tab.id !== tabId);
+      setActiveTab(remainingTabs.length > 0 ? remainingTabs[0].id : null);
+    }
+  };
+
   // Close search window
   const closeSearch = () => {
     setSearchWindow(prev => ({ ...prev, visible: false }));

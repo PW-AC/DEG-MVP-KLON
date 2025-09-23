@@ -401,9 +401,12 @@ def parse_from_mongo(item):
         for key, value in item.items():
             if key in ['geburtsdatum', 'beginn', 'ablauf'] and isinstance(value, str):
                 try:
-                    item[key] = datetime.fromisoformat(value).date()
+                    if value.strip():  # Only parse if not empty
+                        item[key] = datetime.fromisoformat(value).date()
+                    else:
+                        item[key] = None
                 except:
-                    pass
+                    item[key] = None
             elif key in ['beitrag_brutto', 'beitrag_netto'] and isinstance(value, str):
                 # Handle currency strings like "46,24 €" or "1.234,56"
                 try:

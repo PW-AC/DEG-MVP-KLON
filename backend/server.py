@@ -527,6 +527,11 @@ async def get_vertraege_by_kunde(kunde_id: str):
 @api_router.post("/vus", response_model=VU)
 async def create_vu(vu: VUCreate):
     vu_dict = prepare_for_mongo(vu.dict())
+    
+    # Generate internal VU ID if not provided
+    if not vu_dict.get('vu_internal_id'):
+        vu_dict['vu_internal_id'] = await get_next_vu_internal_id()
+    
     vu_obj = VU(**vu_dict)
     result = await db.vus.insert_one(prepare_for_mongo(vu_obj.dict()))
     return vu_obj

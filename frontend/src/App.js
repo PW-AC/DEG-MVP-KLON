@@ -1525,7 +1525,35 @@ const App = () => {
 
   // Close search window
   const closeSearch = () => {
+    // If search was not performed and we have a pending tab, close it
+    if (!searchPerformed && pendingSearchTabId) {
+      setOpenTabs(prev => prev.filter(tab => tab.id !== pendingSearchTabId));
+      if (activeTab === pendingSearchTabId) {
+        const remainingTabs = openTabs.filter(tab => tab.id !== pendingSearchTabId);
+        setActiveTab(remainingTabs.length > 0 ? remainingTabs[0].id : null);
+      }
+      setPendingSearchTabId(null);
+    }
     setSearchWindow(prev => ({ ...prev, visible: false }));
+    setSearchPerformed(false);
+  };
+
+  // Open search window with new tab
+  const openSearchWithNewTab = () => {
+    // Create new empty search results tab
+    const newTabId = `search-${Date.now()}`;
+    const newTab = {
+      id: newTabId,
+      title: 'Suche...',
+      type: 'search',
+      isSearching: true
+    };
+
+    setOpenTabs(prev => [...prev, newTab]);
+    setActiveTab(newTabId);
+    setPendingSearchTabId(newTabId);
+    setSearchPerformed(false);
+    setSearchWindow(prev => ({ ...prev, visible: true }));
   };
 
   // Handle sidebar clicks

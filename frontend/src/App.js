@@ -1454,9 +1454,23 @@ const App = () => {
                                       {vertrag.beitrag_brutto ? `${vertrag.beitrag_brutto}€` : '-'}
                                     </div>
                                     <div className="table-cell">
-                                      <button className="table-btn" data-testid={`edit-contract-btn-${vertrag.id}`}>
-                                        ✏️
-                                      </button>
+                                      <div className="contract-actions">
+                                        <button 
+                                          className="table-btn" 
+                                          onClick={() => toggleContractDocuments(vertrag.id)}
+                                          data-testid={`contract-docs-btn-${vertrag.id}`}
+                                          title="Vertragsdokumente"
+                                        >
+                                          📄
+                                        </button>
+                                        <button 
+                                          className="table-btn" 
+                                          data-testid={`edit-contract-btn-${vertrag.id}`}
+                                          title="Vertrag bearbeiten"
+                                        >
+                                          ✏️
+                                        </button>
+                                      </div>
                                     </div>
                                   </div>
                                 ))}

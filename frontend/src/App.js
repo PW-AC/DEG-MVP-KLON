@@ -571,6 +571,13 @@ const App = () => {
             <div className="duplicate-warning" data-testid="duplicate-warning">
               <div className="warning-icon">⚠️</div>
               <div className="warning-text">{duplicateWarning.message}</div>
+              <button 
+                className="merge-btn" 
+                onClick={() => handleMergeCustomers(duplicateWarning.ids)}
+                data-testid="merge-customers-btn"
+              >
+                Kunden & Vertragsdaten zusammenführen
+              </button>
               <div className="warning-close" onClick={() => setDuplicateWarning(null)}>✕</div>
             </div>
           )}

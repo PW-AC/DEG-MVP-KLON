@@ -539,6 +539,8 @@ const App = () => {
               {(() => {
                 const currentTab = openTabs.find(tab => tab.id === activeTab);
                 
+                if (!currentTab) return null;
+                
                 if (currentTab.type === 'all-customers') {
                   return (
                     <div className="all-customers-tab-content" data-testid="all-customers-tab-content">

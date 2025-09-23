@@ -1352,6 +1352,13 @@ const App = () => {
                           >
                             🔧 Sample Daten
                           </button>
+                          <button 
+                            className="btn"
+                            onClick={migrateExistingContracts}
+                            data-testid="migrate-contracts-btn"
+                          >
+                            🔄 Verträge migrieren
+                          </button>
                         </div>
                       </div>
 

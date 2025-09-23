@@ -30,7 +30,7 @@ class InsuranceBrokerAPITester:
             print(f"❌ {name} - FAILED {details}")
         return success
 
-    def make_request(self, method: str, endpoint: str, data: Dict = None, params: Dict = None) -> tuple:
+    def make_request(self, method: str, endpoint: str, data: any = None, params: Dict = None) -> tuple:
         """Make HTTP request and return success status and response"""
         url = f"{self.api_url}/{endpoint}"
         headers = {'Content-Type': 'application/json'}
@@ -39,7 +39,11 @@ class InsuranceBrokerAPITester:
             if method == 'GET':
                 response = requests.get(url, headers=headers, params=params, timeout=10)
             elif method == 'POST':
-                response = requests.post(url, json=data, headers=headers, timeout=10)
+                # Handle string data for JSON requests
+                if isinstance(data, str):
+                    response = requests.post(url, json=data, headers=headers, timeout=10)
+                else:
+                    response = requests.post(url, json=data, headers=headers, timeout=10)
             elif method == 'PUT':
                 response = requests.put(url, json=data, headers=headers, timeout=10)
             elif method == 'DELETE':

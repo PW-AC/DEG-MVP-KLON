@@ -214,9 +214,15 @@ const App = () => {
     if (item === 'search') {
       setSearchWindow(prev => ({ ...prev, visible: true }));
       setCustomerFormVisible(false);
+      setDocumentsVisible(false);
     } else if (item === 'newcustomer') {
       setCustomerFormVisible(true);
       setSearchWindow(prev => ({ ...prev, visible: false }));
+      setDocumentsVisible(false);
+    } else if (item === 'vu') {
+      setSearchWindow(prev => ({ ...prev, visible: false }));
+      setCustomerFormVisible(false);
+      setDocumentsVisible(false);
     }
   };
 

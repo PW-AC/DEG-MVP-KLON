@@ -990,9 +990,6 @@ input[type="file"] {
 .document-info-compact {
   flex: 1;
   min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
 }
 
 .document-filename {
@@ -1002,13 +999,7 @@ input[type="file"] {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  line-height: 1.2;
-}
-
-.document-date {
-  font-size: 8px;
-  color: #666;
-  line-height: 1.1;
+  line-height: 1.4;
 }
 
 /* Right Panel - Upload */

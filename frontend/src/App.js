@@ -483,39 +483,50 @@ const App = () => {
                     <div className="customer-tab-content" data-testid={`customer-tab-content-${kunde.id}`}>
                       {/* Customer Header Info */}
                       <div className="customer-header">
-                        <div className="customer-info-grid">
-                          <div className="info-item">
-                            <label>Name:</label>
-                            <span>{kunde.name}</span>
+                        <div className="customer-info-section">
+                          <div className="customer-name-row">
+                            <div className="info-item-large">
+                              <label>Name:</label>
+                              <span>{kunde.anrede} {kunde.titel} {kunde.vorname} {kunde.name}</span>
+                            </div>
+                            <div className="info-item">
+                              <label>Vorname:</label>
+                              <span>{kunde.vorname}</span>
+                            </div>
+                            <div className="info-item">
+                              <label>Tel:</label>
+                              <span>{kunde.telefon?.telefon_privat || '-'}</span>
+                            </div>
                           </div>
-                          <div className="info-item">
-                            <label>Vorname:</label>
-                            <span>{kunde.vorname}</span>
+                          <div className="customer-address-row">
+                            <div className="info-item">
+                              <label>Straße:</label>
+                              <span>{kunde.strasse}</span>
+                            </div>
+                            <div className="info-item">
+                              <label>PLZ:</label>
+                              <span>{kunde.plz}</span>
+                            </div>
+                            <div className="info-item">
+                              <label>Ort:</label>
+                              <span>{kunde.ort}</span>
+                            </div>
                           </div>
-                          <div className="info-item">
-                            <label>PLZ:</label>
-                            <span>{kunde.plz}</span>
-                          </div>
-                          <div className="info-item">
-                            <label>Straße:</label>
-                            <span>{kunde.strasse}</span>
-                          </div>
-                          <div className="info-item">
-                            <label>Ort:</label>
-                            <span>{kunde.ort}</span>
-                          </div>
-                          <div className="info-item">
-                            <label>K-ID:</label>
-                            <span>{kunde.kunde_id}</span>
-                          </div>
-                          <div className="info-item">
-                            <label>Tel:</label>
-                            <span>{kunde.telefon?.telefon_privat || '-'}</span>
-                          </div>
-                          <div className="info-item">
-                            <label>Status:</label>
-                            <span>{kunde.status || 'Aktiv'}</span>
-                          </div>
+                        </div>
+                        <div className="customer-actions">
+                          <button 
+                            className="customer-action-btn documents-btn"
+                            onClick={() => handleDocumentResultClick(kunde)}
+                            data-testid={`customer-documents-btn-${kunde.id}`}
+                          >
+                            📄 Dokumente
+                          </button>
+                          <button 
+                            className="customer-action-btn edit-btn"
+                            data-testid={`customer-edit-btn-${kunde.id}`}
+                          >
+                            ✏️ Bearbeiten
+                          </button>
                         </div>
                       </div>
 

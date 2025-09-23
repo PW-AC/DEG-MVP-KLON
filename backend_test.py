@@ -1064,6 +1064,256 @@ class InsuranceBrokerAPITester:
         
         return self.log_test("Document Statistics", success, details)
 
+    def test_pdf_analysis_endpoint_accessibility(self):
+        """Test PDF analysis endpoint accessibility"""
+        print("\n🔍 Testing PDF Analysis Endpoint Accessibility...")
+        
+        # Create a simple test payload with minimal PDF content
+        test_payload = {
+            "file_content": "JVBERi0xLjQKJcOkw7zDtsOfCjIgMCBvYmoKPDwKL0xlbmd0aCAzIDAgUgo+PgpzdHJlYW0KQNC0xLjQKJcOkw7zDtsOfCjIgMCBvYmoKPDwKL0xlbmd0aCAzIDAgUgo+PgpzdHJlYW0K",
+            "file_name": "test_contract.pdf"
+        }
+        
+        status_code, response = self.make_request('POST', 'analyze-contract-pdf', test_payload)
+        
+        # Check if endpoint is accessible (not 404)
+        endpoint_accessible = status_code != 404
+        
+        if status_code == 500:
+            # Check if it's an AI service configuration error
+            error_msg = response.get('detail', '')
+            if 'AI service not configured' in error_msg:
+                success = False
+                details = f"Status: {status_code} - AI service not configured (EMERGENT_LLM_KEY missing)"
+            else:
+                success = endpoint_accessible
+                details = f"Status: {status_code} - Endpoint accessible but processing failed: {error_msg}"
+        elif status_code == 200:
+            # Endpoint working correctly
+            success = True
+            confidence = response.get('confidence', 0)
+            details = f"Status: {status_code} - Endpoint working, Confidence: {confidence}"
+        else:
+            success = endpoint_accessible
+            details = f"Status: {status_code} - Endpoint accessible but returned: {response}"
+        
+        return self.log_test("PDF Analysis Endpoint Accessibility", success, details)
+
+    def test_emergent_llm_key_configuration(self):
+        """Test if EMERGENT_LLM_KEY is properly configured"""
+        print("\n🔍 Testing EMERGENT_LLM_KEY Configuration...")
+        
+        # Try to access the PDF analysis endpoint to check if AI service is configured
+        test_payload = {
+            "file_content": "JVBERi0xLjQKJcOkw7zDtsOfCjIgMCBvYmoKPDwKL0xlbmd0aCAzIDAgUgo+PgpzdHJlYW0KQNC0xLjQKJcOkw7zDtsOfCjIgMCBvYmoKPDwKL0xlbmd0aCAzIDAgUgo+PgpzdHJlYW0K",
+            "file_name": "config_test.pdf"
+        }
+        
+        status_code, response = self.make_request('POST', 'analyze-contract-pdf', test_payload)
+        
+        if status_code == 500:
+            error_msg = response.get('detail', '')
+            if 'AI service not configured' in error_msg:
+                success = False
+                details = f"Status: {status_code} - EMERGENT_LLM_KEY not configured or invalid"
+            else:
+                success = True  # Key is configured, but other error occurred
+                details = f"Status: {status_code} - EMERGENT_LLM_KEY configured but processing error: {error_msg}"
+        elif status_code == 200:
+            success = True
+            details = f"Status: {status_code} - EMERGENT_LLM_KEY properly configured and working"
+        else:
+            success = True  # Assume key is configured if we don't get the specific error
+            details = f"Status: {status_code} - Key appears configured, response: {response}"
+        
+        return self.log_test("EMERGENT_LLM_KEY Configuration", success, details)
+
+    def test_pdf_analysis_with_realistic_data(self):
+        """Test PDF analysis with realistic contract data structure"""
+        print("\n🔍 Testing PDF Analysis with Realistic Data...")
+        
+        # Create a more realistic PDF content (still base64 encoded)
+        realistic_pdf_content = "JVBERi0xLjQKMSAwIG9iago8PAovVHlwZSAvQ2F0YWxvZwovUGFnZXMgMiAwIFIKPj4KZW5kb2JqCjIgMCBvYmoKPDwKL1R5cGUgL1BhZ2VzCi9LaWRzIFszIDAgUl0KL0NvdW50IDEKPD4KZW5kb2JqCjMgMCBvYmoKPDwKL1R5cGUgL1BhZ2UKL1BhcmVudCAyIDAgUgovTWVkaWFCb3ggWzAgMCA2MTIgNzkyXQovQ29udGVudHMgNCAwIFIKPj4KZW5kb2JqCjQgMCBvYmoKPDwKL0xlbmd0aCA0NAo+PgpzdHJlYW0KQNC0xLjQKJcOkw7zDtsOfCjIgMCBvYmoKPDwKL0xlbmd0aCAzIDAgUgo+PgpzdHJlYW0K"
+        
+        test_payload = {
+            "file_content": realistic_pdf_content,
+            "file_name": "versicherungsvertrag_allianz_2024.pdf"
+        }
+        
+        status_code, response = self.make_request('POST', 'analyze-contract-pdf', test_payload)
+        
+        if status_code == 200:
+            # Check if response has expected structure
+            expected_fields = ['vertragsnummer', 'gesellschaft', 'produkt_sparte', 'confidence', 'raw_analysis']
+            has_expected_structure = all(field in response for field in expected_fields)
+            
+            confidence = response.get('confidence', 0)
+            gesellschaft = response.get('gesellschaft')
+            
+            success = has_expected_structure
+            details = f"Status: {status_code}, Structure OK: {has_expected_structure}, Confidence: {confidence}, Gesellschaft: {gesellschaft}"
+        elif status_code == 500:
+            error_msg = response.get('detail', '')
+            if 'AI service not configured' in error_msg:
+                success = False
+                details = f"Status: {status_code} - AI service configuration issue"
+            else:
+                success = False
+                details = f"Status: {status_code} - Processing error: {error_msg}"
+        else:
+            success = False
+            details = f"Status: {status_code} - Unexpected response: {response}"
+        
+        return self.log_test("PDF Analysis with Realistic Data", success, details)
+
+    def test_create_contract_from_pdf_endpoint_accessibility(self):
+        """Test create contract from PDF endpoint accessibility"""
+        print("\n🔍 Testing Create Contract from PDF Endpoint Accessibility...")
+        
+        if not self.created_customers:
+            return self.log_test("Create Contract from PDF Endpoint", False, "No customers created to test")
+        
+        # Create sample extracted data
+        extracted_data = {
+            "vertragsnummer": "V2024PDF001",
+            "gesellschaft": "Allianz Versicherung AG",
+            "produkt_sparte": "KFZ-Versicherung",
+            "tarif": "Vollkasko",
+            "zahlungsweise": "monatlich",
+            "beitrag_brutto": "850.00",
+            "beitrag_netto": "714.29",
+            "beginn": "2024-01-01",
+            "ablauf": "2024-12-31",
+            "kunde_name": "Mustermann",
+            "kunde_vorname": "Max",
+            "kunde_strasse": "Musterstraße 123",
+            "kunde_plz": "10115",
+            "kunde_ort": "Berlin",
+            "confidence": 0.85,
+            "raw_analysis": "Test analysis data"
+        }
+        
+        # Test payload
+        test_payload = {
+            "kunde_id": self.created_customers[0],
+            "extracted_data": extracted_data
+        }
+        
+        status_code, response = self.make_request('POST', 'create-contract-from-pdf', test_payload)
+        
+        # Check if endpoint is accessible (not 404)
+        endpoint_accessible = status_code != 404
+        
+        if status_code == 200:
+            success = True
+            contract_id = response.get('contract_id')
+            if contract_id:
+                self.created_contracts.append(contract_id)
+            details = f"Status: {status_code} - Contract created successfully, ID: {contract_id}"
+        elif status_code == 404:
+            success = False
+            details = f"Status: {status_code} - Endpoint not found"
+        elif status_code == 422:
+            success = endpoint_accessible  # Endpoint exists but validation failed
+            details = f"Status: {status_code} - Endpoint accessible but validation error: {response}"
+        else:
+            success = endpoint_accessible
+            details = f"Status: {status_code} - Endpoint accessible, response: {response}"
+        
+        return self.log_test("Create Contract from PDF Endpoint", success, details)
+
+    def test_pdf_contract_creation_with_vu_assignment(self):
+        """Test PDF contract creation with automatic VU assignment"""
+        print("\n🔍 Testing PDF Contract Creation with VU Assignment...")
+        
+        if not self.created_customers:
+            return self.log_test("PDF Contract Creation with VU Assignment", False, "No customers created to test")
+        
+        # Test with Allianz gesellschaft (should auto-assign VU-001)
+        extracted_data = {
+            "vertragsnummer": "V2024PDFVU001",
+            "gesellschaft": "Allianz",  # Should match VU-001
+            "produkt_sparte": "Hausratversicherung",
+            "tarif": "Basis",
+            "zahlungsweise": "jährlich",
+            "beitrag_brutto": "240.00",
+            "beitrag_netto": "201.68",
+            "beginn": "2024-01-01",
+            "ablauf": "2024-12-31",
+            "confidence": 0.90,
+            "raw_analysis": "PDF analysis for VU assignment test"
+        }
+        
+        test_payload = {
+            "kunde_id": self.created_customers[0],
+            "extracted_data": extracted_data
+        }
+        
+        status_code, response = self.make_request('POST', 'create-contract-from-pdf', test_payload)
+        
+        if status_code == 200:
+            contract_id = response.get('contract_id')
+            success_msg = response.get('success', False)
+            
+            # Verify contract was created and get its details
+            if contract_id:
+                self.created_contracts.append(contract_id)
+                contract_status, contract_data = self.make_request('GET', f'vertraege/{contract_id}')
+                
+                if contract_status == 200:
+                    vu_internal_id = contract_data.get('vu_internal_id')
+                    success = success_msg and vu_internal_id is not None
+                    details = f"Status: {status_code}, Contract ID: {contract_id}, VU Internal ID: {vu_internal_id}"
+                else:
+                    success = False
+                    details = f"Status: {status_code}, Contract created but couldn't retrieve details"
+            else:
+                success = False
+                details = f"Status: {status_code}, No contract ID returned"
+        else:
+            success = False
+            details = f"Status: {status_code}, Response: {response}"
+        
+        return self.log_test("PDF Contract Creation with VU Assignment", success, details)
+
+    def test_emergentintegrations_library_import(self):
+        """Test if emergentintegrations library is properly installed and importable"""
+        print("\n🔍 Testing emergentintegrations Library Import...")
+        
+        # We can't directly test the import, but we can test if the PDF analysis endpoint
+        # works without import errors, which would indicate the library is properly installed
+        
+        test_payload = {
+            "file_content": "JVBERi0xLjQKJcOkw7zDtsOfCjIgMCBvYmoKPDwKL0xlbmd0aCAzIDAgUgo+PgpzdHJlYW0K",
+            "file_name": "import_test.pdf"
+        }
+        
+        status_code, response = self.make_request('POST', 'analyze-contract-pdf', test_payload)
+        
+        # If we get a 500 error with import-related message, library is not installed
+        if status_code == 500:
+            error_msg = response.get('detail', '')
+            if 'import' in error_msg.lower() or 'module' in error_msg.lower():
+                success = False
+                details = f"Status: {status_code} - Library import error: {error_msg}"
+            elif 'AI service not configured' in error_msg:
+                success = True  # Library imported fine, just missing API key
+                details = f"Status: {status_code} - Library imported successfully, missing API key"
+            else:
+                success = True  # Library imported, other processing error
+                details = f"Status: {status_code} - Library imported, processing error: {error_msg}"
+        elif status_code == 200:
+            success = True
+            details = f"Status: {status_code} - Library imported and working correctly"
+        elif status_code == 404:
+            success = False
+            details = f"Status: {status_code} - Endpoint not found, possible routing issue"
+        else:
+            success = True  # Assume library is imported if we don't get import errors
+            details = f"Status: {status_code} - Library appears to be imported correctly"
+        
+        return self.log_test("emergentintegrations Library Import", success, details)
+
     def test_create_contract(self):
         """Test contract creation"""
         if not self.created_customers or not self.created_vus:

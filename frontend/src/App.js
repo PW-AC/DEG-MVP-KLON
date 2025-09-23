@@ -591,18 +591,11 @@ const App = () => {
                                           {doc.document_type === 'image' && '🖼️'}
                                           {doc.document_type === 'other' && '📁'}
                                         </div>
-                                        <div className="document-info">
-                                          <div className="document-name">{doc.title}</div>
-                                          <div className="document-details">
-                                            {doc.filename} • {new Date(doc.created_at).toLocaleDateString('de-DE')}
+                                        <div className="document-info-compact">
+                                          <div className="document-filename">{doc.filename}</div>
+                                          <div className="document-date">
+                                            {new Date(doc.created_at).toLocaleDateString('de-DE')}
                                           </div>
-                                          {doc.tags && doc.tags.length > 0 && (
-                                            <div className="document-tags-mini">
-                                              {doc.tags.map((tag, index) => (
-                                                <span key={index} className="tag-mini">{tag}</span>
-                                              ))}
-                                            </div>
-                                          )}
                                         </div>
                                       </div>
                                     ))}

@@ -11,6 +11,8 @@ import uuid
 from datetime import datetime, date
 from enum import Enum
 import random
+import base64
+from typing import Union
 
 
 ROOT_DIR = Path(__file__).parent

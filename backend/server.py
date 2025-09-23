@@ -615,6 +615,112 @@ async def delete_vu(vu_id: str):
     return {"message": "VU erfolgreich gelöscht"}
 
 
+# VU Matching and Migration endpoints
+@api_router.post("/vus/match-gesellschaft")
+async def match_gesellschaft_to_vu(gesellschaft: str):
+    """
+    Find matching VU for a given gesellschaft name.
+    Used by frontend to check VU assignment before creating contracts.
+    """
+    if not gesellschaft:
+        return {"match": False, "vu": None, "match_type": None}
+    
+    matching_vu, match_type = await find_matching_vu(gesellschaft)
+    if matching_vu:
+        return {
+            "match": True, 
+            "vu": matching_vu.dict(), 
+            "match_type": match_type,
+            "message": f"VU gefunden: {matching_vu.name} (via {match_type})"
+        }
+    
+    return {
+        "match": False, 
+        "vu": None, 
+        "match_type": None,
+        "message": f"Keine VU gefunden für: {gesellschaft}"
+    }
+
+
+@api_router.post("/vertraege/migrate-vu-assignments")
+async def migrate_existing_contracts():
+    """
+    Migrate existing contracts to assign VU IDs based on gesellschaft field.
+    """
+    # Get all contracts without vu_internal_id
+    contracts_without_vu = await db.vertraege.find({"vu_internal_id": {"$exists": False}}).to_list(length=None)
+    
+    migration_results = {
+        "total_contracts": len(contracts_without_vu),
+        "matched": 0,
+        "unmatched": 0,
+        "updated": 0,
+        "matches": [],
+        "unmatched_gesellschaften": []
+    }
+    
+    for contract in contracts_without_vu:
+        gesellschaft = contract.get('gesellschaft')
+        if gesellschaft:
+            matching_vu, match_type = await find_matching_vu(gesellschaft)
+            if matching_vu:
+                # Update contract with VU assignment
+                update_result = await db.vertraege.update_one(
+                    {"id": contract["id"]},
+                    {"$set": {
+                        "vu_id": matching_vu.id,
+                        "vu_internal_id": matching_vu.vu_internal_id,
+                        "updated_at": datetime.utcnow()
+                    }}
+                )
+                
+                if update_result.modified_count > 0:
+                    migration_results["updated"] += 1
+                    migration_results["matched"] += 1
+                    migration_results["matches"].append({
+                        "vertrag_id": contract["id"],
+                        "gesellschaft": gesellschaft,
+                        "vu_name": matching_vu.name,
+                        "vu_internal_id": matching_vu.vu_internal_id,
+                        "match_type": match_type
+                    })
+            else:
+                migration_results["unmatched"] += 1
+                if gesellschaft not in migration_results["unmatched_gesellschaften"]:
+                    migration_results["unmatched_gesellschaften"].append(gesellschaft)
+    
+    return migration_results
+
+
+@api_router.get("/vertraege/vu-statistics")
+async def get_contract_vu_statistics():
+    """
+    Get statistics about VU assignments in contracts.
+    """
+    total_contracts = await db.vertraege.count_documents({})
+    contracts_with_vu = await db.vertraege.count_documents({"vu_internal_id": {"$exists": True, "$ne": None}})
+    contracts_without_vu = total_contracts - contracts_with_vu
+    
+    # Get gesellschaften without VU assignment
+    unassigned_contracts = await db.vertraege.find(
+        {"vu_internal_id": {"$exists": False}}, 
+        {"gesellschaft": 1}
+    ).to_list(length=None)
+    
+    unique_gesellschaften = list(set([
+        c.get('gesellschaft') for c in unassigned_contracts 
+        if c.get('gesellschaft')
+    ]))
+    
+    return {
+        "total_contracts": total_contracts,
+        "contracts_with_vu": contracts_with_vu,
+        "contracts_without_vu": contracts_without_vu,
+        "assignment_percentage": round((contracts_with_vu / total_contracts * 100) if total_contracts > 0 else 0, 2),
+        "unique_unassigned_gesellschaften": unique_gesellschaften
+    }
+
+
 # Initialize sample VU data
 @api_router.post("/vus/init-sample-data")
 async def init_sample_vu_data():

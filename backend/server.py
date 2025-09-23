@@ -529,6 +529,31 @@ async def get_vertraege_by_kunde(kunde_id: str):
     return [Vertrag(**parse_from_mongo(vertrag)) for vertrag in vertraege]
 
 
+@api_router.get("/vertraege/{vertrag_id}", response_model=Vertrag)
+async def get_vertrag(vertrag_id: str):
+    vertrag = await db.vertraege.find_one({"id": vertrag_id})
+    if vertrag is None:
+        raise HTTPException(status_code=404, detail="Vertrag nicht gefunden")
+    return Vertrag(**parse_from_mongo(vertrag))
+
+
+@api_router.put("/vertraege/{vertrag_id}", response_model=Vertrag)
+async def update_vertrag(vertrag_id: str, vertrag_update: VertragCreate):
+    vertrag_dict = prepare_for_mongo(vertrag_update.dict(exclude_unset=True))
+    vertrag_dict["updated_at"] = datetime.utcnow()
+    
+    result = await db.vertraege.update_one(
+        {"id": vertrag_id}, 
+        {"$set": vertrag_dict}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Vertrag nicht gefunden")
+    
+    updated_vertrag = await db.vertraege.find_one({"id": vertrag_id})
+    return Vertrag(**parse_from_mongo(updated_vertrag))
+
+
 # VU endpoints
 @api_router.post("/vus", response_model=VU)
 async def create_vu(vu: VUCreate):

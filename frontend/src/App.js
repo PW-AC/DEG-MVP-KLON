@@ -592,9 +592,8 @@ const App = () => {
                                           {doc.document_type === 'other' && '📁'}
                                         </div>
                                         <div className="document-info-compact">
-                                          <div className="document-filename">{doc.filename}</div>
-                                          <div className="document-date">
-                                            {new Date(doc.created_at).toLocaleDateString('de-DE')}
+                                          <div className="document-filename">
+                                            {doc.filename} ({new Date(doc.created_at).toLocaleDateString('de-DE')})
                                           </div>
                                         </div>
                                       </div>

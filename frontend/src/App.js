@@ -2158,6 +2158,189 @@ const App = () => {
             </div>
           )}
 
+          {/* Contract Form Window */}
+          {contractFormVisible && (
+            <div 
+              className="search-window"
+              style={{ 
+                left: `100px`, 
+                top: `80px`,
+                width: '800px'
+              }}
+            >
+              <div className="window-title">
+                📄 Neuer Vertrag erstellen
+                <div className="window-controls">
+                  <div className="window-control">_</div>
+                  <div className="window-control">□</div>
+                  <div className="window-control" onClick={() => setContractFormVisible(false)}>✕</div>
+                </div>
+              </div>
+              
+              <div className="form-content customer-form">
+                <div className="form-group">
+                  <label>Vertragsnummer</label>
+                  <input 
+                    type="text" 
+                    value={newContract.vertragsnummer}
+                    onChange={(e) => handleContractChange('vertragsnummer', e.target.value)}
+                    placeholder="Vertragsnummer"
+                    data-testid="contract-number-input"
+                  />
+                </div>
+                
+                <div className="form-group">
+                  <label>Interne Vertragsnummer (AiN)</label>
+                  <input 
+                    type="text" 
+                    value={newContract.interne_vertragsnummer}
+                    onChange={(e) => handleContractChange('interne_vertragsnummer', e.target.value)}
+                    placeholder="Interne Nummer"
+                    data-testid="contract-internal-number-input"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>Gesellschaft *</label>
+                  <input 
+                    type="text" 
+                    value={newContract.gesellschaft}
+                    onChange={(e) => handleContractChange('gesellschaft', e.target.value)}
+                    placeholder="Versicherungsgesellschaft"
+                    data-testid="contract-gesellschaft-input"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>KFZ-Kennzeichen</label>
+                  <input 
+                    type="text" 
+                    value={newContract.kfz_kennzeichen}
+                    onChange={(e) => handleContractChange('kfz_kennzeichen', e.target.value)}
+                    placeholder="KFZ-Kennzeichen"
+                    data-testid="contract-license-plate-input"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>Produkt / Sparte</label>
+                  <input 
+                    type="text" 
+                    value={newContract.produkt_sparte}
+                    onChange={(e) => handleContractChange('produkt_sparte', e.target.value)}
+                    placeholder="z.B. KFZ, Haftpflicht, Leben"
+                    data-testid="contract-product-input"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>Tarif</label>
+                  <input 
+                    type="text" 
+                    value={newContract.tarif}
+                    onChange={(e) => handleContractChange('tarif', e.target.value)}
+                    placeholder="Tarif"
+                    data-testid="contract-tarif-input"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>Zahlungsweise</label>
+                  <select 
+                    value={newContract.zahlungsweise}
+                    onChange={(e) => handleContractChange('zahlungsweise', e.target.value)}
+                    data-testid="contract-payment-select"
+                  >
+                    <option value="">Bitte wählen</option>
+                    <option value="monatlich">monatlich</option>
+                    <option value="vierteljährlich">vierteljährlich</option>
+                    <option value="halbjährlich">halbjährlich</option>
+                    <option value="jährlich">jährlich</option>
+                  </select>
+                </div>
+
+                <div className="form-group">
+                  <label>Beitrag brutto (€)</label>
+                  <input 
+                    type="number" 
+                    step="0.01"
+                    value={newContract.beitrag_brutto}
+                    onChange={(e) => handleContractChange('beitrag_brutto', e.target.value)}
+                    placeholder="0.00"
+                    data-testid="contract-premium-gross-input"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>Beitrag netto (€)</label>
+                  <input 
+                    type="number" 
+                    step="0.01"
+                    value={newContract.beitrag_netto}
+                    onChange={(e) => handleContractChange('beitrag_netto', e.target.value)}
+                    placeholder="0.00"
+                    data-testid="contract-premium-net-input"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>Vertragsstatus</label>
+                  <select 
+                    value={newContract.vertragsstatus}
+                    onChange={(e) => handleContractChange('vertragsstatus', e.target.value)}
+                    data-testid="contract-status-select"
+                  >
+                    <option value="aktiv">aktiv</option>
+                    <option value="gekündigt">gekündigt</option>
+                    <option value="ruhend">ruhend</option>
+                    <option value="storniert">storniert</option>
+                  </select>
+                </div>
+
+                <div className="form-group">
+                  <label>Vertragsbeginn</label>
+                  <input 
+                    type="date" 
+                    value={newContract.beginn}
+                    onChange={(e) => handleContractChange('beginn', e.target.value)}
+                    data-testid="contract-start-date-input"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>Vertragsablauf</label>
+                  <input 
+                    type="date" 
+                    value={newContract.ablauf}
+                    onChange={(e) => handleContractChange('ablauf', e.target.value)}
+                    data-testid="contract-end-date-input"
+                  />
+                </div>
+              </div>
+              
+              <div className="form-bottom">
+                <div></div>
+                <div className="form-buttons">
+                  <button 
+                    className="btn" 
+                    onClick={createContract}
+                    disabled={!newContract.gesellschaft}
+                    data-testid="create-contract-btn"
+                  >
+                    Erstellen
+                  </button>
+                  <button 
+                    className="btn" 
+                    onClick={() => setContractFormVisible(false)}
+                    data-testid="cancel-contract-btn"
+                  >
+                    Abbrechen
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* VU Assignment Dialog */}
           {vuAssignmentDialog.visible && (
             <div 

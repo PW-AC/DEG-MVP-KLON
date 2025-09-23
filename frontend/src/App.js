@@ -516,7 +516,7 @@ const App = () => {
     }
 
     console.log('Starte Kunden-Update für:', editingCustomer.id);
-    console.log('Update-Daten:', editCustomerData);
+    console.log('Rohe editCustomerData:', editCustomerData);
 
     try {
       // Validate required fields
@@ -525,9 +525,60 @@ const App = () => {
         return;
       }
 
+      // Prepare complete data structure for backend
+      const completeData = {
+        anrede: editCustomerData.anrede || '',
+        titel: editCustomerData.titel || '',
+        vorname: editCustomerData.vorname || '',
+        name: editCustomerData.name || '',
+        zusatz: editCustomerData.zusatz || '',
+        strasse: editCustomerData.strasse || '',
+        plz: editCustomerData.plz || '',
+        ort: editCustomerData.ort || '',
+        postfach_plz: editCustomerData.postfach_plz || '',
+        postfach_nr: editCustomerData.postfach_nr || '',
+        gewerbliche_adresse: editCustomerData.gewerbliche_adresse || false,
+        dokumentenmappe_nr: editCustomerData.dokumentenmappe_nr || '',
+        betreuer: editCustomerData.betreuer || '',
+        betreuer_name: editCustomerData.betreuer_name || '',
+        betreuer_firma: editCustomerData.betreuer_firma || '',
+        bemerkung: editCustomerData.bemerkung || '',
+        selektion: editCustomerData.selektion || '',
+        bankverbindung: {
+          iban: editCustomerData.bankverbindung?.iban || '',
+          bic: editCustomerData.bankverbindung?.bic || '',
+          bank: editCustomerData.bankverbindung?.bank || '',
+          kontoinhaber: editCustomerData.bankverbindung?.kontoinhaber || ''
+        },
+        telefon: {
+          telefon_privat: editCustomerData.telefon?.telefon_privat || '',
+          telefax_privat: editCustomerData.telefon?.telefax_privat || null,
+          telefon_geschaeftlich: editCustomerData.telefon?.telefon_geschaeftlich || null,
+          telefax_geschaeftlich: editCustomerData.telefon?.telefax_geschaeftlich || null,
+          mobiltelefon: editCustomerData.telefon?.mobiltelefon || null,
+          ansprechpartner: editCustomerData.telefon?.ansprechpartner || null,
+          email: editCustomerData.telefon?.email || '',
+          internet_adresse: editCustomerData.telefon?.internet_adresse || null
+        },
+        persoenliche_daten: {
+          geburtsdatum: editCustomerData.persoenliche_daten?.geburtsdatum || '',
+          geburtsname: editCustomerData.persoenliche_daten?.geburtsname || null,
+          geburtsort: editCustomerData.persoenliche_daten?.geburtsort || null,
+          familienstand: editCustomerData.persoenliche_daten?.familienstand || null,
+          nationalitaet: editCustomerData.persoenliche_daten?.nationalitaet || null
+        },
+        arbeitgeber: {
+          firmenname: editCustomerData.arbeitgeber?.firmenname || null,
+          telefon: editCustomerData.arbeitgeber?.telefon || '',
+          telefax: editCustomerData.arbeitgeber?.telefax || null,
+          personalnummer: editCustomerData.arbeitgeber?.personalnummer || null
+        }
+      };
+
+      console.log('Vollständige Daten für Backend:', completeData);
       console.log('Sende PUT Request an:', `${API}/kunden/${editingCustomer.id}`);
       
-      const response = await axios.put(`${API}/kunden/${editingCustomer.id}`, editCustomerData);
+      const response = await axios.put(`${API}/kunden/${editingCustomer.id}`, completeData);
       const updatedCustomer = response.data;
       
       console.log('Backend Response erhalten:', updatedCustomer);

@@ -464,9 +464,29 @@ class InsuranceBrokerAPITester:
         self.test_search_customers_by_plz()
         self.test_search_customers_empty()
         
-        # VU tests
-        self.test_create_vu()
+        # VU tests - comprehensive testing
+        self.test_vu_sample_data_init()
+        self.test_verify_sample_data_content()
+        self.test_create_vu_with_status()
+        self.test_create_vu_with_pool_status()
         self.test_get_vus()
+        self.test_get_vu_by_id()
+        self.test_update_vu()
+        
+        # VU search tests
+        self.test_search_vus_by_name()
+        self.test_search_vus_by_kurzbezeichnung()
+        self.test_search_vus_by_status()
+        self.test_search_vus_by_ort()
+        self.test_search_vus_by_telefon()
+        self.test_search_vus_by_email()
+        self.test_search_vus_multiple_filters()
+        
+        # VU validation tests
+        self.test_vu_status_enum_validation()
+        
+        # VU deletion test (at the end)
+        self.test_delete_vu()
         
         # Contract tests
         self.test_create_contract()

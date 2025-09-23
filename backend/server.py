@@ -245,6 +245,7 @@ class VU(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     name: str  # z.B. "Alte Leipziger Sachversicherung"
     kurzbezeichnung: Optional[str] = None  # z.B. "ALS"
+    status: Optional[VUStatus] = VUStatus.VU  # VU oder Pool
     strasse: Optional[str] = None
     plz: Optional[str] = None
     ort: Optional[str] = None

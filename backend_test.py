@@ -674,8 +674,10 @@ class InsuranceBrokerAPITester:
         # VU tests - comprehensive testing
         self.test_vu_sample_data_init()
         self.test_verify_sample_data_content()
+        self.test_sample_vus_internal_ids()  # NEW: Test sample VUs have internal IDs
         self.test_create_vu_with_status()
         self.test_create_vu_with_pool_status()
+        self.test_vu_internal_id_generation()  # NEW: Test internal ID generation
         self.test_get_vus()
         self.test_get_vu_by_id()
         self.test_update_vu()
@@ -689,16 +691,30 @@ class InsuranceBrokerAPITester:
         self.test_search_vus_by_email()
         self.test_search_vus_multiple_filters()
         
+        # NEW VU Auto-Assignment Tests
+        print("\n🎯 Testing NEW VU Auto-Assignment Features...")
+        self.test_vu_matching_exact_name()
+        self.test_vu_matching_kurzbezeichnung()
+        self.test_vu_matching_partial_name()
+        self.test_vu_matching_reverse_partial()
+        self.test_vu_matching_no_match()
+        
         # VU validation tests
         self.test_vu_status_enum_validation()
         
         # VU deletion test (at the end)
         self.test_delete_vu()
         
-        # Contract tests
+        # Contract tests with auto-assignment
+        self.test_contract_auto_vu_assignment()  # NEW: Test auto VU assignment
+        self.test_contract_creation_dialog_ag()  # NEW: Test Dialog AG matching
         self.test_create_contract()
         self.test_get_contracts()
         self.test_search_by_kfz_kennzeichen()
+        
+        # NEW Migration and Statistics APIs
+        self.test_contract_migration_api()  # NEW: Test migration API
+        self.test_vu_statistics_api()       # NEW: Test statistics API
         
         # Error handling tests
         self.test_data_validation_errors()

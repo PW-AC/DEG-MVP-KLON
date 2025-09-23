@@ -41,9 +41,9 @@ class InsuranceBrokerAPITester:
             elif method == 'POST':
                 # Handle string data for JSON requests
                 if isinstance(data, str):
-                    response = requests.post(url, json=data, headers=headers, timeout=10)
+                    response = requests.post(url, json=data, headers=headers, params=params, timeout=10)
                 else:
-                    response = requests.post(url, json=data, headers=headers, timeout=10)
+                    response = requests.post(url, json=data, headers=headers, params=params, timeout=10)
             elif method == 'PUT':
                 response = requests.put(url, json=data, headers=headers, timeout=10)
             elif method == 'DELETE':

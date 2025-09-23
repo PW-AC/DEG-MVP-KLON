@@ -2462,6 +2462,18 @@ const App = () => {
                   );
                 }
                 
+                if (currentTab.type === 'search') {
+                  // Show empty search tab (waiting for results)
+                  return (
+                    <div className="search-tab-content" data-testid="search-tab-content">
+                      <div className="search-tab-header">
+                        <h3>🔍 Suchvorgang läuft...</h3>
+                        <p>Bitte führen Sie eine Suche durch um Ergebnisse anzuzeigen.</p>
+                      </div>
+                    </div>
+                  );
+                }
+                
                 return null;
               })()}
             </div>

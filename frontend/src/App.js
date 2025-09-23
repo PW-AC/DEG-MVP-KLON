@@ -2268,6 +2268,318 @@ const App = () => {
             </div>
           )}
 
+          {/* Customer Edit Form Window */}
+          {customerEditFormVisible && (
+            <div 
+              className="search-window"
+              style={{ 
+                left: `50px`, 
+                top: `50px`,
+                width: '900px',
+                height: '600px',
+                overflowY: 'auto'
+              }}
+            >
+              <div className="window-title">
+                ✏️ Kunde bearbeiten: {editingCustomer?.vorname} {editingCustomer?.name} (K-ID: {editingCustomer?.kunde_id})
+                <div className="window-controls">
+                  <div className="window-control">_</div>
+                  <div className="window-control">□</div>
+                  <div className="window-control" onClick={() => setCustomerEditFormVisible(false)}>✕</div>
+                </div>
+              </div>
+              
+              <div className="form-content customer-form">
+                {/* Basic Information */}
+                <div className="form-section">
+                  <h4>👤 Stammdaten</h4>
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label>Anrede</label>
+                      <select 
+                        value={editCustomerData.anrede}
+                        onChange={(e) => handleEditCustomerChange('anrede', e.target.value)}
+                        data-testid="edit-anrede-select"
+                      >
+                        <option value="">Bitte wählen</option>
+                        <option value="Herr">Herr</option>
+                        <option value="Frau">Frau</option>
+                        <option value="Divers">Divers</option>
+                      </select>
+                    </div>
+                    
+                    <div className="form-group">
+                      <label>Titel</label>
+                      <input 
+                        type="text" 
+                        value={editCustomerData.titel}
+                        onChange={(e) => handleEditCustomerChange('titel', e.target.value)}
+                        placeholder="Dr., Prof., etc."
+                        data-testid="edit-titel-input"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label>Vorname *</label>
+                      <input 
+                        type="text" 
+                        value={editCustomerData.vorname}
+                        onChange={(e) => handleEditCustomerChange('vorname', e.target.value)}
+                        placeholder="Vorname"
+                        data-testid="edit-vorname-input"
+                      />
+                    </div>
+                    
+                    <div className="form-group">
+                      <label>Name *</label>
+                      <input 
+                        type="text" 
+                        value={editCustomerData.name}
+                        onChange={(e) => handleEditCustomerChange('name', e.target.value)}
+                        placeholder="Nachname"
+                        data-testid="edit-name-input"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="form-group">
+                    <label>Zusatz</label>
+                    <input 
+                      type="text" 
+                      value={editCustomerData.zusatz}
+                      onChange={(e) => handleEditCustomerChange('zusatz', e.target.value)}
+                      placeholder="Zusatz zum Namen"
+                      data-testid="edit-zusatz-input"
+                    />
+                  </div>
+                </div>
+
+                {/* Address Information */}
+                <div className="form-section">
+                  <h4>🏠 Adresse</h4>
+                  <div className="form-group">
+                    <label>Straße</label>
+                    <input 
+                      type="text" 
+                      value={editCustomerData.strasse}
+                      onChange={(e) => handleEditCustomerChange('strasse', e.target.value)}
+                      placeholder="Straße und Hausnummer"
+                      data-testid="edit-strasse-input"
+                    />
+                  </div>
+
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label>PLZ</label>
+                      <input 
+                        type="text" 
+                        value={editCustomerData.plz}
+                        onChange={(e) => handleEditCustomerChange('plz', e.target.value)}
+                        placeholder="PLZ"
+                        data-testid="edit-plz-input"
+                      />
+                    </div>
+                    
+                    <div className="form-group">
+                      <label>Ort</label>
+                      <input 
+                        type="text" 
+                        value={editCustomerData.ort}
+                        onChange={(e) => handleEditCustomerChange('ort', e.target.value)}
+                        placeholder="Ort"
+                        data-testid="edit-ort-input"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Contact Information */}
+                <div className="form-section">
+                  <h4>📞 Kontaktdaten</h4>
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label>Telefon privat</label>
+                      <input 
+                        type="tel" 
+                        value={editCustomerData.telefon?.telefon_privat}
+                        onChange={(e) => handleEditCustomerChange('telefon.telefon_privat', e.target.value)}
+                        placeholder="Telefonnummer privat"
+                        data-testid="edit-telefon-privat-input"
+                      />
+                    </div>
+                    
+                    <div className="form-group">
+                      <label>Telefon geschäftlich</label>
+                      <input 
+                        type="tel" 
+                        value={editCustomerData.telefon?.telefon_geschaeftlich}
+                        onChange={(e) => handleEditCustomerChange('telefon.telefon_geschaeftlich', e.target.value)}
+                        placeholder="Telefonnummer geschäftlich"
+                        data-testid="edit-telefon-geschaeftlich-input"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label>Mobiltelefon</label>
+                      <input 
+                        type="tel" 
+                        value={editCustomerData.telefon?.mobiltelefon}
+                        onChange={(e) => handleEditCustomerChange('telefon.mobiltelefon', e.target.value)}
+                        placeholder="Mobilnummer"
+                        data-testid="edit-mobiltelefon-input"
+                      />
+                    </div>
+                    
+                    <div className="form-group">
+                      <label>E-Mail</label>
+                      <input 
+                        type="email" 
+                        value={editCustomerData.telefon?.email}
+                        onChange={(e) => handleEditCustomerChange('telefon.email', e.target.value)}
+                        placeholder="E-Mail Adresse"
+                        data-testid="edit-email-input"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Personal Information */}
+                <div className="form-section">
+                  <h4>👤 Persönliche Daten</h4>
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label>Geburtsdatum</label>
+                      <input 
+                        type="date" 
+                        value={editCustomerData.persoenliche_daten?.geburtsdatum}
+                        onChange={(e) => handleEditCustomerChange('persoenliche_daten.geburtsdatum', e.target.value)}
+                        data-testid="edit-geburtsdatum-input"
+                      />
+                    </div>
+                    
+                    <div className="form-group">
+                      <label>Familienstand</label>
+                      <select 
+                        value={editCustomerData.persoenliche_daten?.familienstand}
+                        onChange={(e) => handleEditCustomerChange('persoenliche_daten.familienstand', e.target.value)}
+                        data-testid="edit-familienstand-select"
+                      >
+                        <option value="">Bitte wählen</option>
+                        <option value="ledig">ledig</option>
+                        <option value="verheiratet">verheiratet</option>
+                        <option value="geschieden">geschieden</option>
+                        <option value="verwitwet">verwitwet</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="form-group">
+                    <label>Nationalität</label>
+                    <input 
+                      type="text" 
+                      value={editCustomerData.persoenliche_daten?.nationalitaet}
+                      onChange={(e) => handleEditCustomerChange('persoenliche_daten.nationalitaet', e.target.value)}
+                      placeholder="Nationalität"
+                      data-testid="edit-nationalitaet-input"
+                    />
+                  </div>
+                </div>
+
+                {/* Bank Information */}
+                <div className="form-section">
+                  <h4>🏦 Bankverbindung</h4>
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label>IBAN</label>
+                      <input 
+                        type="text" 
+                        value={editCustomerData.bankverbindung?.iban}
+                        onChange={(e) => handleEditCustomerChange('bankverbindung.iban', e.target.value)}
+                        placeholder="DE89 3704 0044 0532 0130 00"
+                        data-testid="edit-iban-input"
+                      />
+                    </div>
+                    
+                    <div className="form-group">
+                      <label>BIC</label>
+                      <input 
+                        type="text" 
+                        value={editCustomerData.bankverbindung?.bic}
+                        onChange={(e) => handleEditCustomerChange('bankverbindung.bic', e.target.value)}
+                        placeholder="COBADEFFXXX"
+                        data-testid="edit-bic-input"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label>Bank</label>
+                      <input 
+                        type="text" 
+                        value={editCustomerData.bankverbindung?.bank}
+                        onChange={(e) => handleEditCustomerChange('bankverbindung.bank', e.target.value)}
+                        placeholder="Bankname"
+                        data-testid="edit-bank-input"
+                      />
+                    </div>
+                    
+                    <div className="form-group">
+                      <label>Kontoinhaber</label>
+                      <input 
+                        type="text" 
+                        value={editCustomerData.bankverbindung?.kontoinhaber}
+                        onChange={(e) => handleEditCustomerChange('bankverbindung.kontoinhaber', e.target.value)}
+                        placeholder="Name des Kontoinhabers"
+                        data-testid="edit-kontoinhaber-input"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Notes */}
+                <div className="form-section">
+                  <h4>📝 Bemerkungen</h4>
+                  <div className="form-group full-width">
+                    <label>Bemerkung</label>
+                    <textarea 
+                      value={editCustomerData.bemerkung}
+                      onChange={(e) => handleEditCustomerChange('bemerkung', e.target.value)}
+                      placeholder="Zusätzliche Bemerkungen"
+                      rows="3"
+                      data-testid="edit-bemerkung-textarea"
+                    />
+                  </div>
+                </div>
+              </div>
+              
+              <div className="form-bottom">
+                <div></div>
+                <div className="form-buttons">
+                  <button 
+                    className="btn" 
+                    onClick={updateCustomer}
+                    disabled={!editCustomerData.vorname || !editCustomerData.name}
+                    data-testid="update-customer-btn"
+                  >
+                    💾 Speichern
+                  </button>
+                  <button 
+                    className="btn" 
+                    onClick={() => setCustomerEditFormVisible(false)}
+                    data-testid="cancel-edit-customer-btn"
+                  >
+                    Abbrechen
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Contract Form Window */}
           {contractFormVisible && (
             <div 

@@ -675,6 +675,7 @@ const App = () => {
                                     onDrop={handleFileDrop}
                                     onDragOver={(e) => e.preventDefault()}
                                     onDragEnter={(e) => e.preventDefault()}
+                                    onClick={handleDropZoneClick}
                                     data-testid="upload-drop-zone"
                                   >
                                     <div className="drop-icon">📁</div>

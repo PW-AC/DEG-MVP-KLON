@@ -3595,6 +3595,67 @@ const App = () => {
                   />
                 </div>
               </div>
+
+              {/* PDF Upload Section */}
+              <div className="pdf-upload-section">
+                <div className="section-divider">
+                  <span>ODER</span>
+                </div>
+                
+                <div 
+                  className={`pdf-drop-zone ${pdfDragActive ? 'drag-active' : ''}`}
+                  onDrop={handlePdfDrop}
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    setPdfDragActive(true);
+                  }}
+                  onDragLeave={() => setPdfDragActive(false)}
+                >
+                  <div className="drop-zone-content">
+                    {pdfUploading ? (
+                      <div className="uploading-state">
+                        <div className="loading-spinner"></div>
+                        <p>PDF wird analysiert...</p>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="drop-zone-icon">📄</div>
+                        <h3>Versicherungsschein hochladen</h3>
+                        <p>PDF-Dokument hier hineinziehen oder klicken zum Auswählen</p>
+                        <input 
+                          type="file" 
+                          accept=".pdf"
+                          onChange={handlePdfFileSelect}
+                          style={{ display: 'none' }}
+                          id="pdf-file-input"
+                        />
+                        <label htmlFor="pdf-file-input" className="btn btn-secondary">
+                          Datei auswählen
+                        </label>
+                      </>
+                    )}
+                  </div>
+                </div>
+                
+                {extractedData && extractedData.confidence > 0.3 && (
+                  <div className="extracted-data-preview">
+                    <h4>Extrahierte Daten (Vertrauen: {Math.round(extractedData.confidence * 100)}%)</h4>
+                    <div className="extracted-fields">
+                      {extractedData.vertragsnummer && <span>Vertragsnummer: {extractedData.vertragsnummer}</span>}
+                      {extractedData.gesellschaft && <span>Gesellschaft: {extractedData.gesellschaft}</span>}
+                      {extractedData.produkt_sparte && <span>Sparte: {extractedData.produkt_sparte}</span>}
+                      {extractedData.beginn && <span>Beginn: {extractedData.beginn}</span>}
+                    </div>
+                    <button 
+                      className="btn btn-success" 
+                      onClick={createContractFromPdf}
+                      disabled={pdfUploading}
+                    >
+                      Vertrag aus PDF erstellen
+                    </button>
+                  </div>
+                )}
+              </div>
               
               <div className="form-bottom">
                 <div></div>

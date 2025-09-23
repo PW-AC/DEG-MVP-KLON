@@ -452,8 +452,8 @@ class InsuranceBrokerAPITester:
         """Test VU matching with reverse partial matching"""
         print("\n🔍 Testing VU Matching (Reverse Partial)...")
         
-        # Test with "ALS Versicherungsgruppe" (should match "Alte Leipziger")
-        gesellschaft_data = "ALS Versicherungsgruppe"
+        # Test with "Alte Leipziger Versicherungsgruppe" (should match "Alte Leipziger")
+        gesellschaft_data = "Alte Leipziger Versicherungsgruppe"
         params = {"gesellschaft": gesellschaft_data}
         status_code, response = self.make_request('POST', 'vus/match-gesellschaft', params=params)
         

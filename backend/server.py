@@ -404,6 +404,14 @@ def parse_from_mongo(item):
                     item[key] = datetime.fromisoformat(value).date()
                 except:
                     pass
+            elif key in ['beitrag_brutto', 'beitrag_netto'] and isinstance(value, str):
+                # Handle currency strings like "46,24 €" or "1.234,56"
+                try:
+                    # Remove currency symbols and convert German decimal format
+                    cleaned = value.replace('€', '').replace(' ', '').replace('.', '').replace(',', '.')
+                    item[key] = float(cleaned) if cleaned else None
+                except:
+                    item[key] = None
             elif isinstance(value, dict):
                 item[key] = parse_from_mongo(value)
     return item

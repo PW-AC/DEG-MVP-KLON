@@ -1300,6 +1300,22 @@ async def create_contract_from_pdf(
         logger.error(f"Error creating contract from PDF: {e}")
         raise HTTPException(status_code=500, detail=f"Error creating contract: {str(e)}")
 
+# Basic status endpoint
+@api_router.get("/")
+async def root():
+    return {"message": "Versicherungsmakler Verwaltungssystem API", "version": "1.0.0"}
+
+# Include the router in the main app
+app.include_router(api_router)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_credentials=True,
+    allow_origins=os.environ.get('CORS_ORIGINS', '*').split(','),
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 @app.on_event("shutdown")
 async def shutdown_db_client():
     client.close()

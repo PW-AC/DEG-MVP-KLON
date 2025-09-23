@@ -492,11 +492,27 @@ const App = () => {
 
   // Update existing customer
   const updateCustomer = async () => {
-    if (!editingCustomer) return;
+    if (!editingCustomer) {
+      console.error('Kein Kunde zum Bearbeiten ausgewählt');
+      return;
+    }
+
+    console.log('Starte Kunden-Update für:', editingCustomer.id);
+    console.log('Update-Daten:', editCustomerData);
 
     try {
+      // Validate required fields
+      if (!editCustomerData.vorname || !editCustomerData.name) {
+        alert('Vorname und Name sind Pflichtfelder!');
+        return;
+      }
+
+      console.log('Sende PUT Request an:', `${API}/kunden/${editingCustomer.id}`);
+      
       const response = await axios.put(`${API}/kunden/${editingCustomer.id}`, editCustomerData);
       const updatedCustomer = response.data;
+      
+      console.log('Backend Response erhalten:', updatedCustomer);
       
       alert('Kunde erfolgreich aktualisiert!');
       setCustomerEditFormVisible(false);
@@ -505,8 +521,10 @@ const App = () => {
 
       // Update customer data in all relevant places immediately
       const currentTab = openTabs.find(tab => tab.id === activeTab);
+      console.log('Aktueller Tab:', currentTab);
       
-      if (currentTab?.type === 'customer-detail' && currentTab.kunde.id === editingCustomer.id) {
+      if (currentTab?.type === 'customer' && currentTab.kunde.id === editingCustomer.id) {
+        console.log('Aktualisiere Tab mit neuen Kundendaten');
         // Update the customer in the active tab with the response data
         setOpenTabs(prev => prev.map(tab => 
           tab.id === activeTab 
@@ -517,10 +535,12 @@ const App = () => {
               }
             : tab
         ));
+        console.log('Tab aktualisiert');
       }
       
       // Update customer in search results if they exist
       if (searchResults.length > 0) {
+        console.log('Aktualisiere Suchergebnisse');
         setSearchResults(prev => prev.map(kunde => 
           kunde.id === editingCustomer.id ? updatedCustomer : kunde
         ));
@@ -531,11 +551,12 @@ const App = () => {
         kunde.id === editingCustomer.id ? updatedCustomer : kunde
       ));
 
-      // Also reload data from backend to ensure consistency
-      await reloadCustomerData(editingCustomer.id);
+      console.log('Frontend-Status erfolgreich aktualisiert');
 
     } catch (error) {
-      console.error('Fehler beim Aktualisieren:', error);
+      console.error('Detaillierter Fehler beim Aktualisieren:', error);
+      console.error('Error response:', error.response?.data);
+      console.error('Error status:', error.response?.status);
       alert('Fehler beim Aktualisieren: ' + (error.response?.data?.detail || error.message));
     }
   };

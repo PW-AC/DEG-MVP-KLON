@@ -1133,6 +1133,13 @@ const App = () => {
                     data-testid="max-results-input"
                   /> 
                   Datensätze abrufen
+                  <button 
+                    className="btn all-customers-btn"
+                    onClick={loadAllCustomers}
+                    data-testid="all-customers-btn"
+                  >
+                    Alle Kunden anzeigen
+                  </button>
                 </div>
                 
                 <div className="form-buttons">

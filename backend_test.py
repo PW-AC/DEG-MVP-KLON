@@ -409,7 +409,8 @@ class InsuranceBrokerAPITester:
         
         # Test with Allianz (should match exactly)
         gesellschaft_data = "Allianz Versicherung AG"
-        status_code, response = self.make_request('POST', 'vus/match-gesellschaft', gesellschaft_data)
+        params = {"gesellschaft": gesellschaft_data}
+        status_code, response = self.make_request('POST', 'vus/match-gesellschaft', params=params)
         
         success = (status_code == 200 and response.get('match') == True and 
                   'vu' in response and response.get('match_type') == 'exact_name')
@@ -423,7 +424,8 @@ class InsuranceBrokerAPITester:
         
         # Test with "Allianz" kurzbezeichnung
         gesellschaft_data = "Allianz"
-        status_code, response = self.make_request('POST', 'vus/match-gesellschaft', gesellschaft_data)
+        params = {"gesellschaft": gesellschaft_data}
+        status_code, response = self.make_request('POST', 'vus/match-gesellschaft', params=params)
         
         success = (status_code == 200 and response.get('match') == True and 
                   'vu' in response and response.get('match_type') == 'kurzbezeichnung')
@@ -437,7 +439,8 @@ class InsuranceBrokerAPITester:
         
         # Test with "Dialog" (should match Dialog Versicherung AG)
         gesellschaft_data = "Dialog"
-        status_code, response = self.make_request('POST', 'vus/match-gesellschaft', gesellschaft_data)
+        params = {"gesellschaft": gesellschaft_data}
+        status_code, response = self.make_request('POST', 'vus/match-gesellschaft', params=params)
         
         success = (status_code == 200 and response.get('match') == True and 
                   'vu' in response and response.get('match_type') in ['kurzbezeichnung', 'partial_name'])
@@ -451,7 +454,8 @@ class InsuranceBrokerAPITester:
         
         # Test with "ALS Versicherungsgruppe" (should match "Alte Leipziger")
         gesellschaft_data = "ALS Versicherungsgruppe"
-        status_code, response = self.make_request('POST', 'vus/match-gesellschaft', gesellschaft_data)
+        params = {"gesellschaft": gesellschaft_data}
+        status_code, response = self.make_request('POST', 'vus/match-gesellschaft', params=params)
         
         success = (status_code == 200 and response.get('match') == True and 
                   'vu' in response and response.get('match_type') in ['reverse_kurz', 'reverse_partial'])
@@ -465,7 +469,8 @@ class InsuranceBrokerAPITester:
         
         # Test with non-existent gesellschaft
         gesellschaft_data = "Nicht Existierende Versicherung"
-        status_code, response = self.make_request('POST', 'vus/match-gesellschaft', gesellschaft_data)
+        params = {"gesellschaft": gesellschaft_data}
+        status_code, response = self.make_request('POST', 'vus/match-gesellschaft', params=params)
         
         success = (status_code == 200 and response.get('match') == False and 
                   response.get('vu') is None)

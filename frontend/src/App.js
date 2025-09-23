@@ -1462,6 +1462,9 @@ const App = () => {
                                     {vu.status}
                                   </span>
                                 </div>
+                                <div className="vu-cell vu-internal-id-cell">
+                                  <strong>{vu.vu_internal_id || '-'}</strong>
+                                </div>
                                 <div className="vu-cell vu-name-cell">{vu.name}</div>
                                 <div className="vu-cell">{vu.kurzbezeichnung || '-'}</div>
                                 <div className="vu-cell">

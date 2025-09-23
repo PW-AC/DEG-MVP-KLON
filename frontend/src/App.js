@@ -2175,6 +2175,7 @@ const App = () => {
                             <div className="vu-header-cell">Adresse</div>
                             <div className="vu-header-cell">Telefon</div>
                             <div className="vu-header-cell">E-Mail</div>
+                            <div className="vu-header-cell">Aktionen</div>
                           </div>
                         </div>
                         <div className="vu-table-body">

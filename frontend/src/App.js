@@ -991,6 +991,8 @@ const App = () => {
     try {
       const customerData = {
         ...newCustomer,
+        // Convert empty strings to null for enum fields to match backend validation
+        anrede: newCustomer.anrede || null,
         persoenliche_daten: newCustomer.persoenliche_daten.geburtsdatum 
           ? { geburtsdatum: newCustomer.persoenliche_daten.geburtsdatum }
           : null

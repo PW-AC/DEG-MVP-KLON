@@ -226,6 +226,42 @@ frontend:
         agent: "testing"
         comment: "Cannot test - Contract state management not testable without access to contract forms. State variables may be implemented but cannot verify functionality through UI."
 
+  - task: "PDF Upload UI Components"
+    implemented: true
+    working: false
+    file: "/app/frontend/src/App.js"
+    stuck_count: 1
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: false
+        agent: "testing"
+        comment: "❌ PDF Upload UI components not visible in current application. Expected features missing: ODER divider, 'Versicherungsschein hochladen' text, 'Datei auswählen' button, PDF drop zone, file input elements. While backend PDF analysis APIs are working, frontend UI components are not accessible to users through current interface."
+  
+  - task: "Draggable Contract Window"
+    implemented: true
+    working: false
+    file: "/app/frontend/src/App.js"
+    stuck_count: 1
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: false
+        agent: "testing"
+        comment: "❌ Draggable contract window functionality not accessible. No draggable elements or draggable-window classes found in current UI. Contract form cannot be accessed through 'Neuer Vertrag' button, so draggable functionality cannot be tested. Implementation may exist in code but is not reachable through user interface."
+  
+  - task: "Application Stability and Navigation"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ APPLICATION STABILITY CONFIRMED: All sidebar navigation working (Search, New Customer, VU/Ges buttons), customer creation form fully functional, VU/Gesellschaften data loading correctly with 8 VU entries, backend connectivity excellent with all APIs responding, no JavaScript errors detected, responsive design working, page fully loaded and stable. Core application functionality is solid."
+
 metadata:
   created_by: "main_agent"
   version: "4.0"

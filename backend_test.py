@@ -589,6 +589,341 @@ class InsuranceBrokerAPITester:
         details = f"Status: {status_code}, Found Internal IDs: {found_internal_ids}"
         return self.log_test("Sample VUs Internal IDs", success, details)
 
+    def test_contract_creation_allianz_vu_assignment(self):
+        """Test contract creation with Allianz gesellschaft - should auto-assign VU-001"""
+        if not self.created_customers:
+            return self.log_test("Contract Creation (Allianz VU Assignment)", False, "No customers created to test")
+        
+        print("\n🔍 Testing Contract Creation with Allianz VU Assignment...")
+        contract_data = {
+            "vertragsnummer": "V2024ALLIANZ001",
+            "kunde_id": self.created_customers[0],
+            "gesellschaft": "Allianz",  # Should auto-assign to VU-001
+            "kfz_kennzeichen": "M-ALZ 123",
+            "produkt_sparte": "KFZ-Versicherung",
+            "tarif": "Vollkasko",
+            "zahlungsweise": "monatlich",
+            "beitrag_brutto": 950.00,
+            "beitrag_netto": 798.32,
+            "vertragsstatus": "aktiv",
+            "beginn": "2024-01-01",
+            "ablauf": "2024-12-31"
+        }
+        
+        status_code, response = self.make_request('POST', 'vertraege', contract_data)
+        success = (status_code == 200 and 'id' in response and 
+                  'vu_internal_id' in response and response['vu_internal_id'] == 'VU-001')
+        
+        if success:
+            self.created_contracts.append(response['id'])
+            details = f"Status: {status_code}, VU Internal ID: {response.get('vu_internal_id')}"
+        else:
+            details = f"Status: {status_code}, Response: {response}"
+        
+        return self.log_test("Contract Creation (Allianz VU Assignment)", success, details)
+
+    def test_contract_creation_dialog_vu_assignment(self):
+        """Test contract creation with Dialog gesellschaft - should auto-assign VU-003"""
+        if not self.created_customers:
+            return self.log_test("Contract Creation (Dialog VU Assignment)", False, "No customers created to test")
+        
+        print("\n🔍 Testing Contract Creation with Dialog VU Assignment...")
+        contract_data = {
+            "vertragsnummer": "V2024DIALOG002",
+            "kunde_id": self.created_customers[0],
+            "gesellschaft": "Dialog",  # Should auto-assign to VU-003
+            "produkt_sparte": "Lebensversicherung",
+            "tarif": "Premium Life",
+            "zahlungsweise": "jährlich",
+            "beitrag_brutto": 2400.00,
+            "beitrag_netto": 2016.81,
+            "vertragsstatus": "aktiv",
+            "beginn": "2024-01-01",
+            "ablauf": "2044-12-31"
+        }
+        
+        status_code, response = self.make_request('POST', 'vertraege', contract_data)
+        success = (status_code == 200 and 'id' in response and 
+                  'vu_internal_id' in response and response['vu_internal_id'] == 'VU-003')
+        
+        if success:
+            self.created_contracts.append(response['id'])
+            details = f"Status: {status_code}, VU Internal ID: {response.get('vu_internal_id')}"
+        else:
+            details = f"Status: {status_code}, Response: {response}"
+        
+        return self.log_test("Contract Creation (Dialog VU Assignment)", success, details)
+
+    def test_contract_creation_unknown_company_no_vu(self):
+        """Test contract creation with unknown gesellschaft - should create without VU assignment"""
+        if not self.created_customers:
+            return self.log_test("Contract Creation (Unknown Company)", False, "No customers created to test")
+        
+        print("\n🔍 Testing Contract Creation with Unknown Company...")
+        contract_data = {
+            "vertragsnummer": "V2024UNKNOWN001",
+            "kunde_id": self.created_customers[0],
+            "gesellschaft": "Test Insurance Company",  # Should not match any VU
+            "produkt_sparte": "Hausratversicherung",
+            "tarif": "Standard",
+            "zahlungsweise": "halbjährlich",
+            "beitrag_brutto": 180.00,
+            "beitrag_netto": 151.26,
+            "vertragsstatus": "aktiv",
+            "beginn": "2024-01-01",
+            "ablauf": "2024-12-31"
+        }
+        
+        status_code, response = self.make_request('POST', 'vertraege', contract_data)
+        success = (status_code == 200 and 'id' in response and 
+                  (response.get('vu_internal_id') is None or response.get('vu_internal_id') == ""))
+        
+        if success:
+            self.created_contracts.append(response['id'])
+            details = f"Status: {status_code}, No VU assigned (as expected)"
+        else:
+            details = f"Status: {status_code}, Unexpected VU assignment: {response.get('vu_internal_id')}"
+        
+        return self.log_test("Contract Creation (Unknown Company)", success, details)
+
+    def test_document_upload_to_contract(self):
+        """Test uploading document to specific contract"""
+        if not self.created_contracts:
+            return self.log_test("Document Upload to Contract", False, "No contracts created to test")
+        
+        print("\n🔍 Testing Document Upload to Contract...")
+        contract_id = self.created_contracts[0]
+        
+        # Create base64 encoded test PDF content
+        test_pdf_content = "JVBERi0xLjQKJcOkw7zDtsOfCjIgMCBvYmoKPDwKL0xlbmd0aCAzIDAgUgo+PgpzdHJlYW0KQNC0xLjQKJcOkw7zDtsOfCjIgMCBvYmoKPDwKL0xlbmd0aCAzIDAgUgo+PgpzdHJlYW0K"
+        
+        document_data = {
+            "vertrag_id": contract_id,
+            "title": "Versicherungsschein Allianz KFZ",
+            "filename": "versicherungsschein_allianz.pdf",
+            "document_type": "pdf",
+            "description": "Hauptversicherungsschein für KFZ-Versicherung",
+            "tags": ["versicherungsschein", "kfz", "allianz"],
+            "file_content": test_pdf_content
+        }
+        
+        status_code, response = self.make_request('POST', 'documents', document_data)
+        success = (status_code == 200 and 'id' in response and 
+                  response.get('vertrag_id') == contract_id)
+        
+        if success:
+            self.created_documents.append(response['id'])
+            details = f"Status: {status_code}, Document ID: {response.get('id')}"
+        else:
+            details = f"Status: {status_code}, Response: {response}"
+        
+        return self.log_test("Document Upload to Contract", success, details)
+
+    def test_document_upload_via_upload_endpoint(self):
+        """Test document upload via /documents/upload endpoint with vertrag_id"""
+        if not self.created_contracts:
+            return self.log_test("Document Upload via Upload Endpoint", False, "No contracts created to test")
+        
+        print("\n🔍 Testing Document Upload via Upload Endpoint...")
+        contract_id = self.created_contracts[0]
+        
+        # Test data for upload endpoint
+        upload_data = {
+            "vertrag_id": contract_id,
+            "title": "Schadensmeldung Dialog",
+            "description": "Schadensmeldung für Lebensversicherung",
+            "tags": "schadensmeldung,lebensversicherung,dialog",
+            "file_content": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="
+        }
+        
+        status_code, response = self.make_request('POST', 'documents/upload', upload_data)
+        success = (status_code == 200 and 'id' in response and 
+                  response.get('vertrag_id') == contract_id)
+        
+        if success:
+            self.created_documents.append(response['id'])
+            details = f"Status: {status_code}, Document ID: {response.get('id')}"
+        else:
+            details = f"Status: {status_code}, Response: {response}"
+        
+        return self.log_test("Document Upload via Upload Endpoint", success, details)
+
+    def test_retrieve_contract_documents(self):
+        """Test retrieving documents filtered by vertrag_id"""
+        if not self.created_contracts:
+            return self.log_test("Retrieve Contract Documents", False, "No contracts created to test")
+        
+        print("\n🔍 Testing Retrieve Contract Documents...")
+        contract_id = self.created_contracts[0]
+        
+        params = {"vertrag_id": contract_id}
+        status_code, response = self.make_request('GET', 'documents', params=params)
+        
+        success = (status_code == 200 and isinstance(response, list))
+        
+        if success:
+            # Verify all returned documents belong to the contract
+            all_belong_to_contract = all(doc.get('vertrag_id') == contract_id for doc in response)
+            success = success and all_belong_to_contract
+            details = f"Status: {status_code}, Documents found: {len(response)}, All belong to contract: {all_belong_to_contract}"
+        else:
+            details = f"Status: {status_code}, Response: {response}"
+        
+        return self.log_test("Retrieve Contract Documents", success, details)
+
+    def test_document_types_with_contract(self):
+        """Test uploading different document types to contracts"""
+        if not self.created_contracts:
+            return self.log_test("Document Types with Contract", False, "No contracts created to test")
+        
+        print("\n🔍 Testing Different Document Types with Contract...")
+        contract_id = self.created_contracts[-1] if len(self.created_contracts) > 1 else self.created_contracts[0]
+        
+        # Test different document types
+        document_types = [
+            {
+                "type": "pdf",
+                "title": "Vertragsbedingungen PDF",
+                "filename": "bedingungen.pdf",
+                "content": "JVBERi0xLjQKJcOkw7zDtsOfCjIgMCBvYmoK"
+            },
+            {
+                "type": "word",
+                "title": "Antrag Word Dokument",
+                "filename": "antrag.docx",
+                "content": "UEsDBBQAAAAIAAgACAA="
+            },
+            {
+                "type": "excel",
+                "title": "Beitragstabelle Excel",
+                "filename": "beitraege.xlsx",
+                "content": "UEsDBBQAAAAIAAgACAB="
+            }
+        ]
+        
+        successful_uploads = 0
+        total_types = len(document_types)
+        
+        for doc_type in document_types:
+            document_data = {
+                "vertrag_id": contract_id,
+                "title": doc_type["title"],
+                "filename": doc_type["filename"],
+                "document_type": doc_type["type"],
+                "description": f"Test {doc_type['type'].upper()} document for contract",
+                "tags": [doc_type["type"], "test", "contract"],
+                "file_content": doc_type["content"]
+            }
+            
+            status_code, response = self.make_request('POST', 'documents', document_data)
+            if status_code == 200 and 'id' in response:
+                successful_uploads += 1
+                self.created_documents.append(response['id'])
+        
+        success = successful_uploads == total_types
+        details = f"Successfully uploaded {successful_uploads}/{total_types} document types"
+        
+        return self.log_test("Document Types with Contract", success, details)
+
+    def test_contract_document_relationship_integrity(self):
+        """Test that document-contract relationships are maintained correctly"""
+        if not self.created_contracts or not self.created_documents:
+            return self.log_test("Contract-Document Relationship", False, "No contracts or documents to test")
+        
+        print("\n🔍 Testing Contract-Document Relationship Integrity...")
+        
+        # Get all documents
+        status_code, all_documents = self.make_request('GET', 'documents')
+        if status_code != 200:
+            return self.log_test("Contract-Document Relationship", False, f"Failed to get documents: {status_code}")
+        
+        # Check that contract documents have proper vertrag_id
+        contract_documents = [doc for doc in all_documents if doc.get('vertrag_id') is not None]
+        
+        # Verify each contract document has a valid contract reference
+        valid_relationships = 0
+        for doc in contract_documents:
+            vertrag_id = doc.get('vertrag_id')
+            if vertrag_id in self.created_contracts:
+                valid_relationships += 1
+        
+        success = len(contract_documents) > 0 and valid_relationships == len(contract_documents)
+        details = f"Contract documents: {len(contract_documents)}, Valid relationships: {valid_relationships}"
+        
+        return self.log_test("Contract-Document Relationship", success, details)
+
+    def test_get_contracts_by_kunde(self):
+        """Test retrieving contracts by customer ID"""
+        if not self.created_customers:
+            return self.log_test("Get Contracts by Customer", False, "No customers created to test")
+        
+        print("\n🔍 Testing Get Contracts by Customer...")
+        kunde_id = self.created_customers[0]
+        
+        status_code, response = self.make_request('GET', f'vertraege/kunde/{kunde_id}')
+        success = (status_code == 200 and isinstance(response, list))
+        
+        if success:
+            # Verify all contracts belong to the customer
+            all_belong_to_customer = all(contract.get('kunde_id') == kunde_id for contract in response)
+            success = success and all_belong_to_customer
+            details = f"Status: {status_code}, Contracts found: {len(response)}, All belong to customer: {all_belong_to_customer}"
+        else:
+            details = f"Status: {status_code}, Response: {response}"
+        
+        return self.log_test("Get Contracts by Customer", success, details)
+
+    def test_document_crud_operations(self):
+        """Test complete CRUD operations for documents"""
+        if not self.created_documents:
+            return self.log_test("Document CRUD Operations", False, "No documents created to test")
+        
+        print("\n🔍 Testing Document CRUD Operations...")
+        document_id = self.created_documents[0]
+        
+        # Test GET document by ID
+        status_code, response = self.make_request('GET', f'documents/{document_id}')
+        if status_code != 200:
+            return self.log_test("Document CRUD Operations", False, f"Failed to get document: {status_code}")
+        
+        # Test UPDATE document
+        update_data = {
+            "title": "Updated Document Title",
+            "description": "Updated description for testing",
+            "tags": ["updated", "test", "crud"]
+        }
+        
+        status_code, response = self.make_request('PUT', f'documents/{document_id}', update_data)
+        if status_code != 200:
+            return self.log_test("Document CRUD Operations", False, f"Failed to update document: {status_code}")
+        
+        # Verify update
+        updated_title = response.get('title') == update_data['title']
+        updated_description = response.get('description') == update_data['description']
+        
+        success = updated_title and updated_description
+        details = f"Title updated: {updated_title}, Description updated: {updated_description}"
+        
+        return self.log_test("Document CRUD Operations", success, details)
+
+    def test_document_statistics(self):
+        """Test document statistics endpoint"""
+        print("\n🔍 Testing Document Statistics...")
+        
+        status_code, response = self.make_request('GET', 'documents/stats')
+        success = (status_code == 200 and 'total_documents' in response and 
+                  'by_type' in response and 'recent_documents' in response)
+        
+        if success:
+            total_docs = response.get('total_documents', 0)
+            by_type = response.get('by_type', {})
+            recent_docs = response.get('recent_documents', [])
+            details = f"Status: {status_code}, Total: {total_docs}, Types: {len(by_type)}, Recent: {len(recent_docs)}"
+        else:
+            details = f"Status: {status_code}, Response: {response}"
+        
+        return self.log_test("Document Statistics", success, details)
+
     def test_create_contract(self):
         """Test contract creation"""
         if not self.created_customers or not self.created_vus:

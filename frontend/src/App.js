@@ -321,6 +321,9 @@ const App = () => {
       alert('Fehler beim Laden aller Kunden: ' + (error.response?.data?.detail || error.message));
     }
   };
+
+  // Load customer contracts
+  const loadCustomerContracts = async (kundeId) => {
     try {
       const response = await axios.get(`${API}/vertraege/kunde/${kundeId}`);
       setCustomerContracts(prev => ({

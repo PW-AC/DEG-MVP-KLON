@@ -59,6 +59,12 @@ const App = () => {
     email: ''
   });
   const [vuFormVisible, setVuFormVisible] = useState(false);
+  const [vuAssignmentDialog, setVuAssignmentDialog] = useState({
+    visible: false,
+    gesellschaft: '',
+    contractData: null,
+    matchingVUs: []
+  });
   const [newVU, setNewVU] = useState({
     name: '',
     kurzbezeichnung: '',

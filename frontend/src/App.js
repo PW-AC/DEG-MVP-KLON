@@ -1195,6 +1195,148 @@ const App = () => {
                     </div>
                   );
                 }
+                
+                if (currentTab.type === 'vu-overview') {
+                  return (
+                    <div className="vu-overview-tab-content">
+                      <div className="vu-overview-header">
+                        <h3>Versicherungsgesellschaften / VU</h3>
+                        <div className="vu-overview-actions">
+                          <button 
+                            className="btn"
+                            onClick={() => setVuFormVisible(true)}
+                            data-testid="new-vu-btn"
+                          >
+                            📄 Neu anlegen
+                          </button>
+                          <button 
+                            className="btn"
+                            onClick={initSampleVUData}
+                            data-testid="init-sample-vu-btn"
+                          >
+                            🔧 Sample Daten
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* VU Search Form */}
+                      <div className="vu-search-section">
+                        <div className="vu-search-form">
+                          <div className="form-row">
+                            <div className="form-group">
+                              <label>Name</label>
+                              <input
+                                type="text"
+                                value={vuSearchForm.name}
+                                onChange={(e) => handleVuSearchChange('name', e.target.value)}
+                                placeholder="Gesellschaftsname..."
+                              />
+                            </div>
+                            <div className="form-group">
+                              <label>Kürzel</label>
+                              <input
+                                type="text"
+                                value={vuSearchForm.kurzbezeichnung}
+                                onChange={(e) => handleVuSearchChange('kurzbezeichnung', e.target.value)}
+                                placeholder="Kürzel..."
+                              />
+                            </div>
+                            <div className="form-group">
+                              <label>Status</label>
+                              <select
+                                value={vuSearchForm.status}
+                                onChange={(e) => handleVuSearchChange('status', e.target.value)}
+                              >
+                                <option value="">Alle</option>
+                                <option value="VU">VU</option>
+                                <option value="Pool">Pool</option>
+                              </select>
+                            </div>
+                            <div className="form-group">
+                              <label>Ort</label>
+                              <input
+                                type="text"
+                                value={vuSearchForm.ort}
+                                onChange={(e) => handleVuSearchChange('ort', e.target.value)}
+                                placeholder="Ort..."
+                              />
+                            </div>
+                            <div className="form-group">
+                              <label>E-Mail</label>
+                              <input
+                                type="email"
+                                value={vuSearchForm.email}
+                                onChange={(e) => handleVuSearchChange('email', e.target.value)}
+                                placeholder="E-Mail..."
+                              />
+                            </div>
+                            <div className="form-group">
+                              <label>&nbsp;</label>
+                              <div className="search-buttons">
+                                <button 
+                                  className="btn"
+                                  onClick={searchVUs}
+                                  data-testid="search-vus-btn"
+                                >
+                                  🔍 Suchen
+                                </button>
+                                <button 
+                                  className="btn"
+                                  onClick={loadAllVUs}
+                                  data-testid="load-all-vus-btn"
+                                >
+                                  📋 Alle anzeigen
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* VU Table */}
+                      <div className="vu-table">
+                        <div className="vu-table-header">
+                          <div className="vu-header-row">
+                            <div className="vu-header-cell">Status</div>
+                            <div className="vu-header-cell">Name</div>
+                            <div className="vu-header-cell">Kürzel</div>
+                            <div className="vu-header-cell">Adresse</div>
+                            <div className="vu-header-cell">Telefon</div>
+                            <div className="vu-header-cell">E-Mail</div>
+                          </div>
+                        </div>
+                        <div className="vu-table-body">
+                          {allVUs.length === 0 ? (
+                            <div className="no-vus-message">
+                              Keine VUs gefunden. Verwenden Sie "Sample Daten" zum Initialisieren.
+                            </div>
+                          ) : (
+                            allVUs.map((vu) => (
+                              <div key={vu.id} className="vu-row" data-testid={`vu-row-${vu.id}`}>
+                                <div className="vu-cell">
+                                  <span className={`status-badge ${vu.status.toLowerCase()}`}>
+                                    {vu.status}
+                                  </span>
+                                </div>
+                                <div className="vu-cell vu-name-cell">{vu.name}</div>
+                                <div className="vu-cell">{vu.kurzbezeichnung || '-'}</div>
+                                <div className="vu-cell">
+                                  {vu.strasse && vu.plz && vu.ort 
+                                    ? `${vu.strasse}, ${vu.plz} ${vu.ort}` 
+                                    : (vu.ort || '-')
+                                  }
+                                </div>
+                                <div className="vu-cell">{vu.telefon || '-'}</div>
+                                <div className="vu-cell">{vu.email_zentrale || '-'}</div>
+                              </div>
+                            ))
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                }
+                
                 return null;
               })()}
             </div>

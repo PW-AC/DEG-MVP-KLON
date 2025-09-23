@@ -1418,6 +1418,8 @@ const App = () => {
       
       if (results.length === 0) {
         alert('Keine Kunden gefunden.');
+        setSearchWindow(prev => ({ ...prev, visible: false }));
+        setSearchPerformed(true);
         return;
       }
       

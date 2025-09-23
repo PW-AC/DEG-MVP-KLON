@@ -490,10 +490,6 @@ const App = () => {
                               <span>{kunde.anrede} {kunde.titel} {kunde.vorname} {kunde.name}</span>
                             </div>
                             <div className="info-item">
-                              <label>Vorname:</label>
-                              <span>{kunde.vorname}</span>
-                            </div>
-                            <div className="info-item">
                               <label>Tel:</label>
                               <span>{kunde.telefon?.telefon_privat || '-'}</span>
                             </div>

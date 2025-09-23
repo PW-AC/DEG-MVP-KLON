@@ -446,21 +446,31 @@ const App = () => {
 
   // Handle edit customer form changes
   const handleEditCustomerChange = (field, value) => {
+    console.log(`Ändere Feld ${field} zu:`, value);
+    
     const fieldParts = field.split('.');
     if (fieldParts.length === 1) {
-      setEditCustomerData(prev => ({
-        ...prev,
-        [field]: value
-      }));
+      setEditCustomerData(prev => {
+        const updated = {
+          ...prev,
+          [field]: value
+        };
+        console.log('Aktualisierte Formulardaten:', updated);
+        return updated;
+      });
     } else {
       // Handle nested objects like telefon.email, persoenliche_daten.geburtsdatum
-      setEditCustomerData(prev => ({
-        ...prev,
-        [fieldParts[0]]: {
-          ...prev[fieldParts[0]],
-          [fieldParts[1]]: value
-        }
-      }));
+      setEditCustomerData(prev => {
+        const updated = {
+          ...prev,
+          [fieldParts[0]]: {
+            ...prev[fieldParts[0]],
+            [fieldParts[1]]: value
+          }
+        };
+        console.log('Aktualisierte Formulardaten (nested):', updated);
+        return updated;
+      });
     }
   };
 

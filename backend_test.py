@@ -727,8 +727,8 @@ class InsuranceBrokerAPITester:
         print("\n🔍 Testing Document Upload via Upload Endpoint...")
         contract_id = self.created_contracts[0]
         
-        # Test data for upload endpoint
-        upload_data = {
+        # Test data for upload endpoint (using form parameters)
+        params = {
             "vertrag_id": contract_id,
             "title": "Schadensmeldung Dialog",
             "description": "Schadensmeldung für Lebensversicherung",
@@ -736,7 +736,7 @@ class InsuranceBrokerAPITester:
             "file_content": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="
         }
         
-        status_code, response = self.make_request('POST', 'documents/upload', upload_data)
+        status_code, response = self.make_request('POST', 'documents/upload', params=params)
         success = (status_code == 200 and 'id' in response and 
                   response.get('vertrag_id') == contract_id)
         

@@ -1575,6 +1575,34 @@ input[type="file"] {
   font-size: 10px;
 }
 
+/* Customer Edit Form */
+.form-section {
+  margin-bottom: 20px;
+  border: 1px inset #ECE9D8;
+  padding: 12px;
+  background-color: #F8F9FA;
+}
+
+.form-section h4 {
+  font-size: 11px;
+  font-weight: bold;
+  color: #000;
+  margin: 0 0 12px 0;
+  padding-bottom: 4px;
+  border-bottom: 1px solid #ACA899;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.form-row:last-child {
+  margin-bottom: 0;
+}
+
 /* Contract Actions */
 .contract-actions {
   display: flex;

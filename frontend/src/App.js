@@ -543,72 +543,236 @@ const App = () => {
                         </div>
                       </div>
 
-                      {/* Contracts Table */}
-                      <div className="contracts-section">
-                        <div className="section-header">
-                          <h3>Verträge ({contracts.length})</h3>
-                          <button className="btn add-contract-btn" data-testid={`add-contract-btn-${kunde.id}`}>
-                            ➕ Neuer Vertrag
-                          </button>
-                        </div>
-                        
-                        {contracts.length === 0 ? (
-                          <div className="no-contracts">
-                            <div className="contracts-table-header">
-                              <div className="table-header-row">
-                                <div className="table-header-cell">V-Nr.</div>
-                                <div className="table-header-cell">Gesellschaft</div>
-                                <div className="table-header-cell">Sparte</div>
-                                <div className="table-header-cell">Tarif</div>
-                                <div className="table-header-cell">Status</div>
-                                <div className="table-header-cell">Beginn</div>
-                                <div className="table-header-cell">Beitrag</div>
-                                <div className="table-header-cell">Aktionen</div>
-                              </div>
-                            </div>
-                            <div className="empty-message">
-                              Keine Verträge vorhanden.
-                            </div>
+                      {/* Documents View or Contracts View */}
+                      {tabDocumentsView[currentTab.id] ? (
+                        <div className="documents-management-view">
+                          <div className="documents-header">
+                            <h3>📄 Dokumentenverwaltung - {kunde.vorname} {kunde.name}</h3>
+                            <button 
+                              className="close-documents-btn"
+                              onClick={() => closeDocumentsInTab(currentTab.id)}
+                              data-testid={`close-documents-view-${currentTab.id}`}
+                            >
+                              ← Zurück zu Verträgen
+                            </button>
                           </div>
-                        ) : (
-                          <div className="contracts-table">
-                            <div className="contracts-table-header">
-                              <div className="table-header-row">
-                                <div className="table-header-cell">V-Nr.</div>
-                                <div className="table-header-cell">Gesellschaft</div>
-                                <div className="table-header-cell">Sparte</div>
-                                <div className="table-header-cell">Tarif</div>
-                                <div className="table-header-cell">Status</div>
-                                <div className="table-header-cell">Beginn</div>
-                                <div className="table-header-cell">Beitrag</div>
-                                <div className="table-header-cell">Aktionen</div>
+                          
+                          <div className="documents-main-content">
+                            {/* Left Side - Document List */}
+                            <div className="documents-list-panel">
+                              <div className="documents-list-header">
+                                <h4>Vorhandene Dokumente ({customerDocuments.length})</h4>
+                              </div>
+                              
+                              <div className="documents-tree">
+                                {customerDocuments.length === 0 ? (
+                                  <div className="empty-documents">
+                                    <div className="folder-icon">📁</div>
+                                    <div className="empty-text">Keine Dokumente vorhanden</div>
+                                  </div>
+                                ) : (
+                                  <div className="documents-list">
+                                    {customerDocuments.map((doc) => (
+                                      <div key={doc.id} className="document-tree-item" data-testid={`doc-item-${doc.id}`}>
+                                        <div className="document-icon">
+                                          {doc.document_type === 'pdf' && '📄'}
+                                          {doc.document_type === 'email' && '✉️'}
+                                          {doc.document_type === 'word' && '📝'}
+                                          {doc.document_type === 'excel' && '📊'}
+                                          {doc.document_type === 'image' && '🖼️'}
+                                          {doc.document_type === 'other' && '📁'}
+                                        </div>
+                                        <div className="document-info">
+                                          <div className="document-name">{doc.title}</div>
+                                          <div className="document-details">
+                                            {doc.filename} • {new Date(doc.created_at).toLocaleDateString('de-DE')}
+                                          </div>
+                                          {doc.tags && doc.tags.length > 0 && (
+                                            <div className="document-tags-mini">
+                                              {doc.tags.map((tag, index) => (
+                                                <span key={index} className="tag-mini">{tag}</span>
+                                              ))}
+                                            </div>
+                                          )}
+                                        </div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                )}
                               </div>
                             </div>
-                            <div className="contracts-table-body">
-                              {contracts.map((vertrag) => (
-                                <div key={vertrag.id} className="table-row" data-testid={`contract-row-${vertrag.id}`}>
-                                  <div className="table-cell">{vertrag.vertragsnummer}</div>
-                                  <div className="table-cell">{vertrag.gesellschaft}</div>
-                                  <div className="table-cell">{vertrag.produkt_sparte}</div>
-                                  <div className="table-cell">{vertrag.tarif}</div>
-                                  <div className="table-cell">{vertrag.vertragsstatus}</div>
-                                  <div className="table-cell">
-                                    {vertrag.beginn ? new Date(vertrag.beginn).toLocaleDateString('de-DE') : '-'}
+
+                            {/* Right Side - Upload Panel */}
+                            <div className="upload-panel">
+                              <div className="upload-header">
+                                <h4>Neues Dokument hinzufügen</h4>
+                              </div>
+                              
+                              <div className="upload-form-panel">
+                                <div className="upload-fields">
+                                  <div className="upload-field">
+                                    <label>Typ:</label>
+                                    <select 
+                                      value={uploadForm.documentType || 'pdf'}
+                                      onChange={(e) => setUploadForm(prev => ({...prev, documentType: e.target.value}))}
+                                      data-testid="document-type-select"
+                                    >
+                                      <option value="pdf">PDF</option>
+                                      <option value="email">E-Mail</option>
+                                      <option value="word">Word</option>
+                                      <option value="excel">Excel</option>
+                                      <option value="image">Bild</option>
+                                      <option value="other">Sonstiges</option>
+                                    </select>
                                   </div>
-                                  <div className="table-cell">
-                                    {vertrag.beitrag_brutto ? `${vertrag.beitrag_brutto}€` : '-'}
+                                  
+                                  <div className="upload-field">
+                                    <label>Titel:</label>
+                                    <input 
+                                      type="text" 
+                                      value={uploadForm.title}
+                                      onChange={(e) => setUploadForm(prev => ({...prev, title: e.target.value}))}
+                                      placeholder="Dokumententitel"
+                                      data-testid="upload-title-input"
+                                    />
                                   </div>
-                                  <div className="table-cell">
-                                    <button className="table-btn" data-testid={`edit-contract-btn-${vertrag.id}`}>
-                                      ✏️
-                                    </button>
+                                  
+                                  <div className="upload-field">
+                                    <label>Kategorie:</label>
+                                    <input 
+                                      type="text" 
+                                      value={uploadForm.category || ''}
+                                      onChange={(e) => setUploadForm(prev => ({...prev, category: e.target.value}))}
+                                      placeholder="z.B. Vertrag, Schaden"
+                                      data-testid="upload-category-input"
+                                    />
+                                  </div>
+                                  
+                                  <div className="upload-field">
+                                    <label>Tags:</label>
+                                    <input 
+                                      type="text" 
+                                      value={uploadForm.tags}
+                                      onChange={(e) => setUploadForm(prev => ({...prev, tags: e.target.value}))}
+                                      placeholder="wichtig, vertrag, 2024"
+                                      data-testid="upload-tags-input"
+                                    />
                                   </div>
                                 </div>
-                              ))}
+                                
+                                <div className="drag-drop-area">
+                                  <div 
+                                    className="drop-zone-large" 
+                                    onDrop={handleFileDrop}
+                                    onDragOver={(e) => e.preventDefault()}
+                                    onDragEnter={(e) => e.preventDefault()}
+                                    data-testid="upload-drop-zone"
+                                  >
+                                    <div className="drop-icon">📁</div>
+                                    <div className="drop-text">
+                                      <strong>Datei hier hineinziehen</strong><br/>
+                                      oder klicken zum Auswählen
+                                    </div>
+                                    <div className="drop-formats">
+                                      PDF, DOC, XLS, JPG, PNG, EML
+                                    </div>
+                                    
+                                    {uploadForm.file && (
+                                      <div className="selected-file">
+                                        ✓ {uploadForm.file.name}
+                                      </div>
+                                    )}
+                                  </div>
+                                  
+                                  <input 
+                                    type="file" 
+                                    id="file-upload"
+                                    style={{display: 'none'}}
+                                    accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.eml,.msg"
+                                    onChange={(e) => setUploadForm(prev => ({...prev, file: e.target.files[0]}))}
+                                  />
+                                  
+                                  <button 
+                                    className="upload-submit-btn"
+                                    onClick={() => uploadDocument(kunde.id)}
+                                    disabled={!uploadForm.file}
+                                    data-testid="upload-submit-btn"
+                                  >
+                                    📤 Dokument hochladen
+                                  </button>
+                                </div>
+                              </div>
                             </div>
                           </div>
-                        )}
-                      </div>
+                        </div>
+                      ) : (
+                        // Regular Contracts View
+                        <div className="contracts-section">
+                          <div className="section-header">
+                            <h3>Verträge ({contracts.length})</h3>
+                            <button className="btn add-contract-btn" data-testid={`add-contract-btn-${kunde.id}`}>
+                              ➕ Neuer Vertrag
+                            </button>
+                          </div>
+                          
+                          {contracts.length === 0 ? (
+                            <div className="no-contracts">
+                              <div className="contracts-table-header">
+                                <div className="table-header-row">
+                                  <div className="table-header-cell">V-Nr.</div>
+                                  <div className="table-header-cell">Gesellschaft</div>
+                                  <div className="table-header-cell">Sparte</div>
+                                  <div className="table-header-cell">Tarif</div>
+                                  <div className="table-header-cell">Status</div>
+                                  <div className="table-header-cell">Beginn</div>
+                                  <div className="table-header-cell">Beitrag</div>
+                                  <div className="table-header-cell">Aktionen</div>
+                                </div>
+                              </div>
+                              <div className="empty-message">
+                                Keine Verträge vorhanden.
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="contracts-table">
+                              <div className="contracts-table-header">
+                                <div className="table-header-row">
+                                  <div className="table-header-cell">V-Nr.</div>
+                                  <div className="table-header-cell">Gesellschaft</div>
+                                  <div className="table-header-cell">Sparte</div>
+                                  <div className="table-header-cell">Tarif</div>
+                                  <div className="table-header-cell">Status</div>
+                                  <div className="table-header-cell">Beginn</div>
+                                  <div className="table-header-cell">Beitrag</div>
+                                  <div className="table-header-cell">Aktionen</div>
+                                </div>
+                              </div>
+                              <div className="contracts-table-body">
+                                {contracts.map((vertrag) => (
+                                  <div key={vertrag.id} className="table-row" data-testid={`contract-row-${vertrag.id}`}>
+                                    <div className="table-cell">{vertrag.vertragsnummer}</div>
+                                    <div className="table-cell">{vertrag.gesellschaft}</div>
+                                    <div className="table-cell">{vertrag.produkt_sparte}</div>
+                                    <div className="table-cell">{vertrag.tarif}</div>
+                                    <div className="table-cell">{vertrag.vertragsstatus}</div>
+                                    <div className="table-cell">
+                                      {vertrag.beginn ? new Date(vertrag.beginn).toLocaleDateString('de-DE') : '-'}
+                                    </div>
+                                    <div className="table-cell">
+                                      {vertrag.beitrag_brutto ? `${vertrag.beitrag_brutto}€` : '-'}
+                                    </div>
+                                    <div className="table-cell">
+                                      <button className="table-btn" data-testid={`edit-contract-btn-${vertrag.id}`}>
+                                        ✏️
+                                      </button>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </div>
                   );
                 }

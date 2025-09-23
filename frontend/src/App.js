@@ -1064,9 +1064,19 @@ const App = () => {
         setContractFormVisible(false);
         setExtractedData(null);
         
-        // Reload contracts for the current customer
-        if (activeTab && openTabs.find(tab => tab.id === activeTab)) {
-          loadCustomerContracts(activeTab);
+        // Reload contracts for the customer
+        const customerId = contractFormCustomerId;
+        if (customerId && customerId !== 'demo-customer-id') {
+          // Reload contracts if we have a real customer
+          loadCustomerContracts(customerId);
+          
+          // If customer is in active tab, refresh that too
+          if (activeTab && openTabs.find(tab => tab.id === activeTab)) {
+            loadCustomerContracts(activeTab);
+          }
+        } else {
+          // For demo mode, show success message with contract ID
+          alert(`Vertrag erfolgreich erstellt!\nVertrag-ID: ${response.data.contract_id}\n\nHinweis: Öffnen Sie einen echten Kunden um Verträge zu sehen.`);
         }
       }
     } catch (error) {

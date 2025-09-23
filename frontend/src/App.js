@@ -388,11 +388,13 @@ const App = () => {
       // Check for duplicates in search results
       const duplicates = checkForDuplicates(results);
       if (duplicates.length > 0) {
-        // Show duplicate warning
-        const duplicateIds = duplicates[0]; // Show first duplicate pair found
+        // Show duplicate warning with match details
+        const duplicate = duplicates[0]; // Show first duplicate pair found
         setDuplicateWarning({
-          message: `Potenzielle Dublette gefunden: ${duplicateIds.join(' und ')}`,
-          ids: duplicateIds
+          message: `Potenzielle Dublette gefunden: ${duplicate.ids.join(' und ')} (${duplicate.matchCount} Übereinstimmungen: ${duplicate.matches.join(', ')})`,
+          ids: duplicate.ids,
+          matchCount: duplicate.matchCount,
+          matches: duplicate.matches
         });
       } else {
         setDuplicateWarning(null);

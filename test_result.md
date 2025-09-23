@@ -246,9 +246,6 @@ metadata:
 
 test_plan:
   current_focus:
-    - "VU CRUD API Endpoints"
-    - "VU Search API Endpoint"
-    - "Sample VU Data Initialization"
     - "VU Overview Tab Component"
     - "VU Search Form"
     - "VU Creation Form"
@@ -259,3 +256,5 @@ test_plan:
 agent_communication:
   - agent: "main"
     message: "Successfully implemented complete VU/Ges feature including backend API with CRUD operations, search functionality, sample data initialization, and frontend with overview table, search form, and creation form. All components tested via screenshots and working correctly. Ready for comprehensive backend and frontend testing."
+  - agent: "testing"
+    message: "BACKEND TESTING COMPLETE: All VU backend functionality tested and working perfectly. ✅ VUStatus enum with VU/Pool validation ✅ Full CRUD operations (Create, Read, Update, Delete) ✅ Advanced search with multiple filters ✅ Sample data initialization with all 4 expected VUs (Allianz, Alte Leipziger, Dialog, Itzehoer) ✅ Proper error handling and HTTP status codes. Backend APIs are production-ready. Only frontend testing remains."

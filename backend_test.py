@@ -1056,6 +1056,22 @@ class InsuranceBrokerAPITester:
         self.test_contract_migration_api()  # NEW: Test migration API
         self.test_vu_statistics_api()       # NEW: Test statistics API
         
+        # NEW CONTRACT CREATION AND DOCUMENT MANAGEMENT TESTS
+        print("\n🎯 Testing NEW Contract Creation and Document Management Features...")
+        self.test_contract_creation_allianz_vu_assignment()    # Test Allianz -> VU-001
+        self.test_contract_creation_dialog_vu_assignment()     # Test Dialog -> VU-003  
+        self.test_contract_creation_unknown_company_no_vu()    # Test unknown company -> no VU
+        self.test_get_contracts_by_kunde()                     # Test get contracts by customer
+        
+        # Document Management Tests
+        self.test_document_upload_to_contract()                # Test document upload to contract
+        self.test_document_upload_via_upload_endpoint()        # Test upload via /documents/upload
+        self.test_retrieve_contract_documents()                # Test document retrieval by contract
+        self.test_document_types_with_contract()               # Test PDF, DOC, Excel types
+        self.test_contract_document_relationship_integrity()   # Test relationship integrity
+        self.test_document_crud_operations()                   # Test document CRUD
+        self.test_document_statistics()                        # Test document stats
+        
         # Error handling tests
         self.test_data_validation_errors()
         self.test_nonexistent_customer()

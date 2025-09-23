@@ -1606,6 +1606,80 @@ const App = () => {
     setSearchWindow(prev => ({ ...prev, visible: true }));
   };
 
+  // Open dashboard tab
+  const openDashboardTab = async () => {
+    const dashboardTabId = 'dashboard-main';
+    
+    // Check if dashboard tab already exists
+    const existingTab = openTabs.find(tab => tab.id === dashboardTabId);
+    if (existingTab) {
+      setActiveTab(dashboardTabId);
+      return;
+    }
+
+    // Create new dashboard tab
+    const dashboardTab = {
+      id: dashboardTabId,
+      title: '📊 Dashboard',
+      type: 'dashboard'
+    };
+
+    setOpenTabs(prev => [...prev, dashboardTab]);
+    setActiveTab(dashboardTabId);
+    
+    // Load dashboard data
+    await loadDashboardStats();
+  };
+
+  // Load dashboard statistics
+  const loadDashboardStats = async () => {
+    try {
+      // Load customers count
+      const customersResponse = await axios.get(`${API}/kunden/search?limit=1000`);
+      const totalCustomers = customersResponse.data.length;
+
+      // Load contracts count  
+      const contractsResponse = await axios.get(`${API}/vertraege?limit=1000`);
+      const contracts = contractsResponse.data;
+      const totalContracts = contracts.length;
+
+      // Calculate total premium
+      const totalPremium = contracts.reduce((sum, contract) => {
+        return sum + (contract.beitrag_brutto || 0);
+      }, 0);
+
+      // Count expiring contracts (next 3 months)
+      const threeMonthsFromNow = new Date();
+      threeMonthsFromNow.setMonth(threeMonthsFromNow.getMonth() + 3);
+      
+      const expiringContracts = contracts.filter(contract => {
+        if (!contract.ablauf) return false;
+        const expiryDate = new Date(contract.ablauf);
+        return expiryDate <= threeMonthsFromNow && expiryDate >= new Date();
+      }).length;
+
+      // Count new contracts this month
+      const thisMonth = new Date();
+      thisMonth.setDate(1);
+      
+      const newContractsThisMonth = contracts.filter(contract => {
+        const createdDate = new Date(contract.created_at);
+        return createdDate >= thisMonth;
+      }).length;
+
+      setDashboardStats({
+        totalCustomers,
+        totalContracts,
+        totalPremium,
+        expiringContracts,
+        newContractsThisMonth
+      });
+
+    } catch (error) {
+      console.error('Error loading dashboard stats:', error);
+    }
+  };
+
   // Handle sidebar clicks
   const handleSidebarClick = (item) => {
     setSelectedSidebarItem(item);

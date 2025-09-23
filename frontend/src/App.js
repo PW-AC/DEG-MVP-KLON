@@ -744,7 +744,7 @@ const App = () => {
 
       // Prepare complete data structure for backend
       const completeData = {
-        anrede: editCustomerData.anrede || '',
+        anrede: editCustomerData.anrede || null,
         titel: editCustomerData.titel || '',
         vorname: editCustomerData.vorname || '',
         name: editCustomerData.name || '',

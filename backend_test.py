@@ -19,6 +19,7 @@ class InsuranceBrokerAPITester:
         self.created_customers = []
         self.created_contracts = []
         self.created_vus = []
+        self.created_documents = []
 
     def log_test(self, name: str, success: bool, details: str = ""):
         """Log test results"""

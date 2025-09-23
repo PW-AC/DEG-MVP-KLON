@@ -383,8 +383,17 @@ const App = () => {
     e.preventDefault();
     const files = e.dataTransfer.files;
     if (files.length > 0) {
-      processFiles(files);
+      setUploadForm(prev => ({
+        ...prev,
+        file: files[0],
+        title: prev.title || files[0].name.split('.')[0] // Set title to filename if empty
+      }));
     }
+  };
+
+  // Handle click on drop zone
+  const handleDropZoneClick = () => {
+    document.getElementById('file-upload').click();
   };
 
   const processFiles = (files) => {

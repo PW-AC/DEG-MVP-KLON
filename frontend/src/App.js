@@ -1475,16 +1475,17 @@ const App = () => {
         
         if (pendingSearchTabId) {
           // Update the pending tab to show search results
+          const newTabId = `search-results-${Date.now()}`;
           setOpenTabs(prev => prev.map(tab => 
             tab.id === pendingSearchTabId 
               ? {
-                  id: `search-results-${Date.now()}`,
+                  id: newTabId,
                   title: `Suchergebnisse (${results.length})`,
                   type: 'all-customers'
                 }
               : tab
           ));
-          setActiveTab(`search-results-${Date.now()}`);
+          setActiveTab(newTabId);
           setPendingSearchTabId(null);
         } else {
           // Fallback to old logic

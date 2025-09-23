@@ -130,6 +130,11 @@ const App = () => {
   const [editingVU, setEditingVU] = useState(null);
   const [vuEditFormVisible, setVuEditFormVisible] = useState(false);
   const [editVUData, setEditVUData] = useState({});
+  
+  // PDF Upload and Analysis state
+  const [pdfUploading, setPdfUploading] = useState(false);
+  const [pdfDragActive, setPdfDragActive] = useState(false);
+  const [extractedData, setExtractedData] = useState(null);
 
   // Drag & Drop functionality for windows
   useEffect(() => {

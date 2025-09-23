@@ -293,22 +293,44 @@ const App = () => {
     loadCustomerContracts(kunde.id);
   };
 
-  // Load all customers
+  // Load all customers (filtered by search criteria)
   const loadAllCustomers = async () => {
     try {
-      const response = await axios.get(`${API}/kunden?limit=1000`); // Get all customers
-      setAllCustomers(response.data);
+      // Use the same search logic as performSearch but show all results
+      const searchParams = new URLSearchParams();
+      Object.entries(searchForm).forEach(([key, value]) => {
+        if (value && key !== 'maxResults') {
+          if (key === 'kundennummer') {
+            searchParams.append('kunde_id', value);
+          } else {
+            searchParams.append(key, value);
+          }
+        }
+      });
+      searchParams.append('limit', searchForm.maxResults);
+
+      const response = await axios.get(`${API}/kunden/search?${searchParams.toString()}`);
+      const results = response.data;
+      setAllCustomers(results);
       
-      // Create "All Customers" tab
+      // Create "All Customers" tab with search results
       const allCustomersTab = {
         id: 'tab-all-customers',
-        title: 'Alle Kunden',
+        title: `Alle Kunden (${results.length})`,
         type: 'all-customers'
       };
 
-      // Check if tab already exists
-      const existingTab = openTabs.find(tab => tab.id === 'tab-all-customers');
-      if (!existingTab) {
+      // Check if tab already exists and update it
+      const existingTabIndex = openTabs.findIndex(tab => tab.id === 'tab-all-customers');
+      if (existingTabIndex !== -1) {
+        // Update existing tab title
+        setOpenTabs(prev => {
+          const newTabs = [...prev];
+          newTabs[existingTabIndex] = allCustomersTab;
+          return newTabs;
+        });
+      } else {
+        // Add new tab
         setOpenTabs(prev => [...prev, allCustomersTab]);
       }
       
@@ -316,8 +338,8 @@ const App = () => {
       setSearchWindow(prev => ({ ...prev, visible: false }));
       
     } catch (error) {
-      console.error('Fehler beim Laden aller Kunden:', error);
-      alert('Fehler beim Laden aller Kunden: ' + (error.response?.data?.detail || error.message));
+      console.error('Fehler beim Laden der Kunden:', error);
+      alert('Fehler beim Laden der Kunden: ' + (error.response?.data?.detail || error.message));
     }
   };
 

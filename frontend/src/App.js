@@ -3009,6 +3009,7 @@ const App = () => {
           {customerEditFormVisible && (
             <div 
               className="draggable-window"
+              data-window-id="customer-edit"
               style={{ 
                 left: `50px`, 
                 top: `50px`,
@@ -3017,7 +3018,10 @@ const App = () => {
                 overflowY: 'auto'
               }}
             >
-              <div className="window-title draggable-handle">
+              <div 
+                className="window-title draggable-handle"
+                onMouseDown={(e) => startDrag('customer-edit', e)}
+              >
                 ✏️ Kunde bearbeiten: {editingCustomer?.vorname} {editingCustomer?.name} (K-ID: {editingCustomer?.kunde_id})
                 <div className="window-controls">
                   <div className="window-control">_</div>

@@ -96,69 +96,6 @@ const App = () => {
     }
   };
 
-  // Perform customer search
-  const performSearch = async () => {
-    setIsSearching(true);
-    try {
-      const searchParams = new URLSearchParams();
-      Object.entries(searchForm).forEach(([key, value]) => {
-        if (value && key !== 'maxResults') {
-          if (key === 'kundennummer') {
-            searchParams.append('kunde_id', value);
-          } else {
-            searchParams.append(key, value);
-          }
-        }
-      });
-      searchParams.append('limit', searchForm.maxResults);
-
-      const response = await axios.get(`${API}/kunden/search?${searchParams.toString()}`);
-      const results = response.data;
-      
-      // If customers found, close search window and open first customer in tab
-      if (results && results.length > 0) {
-        // Close search window
-        setSearchWindow(prev => ({ ...prev, visible: false }));
-        
-        // Clear any previous search results to prevent results window from showing
-        setSearchResults([]);
-        
-        // Open first customer in tab
-        const firstCustomer = results[0];
-        openCustomerTab(firstCustomer);
-        
-        // Clear search form for next search
-        setSearchForm({
-          vorname: '',
-          name: '',
-          strasse: '',
-          plz: '',
-          ort: '',
-          vertragsnummer: '',
-          kundennummer: '',
-          geburtsdatum: '',
-          kfz_kennzeichen: '',
-          antragsnummer: '',
-          schadenummer: '',
-          gesellschaft: '',
-          maxResults: '60'
-        });
-      } else {
-        // If no results found, show message but keep search window open
-        // Also clear search results to prevent empty results window
-        setSearchResults([]);
-        alert('Keine Kunden gefunden. Bitte Suchkriterien anpassen.');
-      }
-    } catch (error) {
-      console.error('Suchfehler:', error);
-      alert('Fehler bei der Suche: ' + (error.response?.data?.detail || error.message));
-      // Clear search results on error
-      setSearchResults([]);
-    } finally {
-      setIsSearching(false);
-    }
-  };
-
   // Create new customer
   const createCustomer = async () => {
     try {

@@ -499,17 +499,9 @@ const App = () => {
                             </div>
                           </div>
                           <div className="customer-address-row">
-                            <div className="info-item">
-                              <label>Straße:</label>
-                              <span>{kunde.strasse}</span>
-                            </div>
-                            <div className="info-item">
-                              <label>PLZ:</label>
-                              <span>{kunde.plz}</span>
-                            </div>
-                            <div className="info-item">
-                              <label>Ort:</label>
-                              <span>{kunde.ort}</span>
+                            <div className="info-item-address">
+                              <label>Adresse:</label>
+                              <span>{kunde.strasse}, {kunde.plz} {kunde.ort}</span>
                             </div>
                           </div>
                         </div>

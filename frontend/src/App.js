@@ -131,6 +131,48 @@ const App = () => {
   const [vuEditFormVisible, setVuEditFormVisible] = useState(false);
   const [editVUData, setEditVUData] = useState({});
 
+  // Drag & Drop functionality for windows
+  useEffect(() => {
+    const handleMouseMove = (e) => {
+      if (dragging.isDragging && dragging.windowId) {
+        const window = document.querySelector(`.draggable-window[data-window-id="${dragging.windowId}"]`);
+        if (window) {
+          window.style.left = `${e.clientX - dragging.offset.x}px`;
+          window.style.top = `${e.clientY - dragging.offset.y}px`;
+        }
+      }
+    };
+
+    const handleMouseUp = () => {
+      setDragging({ isDragging: false, windowId: null, offset: { x: 0, y: 0 } });
+    };
+
+    if (dragging.isDragging) {
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+    }
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [dragging]);
+
+  const startDrag = (windowId, e) => {
+    const window = e.target.closest('.draggable-window');
+    if (window) {
+      const rect = window.getBoundingClientRect();
+      setDragging({
+        isDragging: true,
+        windowId: windowId,
+        offset: {
+          x: e.clientX - rect.left,
+          y: e.clientY - rect.top
+        }
+      });
+    }
+  };
+
   // Update time every second
   useEffect(() => {
     const timer = setInterval(() => {

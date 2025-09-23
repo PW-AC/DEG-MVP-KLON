@@ -447,8 +447,41 @@ async def create_vu(vu: VUCreate):
 
 
 @api_router.get("/vus", response_model=List[VU])
-async def get_vus():
-    vus = await db.vus.find().to_list(length=None)
+async def get_vus(skip: int = 0, limit: int = 100):
+    vus = await db.vus.find().skip(skip).limit(limit).to_list(length=None)
+    return [VU(**parse_from_mongo(vu)) for vu in vus]
+
+
+@api_router.get("/vus/search")
+async def search_vus(
+    name: Optional[str] = None,
+    kurzbezeichnung: Optional[str] = None,
+    status: Optional[VUStatus] = None,
+    ort: Optional[str] = None,
+    telefon: Optional[str] = None,
+    email: Optional[str] = None,
+    limit: int = 100
+):
+    query = {}
+    
+    if name:
+        query["name"] = {"$regex": name, "$options": "i"}
+    if kurzbezeichnung:
+        query["kurzbezeichnung"] = {"$regex": kurzbezeichnung, "$options": "i"}
+    if status:
+        query["status"] = status.value
+    if ort:
+        query["ort"] = {"$regex": ort, "$options": "i"}
+    if telefon:
+        query["telefon"] = {"$regex": telefon, "$options": "i"}
+    if email:
+        # Search in both email fields
+        query["$or"] = [
+            {"email_zentrale": {"$regex": email, "$options": "i"}},
+            {"email_schaden": {"$regex": email, "$options": "i"}}
+        ]
+    
+    vus = await db.vus.find(query).limit(limit).to_list(length=None)
     return [VU(**parse_from_mongo(vu)) for vu in vus]
 
 
@@ -458,6 +491,118 @@ async def get_vu(vu_id: str):
     if vu is None:
         raise HTTPException(status_code=404, detail="VU nicht gefunden")
     return VU(**parse_from_mongo(vu))
+
+
+@api_router.put("/vus/{vu_id}", response_model=VU)
+async def update_vu(vu_id: str, vu_update: VUCreate):
+    vu_dict = prepare_for_mongo(vu_update.dict(exclude_unset=True))
+    vu_dict["updated_at"] = datetime.utcnow()
+    
+    result = await db.vus.update_one(
+        {"id": vu_id}, 
+        {"$set": vu_dict}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="VU nicht gefunden")
+    
+    updated_vu = await db.vus.find_one({"id": vu_id})
+    return VU(**parse_from_mongo(updated_vu))
+
+
+@api_router.delete("/vus/{vu_id}")
+async def delete_vu(vu_id: str):
+    result = await db.vus.delete_one({"id": vu_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="VU nicht gefunden")
+    return {"message": "VU erfolgreich gelöscht"}
+
+
+# Initialize sample VU data
+@api_router.post("/vus/init-sample-data")
+async def init_sample_vu_data():
+    # Check if sample data already exists
+    existing_count = await db.vus.count_documents({})
+    if existing_count > 0:
+        return {"message": f"Sample data bereits vorhanden ({existing_count} VUs gefunden)"}
+    
+    sample_vus = [
+        {
+            "name": "Allianz Versicherung AG",
+            "kurzbezeichnung": "Allianz",
+            "status": "VU",
+            "strasse": "Königinstr. 28",
+            "plz": "80802",
+            "ort": "München",
+            "telefon": "089 3800-0",
+            "telefax": "089 3800-3425",
+            "email_zentrale": "service@allianz.de",
+            "email_schaden": "schaden@allianz.de",
+            "internet_adresse": "www.allianz.de",
+            "ansprechpartner": "Herr Müller",
+            "acencia_vermittlernummer": "12345",
+            "vu_id": "ALZ001"
+        },
+        {
+            "name": "Alte Leipziger Lebensversicherung AG",
+            "kurzbezeichnung": "Alte Leipziger",
+            "status": "VU",
+            "strasse": "Alte-Leipziger-Platz 1",
+            "plz": "61440",
+            "ort": "Oberursel",
+            "telefon": "06171 3090-0",
+            "telefax": "06171 3090-1500",
+            "email_zentrale": "info@alte-leipziger.de",
+            "email_schaden": "schaden@alte-leipziger.de",
+            "internet_adresse": "www.alte-leipziger.de",
+            "ansprechpartner": "Frau Schmidt",
+            "acencia_vermittlernummer": "23456",
+            "vu_id": "ALD002"
+        },
+        {
+            "name": "Dialog Versicherung AG",
+            "kurzbezeichnung": "Dialog",
+            "status": "VU",
+            "strasse": "Adenauerring 9",
+            "plz": "81737",
+            "ort": "München",
+            "telefon": "089 746824-0",
+            "telefax": "089 746824-99",
+            "email_zentrale": "info@dialog.de",
+            "email_schaden": "schaden@dialog.de",
+            "internet_adresse": "www.dialog.de",
+            "ansprechpartner": "Herr Weber",
+            "acencia_vermittlernummer": "34567",
+            "vu_id": "DLG003"
+        },
+        {
+            "name": "Itzehoer Versicherung",
+            "kurzbezeichnung": "Itzehoer",
+            "status": "VU",
+            "strasse": "Schützenstraße 19",
+            "plz": "25524",
+            "ort": "Itzehoe",
+            "telefon": "04821 773-0",
+            "telefax": "04821 773-900",
+            "email_zentrale": "info@itzehoer.de",
+            "email_schaden": "schaden@itzehoer.de",
+            "internet_adresse": "www.itzehoer.de",
+            "ansprechpartner": "Frau Klein",
+            "acencia_vermittlernummer": "45678",
+            "vu_id": "ITZ004"
+        }
+    ]
+    
+    created_vus = []
+    for vu_data in sample_vus:
+        vu_obj = VU(**vu_data)
+        await db.vus.insert_one(prepare_for_mongo(vu_obj.dict()))
+        created_vus.append(vu_obj)
+    
+    return {
+        "message": f"{len(created_vus)} Sample VUs erfolgreich erstellt",
+        "vus": created_vus
+    }
 
 
 # Document Management endpoints

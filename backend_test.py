@@ -187,25 +187,57 @@ class InsuranceBrokerAPITester:
         success = status_code == 200 and isinstance(response, list)
         return self.log_test("Search Customers (Empty)", success, f"Status: {status_code}, Results: {len(response) if isinstance(response, list) else 0}")
 
-    def test_create_vu(self):
-        """Test VU (Insurance Company) creation"""
-        print("\n🔍 Testing VU Creation...")
+    def test_vu_sample_data_init(self):
+        """Test VU sample data initialization"""
+        print("\n🔍 Testing VU Sample Data Initialization...")
+        status_code, response = self.make_request('POST', 'vus/init-sample-data')
+        success = status_code == 200 and 'message' in response
+        details = f"Status: {status_code}"
+        if success and 'vus' in response:
+            details += f", Created: {len(response['vus'])} VUs"
+        return self.log_test("VU Sample Data Init", success, details)
+
+    def test_create_vu_with_status(self):
+        """Test VU creation with VU status"""
+        print("\n🔍 Testing VU Creation (VU Status)...")
         vu_data = {
-            "name": "Alte Leipziger Sachversicherung AG",
-            "kurzbezeichnung": "ALS",
-            "strasse": "Leipziger Straße 1",
-            "plz": "04109",
-            "ort": "Leipzig",
-            "telefon": "+49 341 12345678",
-            "email_zentrale": "info@alte-leipziger.de",
-            "ansprechpartner": "Herr Müller"
+            "name": "Test Versicherung AG",
+            "kurzbezeichnung": "TEST",
+            "status": "VU",
+            "strasse": "Teststraße 1",
+            "plz": "12345",
+            "ort": "Teststadt",
+            "telefon": "+49 123 456789",
+            "email_zentrale": "info@test.de",
+            "ansprechpartner": "Herr Test"
         }
         
         status_code, response = self.make_request('POST', 'vus', vu_data)
-        success = status_code == 200 and 'id' in response
+        success = status_code == 200 and 'id' in response and response.get('status') == 'VU'
         if success:
             self.created_vus.append(response['id'])
-        return self.log_test("Create VU", success, f"Status: {status_code}")
+        return self.log_test("Create VU (VU Status)", success, f"Status: {status_code}")
+
+    def test_create_vu_with_pool_status(self):
+        """Test VU creation with Pool status"""
+        print("\n🔍 Testing VU Creation (Pool Status)...")
+        vu_data = {
+            "name": "Test Pool Versicherung",
+            "kurzbezeichnung": "POOL",
+            "status": "Pool",
+            "strasse": "Poolstraße 1",
+            "plz": "54321",
+            "ort": "Poolstadt",
+            "telefon": "+49 987 654321",
+            "email_zentrale": "info@pool.de",
+            "ansprechpartner": "Frau Pool"
+        }
+        
+        status_code, response = self.make_request('POST', 'vus', vu_data)
+        success = status_code == 200 and 'id' in response and response.get('status') == 'Pool'
+        if success:
+            self.created_vus.append(response['id'])
+        return self.log_test("Create VU (Pool Status)", success, f"Status: {status_code}")
 
     def test_get_vus(self):
         """Test retrieving all VUs"""
@@ -213,6 +245,137 @@ class InsuranceBrokerAPITester:
         status_code, response = self.make_request('GET', 'vus')
         success = status_code == 200 and isinstance(response, list)
         return self.log_test("Get All VUs", success, f"Status: {status_code}, Count: {len(response) if isinstance(response, list) else 0}")
+
+    def test_get_vu_by_id(self):
+        """Test retrieving VU by ID"""
+        if not self.created_vus:
+            return self.log_test("Get VU by ID", False, "No VUs created to test")
+        
+        print("\n🔍 Testing Get VU by ID...")
+        vu_id = self.created_vus[0]
+        status_code, response = self.make_request('GET', f'vus/{vu_id}')
+        success = status_code == 200 and response.get('id') == vu_id
+        return self.log_test("Get VU by ID", success, f"Status: {status_code}")
+
+    def test_update_vu(self):
+        """Test VU update"""
+        if not self.created_vus:
+            return self.log_test("Update VU", False, "No VUs created to test")
+        
+        print("\n🔍 Testing VU Update...")
+        vu_id = self.created_vus[0]
+        update_data = {
+            "name": "Updated Test Versicherung AG",
+            "telefon": "+49 123 999888",
+            "bemerkung": "Updated via API test"
+        }
+        
+        status_code, response = self.make_request('PUT', f'vus/{vu_id}', update_data)
+        success = status_code == 200 and response.get('name') == update_data['name']
+        return self.log_test("Update VU", success, f"Status: {status_code}")
+
+    def test_delete_vu(self):
+        """Test VU deletion"""
+        if not self.created_vus:
+            return self.log_test("Delete VU", False, "No VUs created to test")
+        
+        print("\n🔍 Testing VU Deletion...")
+        vu_id = self.created_vus[-1]  # Delete the last created VU
+        status_code, response = self.make_request('DELETE', f'vus/{vu_id}')
+        success = status_code == 200 and 'message' in response
+        if success:
+            self.created_vus.remove(vu_id)
+        return self.log_test("Delete VU", success, f"Status: {status_code}")
+
+    def test_search_vus_by_name(self):
+        """Test VU search by name"""
+        print("\n🔍 Testing VU Search (Name)...")
+        params = {"name": "Allianz"}
+        status_code, response = self.make_request('GET', 'vus/search', params=params)
+        success = status_code == 200 and isinstance(response, list)
+        return self.log_test("Search VUs by Name", success, f"Status: {status_code}, Results: {len(response) if isinstance(response, list) else 0}")
+
+    def test_search_vus_by_kurzbezeichnung(self):
+        """Test VU search by kurzbezeichnung"""
+        print("\n🔍 Testing VU Search (Kurzbezeichnung)...")
+        params = {"kurzbezeichnung": "Alte"}
+        status_code, response = self.make_request('GET', 'vus/search', params=params)
+        success = status_code == 200 and isinstance(response, list)
+        return self.log_test("Search VUs by Kurzbezeichnung", success, f"Status: {status_code}, Results: {len(response) if isinstance(response, list) else 0}")
+
+    def test_search_vus_by_status(self):
+        """Test VU search by status"""
+        print("\n🔍 Testing VU Search (Status VU)...")
+        params = {"status": "VU"}
+        status_code, response = self.make_request('GET', 'vus/search', params=params)
+        success = status_code == 200 and isinstance(response, list)
+        return self.log_test("Search VUs by Status (VU)", success, f"Status: {status_code}, Results: {len(response) if isinstance(response, list) else 0}")
+
+    def test_search_vus_by_ort(self):
+        """Test VU search by ort"""
+        print("\n🔍 Testing VU Search (Ort)...")
+        params = {"ort": "München"}
+        status_code, response = self.make_request('GET', 'vus/search', params=params)
+        success = status_code == 200 and isinstance(response, list)
+        return self.log_test("Search VUs by Ort", success, f"Status: {status_code}, Results: {len(response) if isinstance(response, list) else 0}")
+
+    def test_search_vus_by_telefon(self):
+        """Test VU search by telefon"""
+        print("\n🔍 Testing VU Search (Telefon)...")
+        params = {"telefon": "089"}
+        status_code, response = self.make_request('GET', 'vus/search', params=params)
+        success = status_code == 200 and isinstance(response, list)
+        return self.log_test("Search VUs by Telefon", success, f"Status: {status_code}, Results: {len(response) if isinstance(response, list) else 0}")
+
+    def test_search_vus_by_email(self):
+        """Test VU search by email"""
+        print("\n🔍 Testing VU Search (Email)...")
+        params = {"email": "allianz"}
+        status_code, response = self.make_request('GET', 'vus/search', params=params)
+        success = status_code == 200 and isinstance(response, list)
+        return self.log_test("Search VUs by Email", success, f"Status: {status_code}, Results: {len(response) if isinstance(response, list) else 0}")
+
+    def test_search_vus_multiple_filters(self):
+        """Test VU search with multiple filters"""
+        print("\n🔍 Testing VU Search (Multiple Filters)...")
+        params = {"status": "VU", "ort": "München"}
+        status_code, response = self.make_request('GET', 'vus/search', params=params)
+        success = status_code == 200 and isinstance(response, list)
+        return self.log_test("Search VUs (Multiple Filters)", success, f"Status: {status_code}, Results: {len(response) if isinstance(response, list) else 0}")
+
+    def test_vu_status_enum_validation(self):
+        """Test VU status enum validation"""
+        print("\n🔍 Testing VU Status Enum Validation...")
+        invalid_vu = {
+            "name": "Invalid Status VU",
+            "status": "InvalidStatus"  # Should fail validation
+        }
+        
+        status_code, response = self.make_request('POST', 'vus', invalid_vu)
+        success = status_code == 422  # Validation error expected
+        return self.log_test("VU Status Enum Validation", success, f"Status: {status_code}")
+
+    def test_verify_sample_data_content(self):
+        """Test that sample data contains expected VUs"""
+        print("\n🔍 Testing Sample Data Content Verification...")
+        status_code, response = self.make_request('GET', 'vus')
+        
+        if status_code != 200 or not isinstance(response, list):
+            return self.log_test("Verify Sample Data Content", False, f"Failed to get VUs: {status_code}")
+        
+        expected_vus = ["Allianz", "Alte Leipziger", "Dialog", "Itzehoer"]
+        found_vus = []
+        
+        for vu in response:
+            vu_name = vu.get('name', '')
+            for expected in expected_vus:
+                if expected.lower() in vu_name.lower():
+                    found_vus.append(expected)
+                    break
+        
+        success = len(found_vus) >= 4  # Should find all 4 expected VUs
+        details = f"Status: {status_code}, Found: {found_vus}"
+        return self.log_test("Verify Sample Data Content", success, details)
 
     def test_create_contract(self):
         """Test contract creation"""

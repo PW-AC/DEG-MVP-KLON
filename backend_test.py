@@ -240,6 +240,47 @@ class InsuranceBrokerAPITester:
         
         return self.log_test("Create Customer (Frontend Payload Fixed)", success, details)
 
+    def test_create_customer_frontend_payload_null_anrede(self):
+        """Test customer creation with frontend payload using null for anrede"""
+        print("\n🔍 Testing Customer Creation (Frontend Payload with null anrede)...")
+        
+        # Frontend payload with null anrede (might be more appropriate than empty string)
+        frontend_payload_null = {
+            "anrede": None,  # Using null instead of empty string
+            "titel": "",
+            "vorname": "Test",
+            "name": "Customer",
+            "kunde_id": "",
+            "strasse": "Test Str",
+            "plz": "12345",
+            "ort": "Test City",
+            "telefon": { "telefon_privat": "123456", "email": "test@test.com" },
+            "persoenliche_daten": { "geburtsdatum": "1990-01-01" },
+            "bemerkung": "Test"
+        }
+        
+        status_code, response = self.make_request('POST', 'kunden', frontend_payload_null)
+        
+        print(f"   📋 Null Anrede Frontend Payload Test Details:")
+        print(f"   📋 Status Code: {status_code}")
+        
+        if status_code == 200 and 'id' in response:
+            print(f"   ✅ Customer created successfully with null anrede")
+            self.created_customers.append(response['id'])
+            success = True
+            details = f"Status: {status_code} - SUCCESS. Null anrede works with backend."
+        elif status_code == 422:
+            print(f"   ❌ Validation errors with null anrede")
+            print(f"   📋 Error Details: {response}")
+            success = False
+            details = f"Status: {status_code} - VALIDATION ERROR with null anrede."
+        else:
+            print(f"   ❓ Unexpected response")
+            success = False
+            details = f"Status: {status_code} - UNEXPECTED RESPONSE"
+        
+        return self.log_test("Create Customer (Frontend Payload with null anrede)", success, details)
+
     def test_get_customers(self):
         """Test retrieving all customers"""
         print("\n🔍 Testing Get All Customers...")

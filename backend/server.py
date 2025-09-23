@@ -1298,9 +1298,10 @@ async def create_contract_from_pdf(
         # Auto-assign VU if gesellschaft is found
         if extracted_data.gesellschaft:
             # Use existing VU matching logic
-            vu_assignment = await find_matching_vu(extracted_data.gesellschaft)
-            if vu_assignment:
-                contract_data["vu_internal_id"] = vu_assignment
+            matching_vu, match_type = await find_matching_vu(extracted_data.gesellschaft)
+            if matching_vu:
+                contract_data["vu_id"] = matching_vu.id
+                contract_data["vu_internal_id"] = matching_vu.vu_internal_id
         
         # Insert contract
         await db.vertraege.insert_one(contract_data)

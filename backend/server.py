@@ -506,6 +506,12 @@ async def delete_kunde(kunde_id: str):
 @api_router.post("/vertraege", response_model=Vertrag)
 async def create_vertrag(vertrag: VertragCreate):
     vertrag_dict = prepare_for_mongo(vertrag.dict())
+    
+    # Auto-assign VU based on gesellschaft if not already assigned
+    if not vertrag_dict.get('vu_id') and vertrag_dict.get('gesellschaft'):
+        vertrag_dict, match_info = await auto_assign_vu_to_contract(vertrag_dict)
+        # Note: match_info could be used for logging or user feedback
+    
     vertrag_obj = Vertrag(**vertrag_dict)
     result = await db.vertraege.insert_one(prepare_for_mongo(vertrag_obj.dict()))
     return vertrag_obj

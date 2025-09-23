@@ -538,6 +538,54 @@ const App = () => {
             <div className="tab-content">
               {(() => {
                 const currentTab = openTabs.find(tab => tab.id === activeTab);
+                
+                if (currentTab.type === 'all-customers') {
+                  return (
+                    <div className="all-customers-tab-content" data-testid="all-customers-tab-content">
+                      <div className="all-customers-header">
+                        <h3>📋 Alle Kunden ({allCustomers.length})</h3>
+                      </div>
+                      
+                      <div className="all-customers-table">
+                        <div className="all-customers-table-header">
+                          <div className="all-customers-header-row">
+                            <div className="all-customers-header-cell">Name</div>
+                            <div className="all-customers-header-cell">Vorname</div>
+                            <div className="all-customers-header-cell">Straße</div>
+                            <div className="all-customers-header-cell">PLZ</div>
+                            <div className="all-customers-header-cell">Ort</div>
+                            <div className="all-customers-header-cell">K-ID</div>
+                          </div>
+                        </div>
+                        
+                        <div className="all-customers-table-body">
+                          {allCustomers.length === 0 ? (
+                            <div className="no-customers-message">
+                              Keine Kunden gefunden.
+                            </div>
+                          ) : (
+                            allCustomers.map((kunde) => (
+                              <div 
+                                key={kunde.id} 
+                                className="all-customers-row" 
+                                data-testid={`all-customers-row-${kunde.id}`}
+                                onClick={() => openCustomerTab(kunde)}
+                              >
+                                <div className="all-customers-cell">{kunde.name || '-'}</div>
+                                <div className="all-customers-cell">{kunde.vorname || '-'}</div>
+                                <div className="all-customers-cell">{kunde.strasse || '-'}</div>
+                                <div className="all-customers-cell">{kunde.plz || '-'}</div>
+                                <div className="all-customers-cell">{kunde.ort || '-'}</div>
+                                <div className="all-customers-cell">{kunde.kunde_id || '-'}</div>
+                              </div>
+                            ))
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                }
+                
                 if (currentTab.type === 'customer') {
                   const kunde = currentTab.kunde;
                   const contracts = customerContracts[kunde.id] || [];

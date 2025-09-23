@@ -51,6 +51,51 @@ class Vertragsstatus(str, Enum):
     STORNIERT = "storniert"
 
 
+class DocumentType(str, Enum):
+    PDF = "pdf"
+    EMAIL = "email"
+    WORD = "word"
+    EXCEL = "excel"
+    IMAGE = "image"
+    OTHER = "other"
+
+
+# Document Management Models
+class Document(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    kunde_id: Optional[str] = None
+    vertrag_id: Optional[str] = None
+    title: str
+    filename: str
+    document_type: DocumentType
+    file_size: Optional[int] = None
+    mime_type: Optional[str] = None
+    description: Optional[str] = None
+    tags: List[str] = []
+    file_content: Optional[str] = None  # Base64 encoded file content
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+
+
+class DocumentCreate(BaseModel):
+    kunde_id: Optional[str] = None
+    vertrag_id: Optional[str] = None
+    title: str
+    filename: str
+    document_type: DocumentType
+    file_size: Optional[int] = None
+    mime_type: Optional[str] = None
+    description: Optional[str] = None
+    tags: List[str] = []
+    file_content: Optional[str] = None  # Base64 encoded file content
+
+
+class DocumentUpdate(BaseModel):
+    title: Optional[str] = None
+    description: Optional[str] = None
+    tags: Optional[List[str]] = None
+
+
 # Customer (Kunde) Models
 class KundeBankverbindung(BaseModel):
     iban: Optional[str] = None

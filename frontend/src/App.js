@@ -3330,14 +3330,15 @@ const App = () => {
           {/* Contract Form Window */}
           {contractFormVisible && (
             <div 
-              className="search-window"
+              className="search-window draggable-window"
+              data-window-id="contract-form"
               style={{ 
                 left: `100px`, 
                 top: `80px`,
                 width: '800px'
               }}
             >
-              <div className="window-title">
+              <div className="window-title" onMouseDown={(e) => startDrag('contract-form', e)}>
                 📄 Neuer Vertrag erstellen
                 <div className="window-controls">
                   <div className="window-control">_</div>

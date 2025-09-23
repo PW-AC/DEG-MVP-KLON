@@ -763,6 +763,13 @@ const App = () => {
                     <div className="result-actions">
                       <button 
                         className="result-btn"
+                        onClick={() => openCustomerTab(kunde)}
+                        data-testid={`open-customer-btn-${kunde.id}`}
+                      >
+                        👤 Öffnen
+                      </button>
+                      <button 
+                        className="result-btn"
                         onClick={() => handleDocumentResultClick(kunde)}
                         data-testid={`documents-btn-${kunde.id}`}
                       >

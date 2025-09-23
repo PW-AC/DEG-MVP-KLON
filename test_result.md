@@ -102,101 +102,35 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "Implement automatic VU assignment for contracts based on gesellschaft field. VUs should have internal IDs (VU-001, VU-002, etc.) for relation management. Include dialog for unmatched VUs with options: auto-create VU, manual create VU, or save contract without VU assignment. Migrate all existing contracts to assign VU IDs automatically."
+user_problem_statement: "Implement contract creation and contract document management. Contracts should be created via 'Neuer Vertrag' button in customer detail view. Each contract should have its own document management system similar to customers."
 
 backend:
-  - task: "VU Model Extension with Internal ID"
+  - task: "Contract Creation API"
     implemented: true
     working: true
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
       - working: true
         agent: "main"
-        comment: "Added vu_internal_id field to VU model with auto-generation (VU-001, VU-002, etc.) for contract relations and email automation"
-      - working: true
-        agent: "testing"
-        comment: "TESTED: VU creation with automatic internal ID generation working perfectly. Sequential ID generation (VU-001, VU-002, etc.) verified. Sample VUs updated with proper internal IDs (VU-001 through VU-004). get_next_vu_internal_id() function working correctly."
+        comment: "Enhanced contract creation with automatic VU assignment. POST /api/vertraege creates contracts with VU matching based on gesellschaft field and assigns vu_internal_id for relations"
   
-  - task: "Contract Model Extension for VU Relations"
+  - task: "Contract Document Storage"
     implemented: true
     working: true
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
       - working: true
         agent: "main"
-        comment: "Extended Vertrag model with vu_internal_id field for linking contracts to VUs via internal ID"
-      - working: true
-        agent: "testing"
-        comment: "TESTED: Contract model extension working perfectly. vu_internal_id field properly linked to VUs. Auto-assignment during contract creation verified with multiple test cases (Allianz->VU-001, Dialog AG->VU-003, Alte Leipziger->VU-002)."
-  
-  - task: "Automatic VU Matching Logic"
-    implemented: true
-    working: true
-    file: "/app/backend/server.py"
-    stuck_count: 0
-    priority: "high"
-    needs_retesting: false
-    status_history:
-      - working: true
-        agent: "main"
-        comment: "Implemented find_matching_vu() and auto_assign_vu_to_contract() functions with exact name, kurzbezeichnung, partial, and reverse matching strategies"
-      - working: true
-        agent: "testing"
-        comment: "TESTED: All matching strategies working perfectly. ✅ Exact name matching (Allianz Versicherung AG) ✅ Kurzbezeichnung matching (Allianz) ✅ Partial name matching (Dialog) ✅ Reverse partial matching (Alte Leipziger Versicherungsgruppe) ✅ No match handling. All 5/5 test cases passed."
-  
-  - task: "VU Matching API Endpoint"
-    implemented: true
-    working: true
-    file: "/app/backend/server.py"
-    stuck_count: 0
-    priority: "high"
-    needs_retesting: false
-    status_history:
-      - working: true
-        agent: "main"
-        comment: "Added POST /api/vus/match-gesellschaft endpoint for frontend to check VU matching before contract creation"
-      - working: true
-        agent: "testing"
-        comment: "TESTED: POST /api/vus/match-gesellschaft endpoint working perfectly. Returns proper match results with match_type and detailed messages. Handles query parameters correctly. All matching strategies verified through API."
-  
-  - task: "Contract Migration API"
-    implemented: true
-    working: true
-    file: "/app/backend/server.py"
-    stuck_count: 0
-    priority: "high"
-    needs_retesting: false
-    status_history:
-      - working: true
-        agent: "main"
-        comment: "Created POST /api/vertraege/migrate-vu-assignments endpoint to migrate existing contracts with detailed statistics and matching results"
-      - working: true
-        agent: "testing"
-        comment: "TESTED: POST /api/vertraege/migrate-vu-assignments endpoint working perfectly. Returns detailed migration statistics (total_contracts, matched, unmatched, updated). Properly handles existing contracts without VU assignments."
-  
-  - task: "VU Statistics API"
-    implemented: true
-    working: true
-    file: "/app/backend/server.py"
-    stuck_count: 0
-    priority: "medium"
-    needs_retesting: false
-    status_history:
-      - working: true
-        agent: "main"
-        comment: "Added GET /api/vertraege/vu-statistics endpoint for monitoring VU assignment status and unassigned gesellschaften"
-      - working: true
-        agent: "testing"
-        comment: "TESTED: GET /api/vertraege/vu-statistics endpoint working perfectly. Returns comprehensive statistics including total_contracts, contracts_with_vu, assignment_percentage, and unique_unassigned_gesellschaften. Currently showing 46.67% assignment rate."
+        comment: "Document model already supports vertrag_id field. Documents can be linked to specific contracts via vertrag_id parameter in document creation and retrieval"
 
 frontend:
-  - task: "VU Assignment Dialog Component"
+  - task: "Contract Creation Form"
     implemented: true
     working: true
     file: "/app/frontend/src/App.js"
@@ -206,9 +140,9 @@ frontend:
     status_history:
       - working: true
         agent: "main"
-        comment: "Created dialog with 3 options: auto-create VU, manual create VU, save without VU assignment. Includes proper error handling and user feedback"
+        comment: "Complete contract creation form with all fields: vertragsnummer, gesellschaft, produkt_sparte, tarif, zahlungsweise, beiträge, status, dates. Form validation requires gesellschaft field"
   
-  - task: "VU Assignment State Management"
+  - task: "Neuer Vertrag Button Integration"
     implemented: true
     working: true
     file: "/app/frontend/src/App.js"
@@ -218,9 +152,21 @@ frontend:
     status_history:
       - working: true
         agent: "main"
-        comment: "Added vuAssignmentDialog state and checkVuAssignment() function for automatic VU matching checks during contract creation"
+        comment: "Added onClick handler to existing 'Neuer Vertrag' button in customer detail view. Button opens contract creation form with customer ID pre-filled"
   
-  - task: "Contract Migration UI Integration"
+  - task: "Contract Document Management UI"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Added document icon (📄) button to each contract row. Clicking opens document management panel below contracts table with upload form and document list similar to customer documents"
+  
+  - task: "Contract Document Upload Logic"
     implemented: true
     working: true
     file: "/app/frontend/src/App.js"
@@ -230,45 +176,32 @@ frontend:
     status_history:
       - working: true
         agent: "main"
-        comment: "Added migrate button to VU overview with migrateExistingContracts() function and user feedback via alert dialogs"
+        comment: "Implemented uploadContractDocument() function that uploads documents with vertrag_id. Uses same Base64 upload logic as customer documents but targets contract-specific storage"
   
-  - task: "VU Table Internal ID Display"
+  - task: "Contract State Management"
     implemented: true
     working: true
     file: "/app/frontend/src/App.js"
     stuck_count: 0
     priority: "medium"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
       - working: true
         agent: "main"
-        comment: "Extended VU table to display vu_internal_id column with highlighting and proper grid layout"
-  
-  - task: "VU Assignment Dialog Styling"
-    implemented: true
-    working: true
-    file: "/app/frontend/src/App.css"
-    stuck_count: 0
-    priority: "medium"
-    needs_retesting: false
-    status_history:
-      - working: true
-        agent: "main"
-        comment: "Added Windows XP-style CSS for assignment dialog with color-coded action buttons and proper spacing"
+        comment: "Added contract-specific state variables: contractFormVisible, newContract, contractDocuments, contractDocumentsVisible for managing form display and document visibility per contract"
 
 metadata:
   created_by: "main_agent"
-  version: "2.1"
+  version: "3.0"
   test_sequence: 3
   run_ui: true
 
 test_plan:
   current_focus:
-    - "VU Model Extension with Internal ID"
-    - "Automatic VU Matching Logic"
-    - "VU Matching API Endpoint"
-    - "Contract Migration API"
-    - "VU Assignment Dialog Component"
+    - "Contract Creation API"
+    - "Contract Creation Form"
+    - "Contract Document Management UI"
+    - "Contract Document Upload Logic"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
@@ -282,3 +215,5 @@ agent_communication:
     message: "EXTENDED VU SYSTEM: Added automatic VU assignment for contracts with internal IDs (VU-001, VU-002, etc.), matching logic (exact/partial name, kurzbezeichnung), migration API for existing contracts, and frontend dialog for unmatched VUs. Sample VUs updated with internal IDs. Migration button successfully tested via screenshots. Ready for comprehensive backend testing of new VU assignment features."
   - agent: "testing"
     message: "NEW VU AUTO-ASSIGNMENT TESTING COMPLETE: All new VU auto-assignment features tested and working perfectly! ✅ VU Internal ID System (VU-001 through VU-004) ✅ VU Matching Logic (5/5 strategies working: exact name, kurzbezeichnung, partial, reverse partial, no match) ✅ Contract Auto VU Assignment (3/3 test cases passed) ✅ Migration API (working with statistics) ✅ Statistics API (46.67% assignment rate). All 42/42 backend tests passed. All 5/5 VU auto-assignment specific tests passed. Backend is production-ready."
+  - agent: "main"
+    message: "NEW CONTRACT MANAGEMENT: Implemented complete contract creation and document management system. Contract creation form with all required fields, automatic VU assignment integration, contract-specific document storage and upload, document management UI per contract with panels similar to customer documents. Ready for backend testing of contract creation and document APIs."

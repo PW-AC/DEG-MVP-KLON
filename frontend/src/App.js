@@ -36,6 +36,9 @@ const App = () => {
   const [documentsVisible, setDocumentsVisible] = useState(false);
   const [selectedCustomerId, setSelectedCustomerId] = useState(null);
   const [customerDocuments, setCustomerDocuments] = useState([]);
+  const [openTabs, setOpenTabs] = useState([]);
+  const [activeTab, setActiveTab] = useState(null);
+  const [customerContracts, setCustomerContracts] = useState({});
   const [uploadForm, setUploadForm] = useState({
     title: '',
     description: '',

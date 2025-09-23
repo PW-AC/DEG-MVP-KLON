@@ -276,7 +276,7 @@ body {
 .customer-name-row,
 .customer-address-row {
   display: grid;
-  grid-template-columns: 2fr 1fr 1fr;
+  grid-template-columns: 3fr 1fr;
   gap: 12px;
   font-size: 10px;
 }

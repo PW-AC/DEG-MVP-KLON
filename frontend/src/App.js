@@ -120,6 +120,14 @@ const App = () => {
   const [customerEditFormVisible, setCustomerEditFormVisible] = useState(false);
   const [editCustomerData, setEditCustomerData] = useState({});
   const [lastUpdate, setLastUpdate] = useState(Date.now());
+  // Contract editing state
+  const [editingContract, setEditingContract] = useState(null);
+  const [contractEditFormVisible, setContractEditFormVisible] = useState(false);
+  const [editContractData, setEditContractData] = useState({});
+  // VU editing state
+  const [editingVU, setEditingVU] = useState(null);
+  const [vuEditFormVisible, setVuEditFormVisible] = useState(false);
+  const [editVUData, setEditVUData] = useState({});
 
   // Update time every second
   useEffect(() => {

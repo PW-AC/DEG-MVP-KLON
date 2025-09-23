@@ -1561,6 +1561,12 @@ input[type="file"] {
   color: white;
 }
 
+.vu-internal-id-cell {
+  font-weight: bold;
+  color: #001f3c;
+  background-color: #F0F8FF;
+}
+
 .no-vus-message {
   padding: 20px;
   text-align: center;

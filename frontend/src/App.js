@@ -247,7 +247,7 @@ const App = () => {
     }
   };
 
-  // Check for duplicate customers based on name and personal data
+  // Check for duplicate customers based on multiple attributes (minimum 4 matches required)
   const checkForDuplicates = (customers) => {
     const duplicates = [];
     
@@ -256,25 +256,107 @@ const App = () => {
         const customer1 = customers[i];
         const customer2 = customers[j];
         
-        // Check if customers are potential duplicates
-        const nameMatch = customer1.name && customer2.name && 
-                         customer1.name.toLowerCase() === customer2.name.toLowerCase();
+        let matchCount = 0;
+        const matches = [];
         
-        const vornameMatch = customer1.vorname && customer2.vorname && 
-                            customer1.vorname.toLowerCase() === customer2.vorname.toLowerCase();
+        // Compare all customer attributes
         
-        const addressMatch = customer1.strasse && customer2.strasse && customer1.plz && customer2.plz &&
-                             customer1.strasse.toLowerCase() === customer2.strasse.toLowerCase() &&
-                             customer1.plz === customer2.plz;
+        // Name comparison
+        if (customer1.name && customer2.name && 
+            customer1.name.toLowerCase().trim() === customer2.name.toLowerCase().trim()) {
+          matchCount++;
+          matches.push('Name');
+        }
         
-        // Consider as duplicate if name + vorname match, or name + address match
-        if ((nameMatch && vornameMatch) || (nameMatch && addressMatch)) {
+        // Vorname comparison
+        if (customer1.vorname && customer2.vorname && 
+            customer1.vorname.toLowerCase().trim() === customer2.vorname.toLowerCase().trim()) {
+          matchCount++;
+          matches.push('Vorname');
+        }
+        
+        // Straße comparison
+        if (customer1.strasse && customer2.strasse && 
+            customer1.strasse.toLowerCase().trim() === customer2.strasse.toLowerCase().trim()) {
+          matchCount++;
+          matches.push('Straße');
+        }
+        
+        // PLZ comparison
+        if (customer1.plz && customer2.plz && 
+            customer1.plz.trim() === customer2.plz.trim()) {
+          matchCount++;
+          matches.push('PLZ');
+        }
+        
+        // Ort comparison
+        if (customer1.ort && customer2.ort && 
+            customer1.ort.toLowerCase().trim() === customer2.ort.toLowerCase().trim()) {
+          matchCount++;
+          matches.push('Ort');
+        }
+        
+        // Telefon comparison
+        if (customer1.telefon?.telefon_privat && customer2.telefon?.telefon_privat && 
+            customer1.telefon.telefon_privat.trim() === customer2.telefon.telefon_privat.trim()) {
+          matchCount++;
+          matches.push('Telefon');
+        }
+        
+        // Email comparison
+        if (customer1.telefon?.email && customer2.telefon?.email && 
+            customer1.telefon.email.toLowerCase().trim() === customer2.telefon.email.toLowerCase().trim()) {
+          matchCount++;
+          matches.push('E-Mail');
+        }
+        
+        // Geburtsdatum comparison
+        if (customer1.persoenliche_daten?.geburtsdatum && customer2.persoenliche_daten?.geburtsdatum && 
+            customer1.persoenliche_daten.geburtsdatum === customer2.persoenliche_daten.geburtsdatum) {
+          matchCount++;
+          matches.push('Geburtsdatum');
+        }
+        
+        // Anrede comparison
+        if (customer1.anrede && customer2.anrede && 
+            customer1.anrede === customer2.anrede) {
+          matchCount++;
+          matches.push('Anrede');
+        }
+        
+        // Titel comparison
+        if (customer1.titel && customer2.titel && 
+            customer1.titel.toLowerCase().trim() === customer2.titel.toLowerCase().trim()) {
+          matchCount++;
+          matches.push('Titel');
+        }
+        
+        // Postfach comparison
+        if (customer1.postfach_plz && customer2.postfach_plz && 
+            customer1.postfach_plz.trim() === customer2.postfach_plz.trim()) {
+          matchCount++;
+          matches.push('Postfach-PLZ');
+        }
+        
+        // Bankverbindung IBAN comparison
+        if (customer1.bankverbindung?.iban && customer2.bankverbindung?.iban && 
+            customer1.bankverbindung.iban.trim() === customer2.bankverbindung.iban.trim()) {
+          matchCount++;
+          matches.push('IBAN');
+        }
+        
+        // Check if we have at least 4 matching attributes
+        if (matchCount >= 4) {
           const existingDuplicate = duplicates.find(dup => 
-            dup.includes(customer1.kunde_id) || dup.includes(customer2.kunde_id)
+            dup.ids.includes(customer1.kunde_id) || dup.ids.includes(customer2.kunde_id)
           );
           
           if (!existingDuplicate) {
-            duplicates.push([customer1.kunde_id, customer2.kunde_id]);
+            duplicates.push({
+              ids: [customer1.kunde_id, customer2.kunde_id],
+              matchCount: matchCount,
+              matches: matches
+            });
           }
         }
       }

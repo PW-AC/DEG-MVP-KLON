@@ -265,6 +265,7 @@ class VU(BaseModel):
 class VUCreate(BaseModel):
     name: str
     kurzbezeichnung: Optional[str] = None
+    status: Optional[VUStatus] = VUStatus.VU
     strasse: Optional[str] = None
     plz: Optional[str] = None
     ort: Optional[str] = None

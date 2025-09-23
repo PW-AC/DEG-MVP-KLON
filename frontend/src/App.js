@@ -1514,7 +1514,11 @@ const App = () => {
           </button>
           <button 
             className={`sidebar-item ${selectedSidebarItem === 'newcustomer' ? 'selected' : ''}`}
-            onClick={() => {setSelectedSidebarItem('newcustomer'); setCustomerFormVisible(true);}}
+            onClick={() => {
+              setSelectedSidebarItem('newcustomer'); 
+              setSearchWindow(prev => ({...prev, visible: false})); // Close search window
+              setCustomerFormVisible(true);
+            }}
             data-testid="newcustomer-sidebar-btn"
           >
             👤 Kunden Neuerfassen

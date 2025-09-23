@@ -972,6 +972,109 @@ const App = () => {
     }
   };
 
+  // Handle PDF drop and upload
+  const handlePdfDrop = async (e) => {
+    e.preventDefault();
+    setPdfDragActive(false);
+    
+    const files = Array.from(e.dataTransfer.files);
+    const pdfFile = files.find(file => file.type === 'application/pdf');
+    
+    if (pdfFile) {
+      await analyzePdfContract(pdfFile);
+    } else {
+      alert('Bitte nur PDF-Dateien hochladen.');
+    }
+  };
+
+  const handlePdfFileSelect = async (e) => {
+    const file = e.target.files[0];
+    if (file && file.type === 'application/pdf') {
+      await analyzePdfContract(file);
+    } else {
+      alert('Bitte nur PDF-Dateien auswählen.');
+    }
+  };
+
+  // Analyze PDF with AI and extract contract data
+  const analyzePdfContract = async (file) => {
+    setPdfUploading(true);
+    try {
+      // Convert file to base64
+      const base64Content = await new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          const base64 = reader.result.split(',')[1];
+          resolve(base64);
+        };
+        reader.readAsDataURL(file);
+      });
+
+      // Send to backend for analysis
+      const response = await axios.post(`${API}/analyze-contract-pdf`, {
+        file_content: base64Content,
+        file_name: file.name
+      });
+
+      const extractedData = response.data;
+      setExtractedData(extractedData);
+
+      // Pre-fill contract form with extracted data
+      if (extractedData.confidence > 0.5) {
+        setNewContract(prev => ({
+          ...prev,
+          vertragsnummer: extractedData.vertragsnummer || prev.vertragsnummer,
+          gesellschaft: extractedData.gesellschaft || prev.gesellschaft,
+          produkt_sparte: extractedData.produkt_sparte || prev.produkt_sparte,
+          tarif: extractedData.tarif || prev.tarif,
+          zahlungsweise: extractedData.zahlungsweise || prev.zahlungsweise,
+          beitrag_brutto: extractedData.beitrag_brutto || prev.beitrag_brutto,
+          beitrag_netto: extractedData.beitrag_netto || prev.beitrag_netto,
+          beginn: extractedData.beginn || prev.beginn,
+          ablauf: extractedData.ablauf || prev.ablauf
+        }));
+
+        alert(`PDF erfolgreich analysiert! (Vertrauen: ${Math.round(extractedData.confidence * 100)}%)\nVertragsdaten wurden automatisch ausgefüllt.`);
+      } else {
+        alert('PDF konnte nicht vollständig analysiert werden. Bitte prüfen Sie die Daten manuell.');
+      }
+
+    } catch (error) {
+      console.error('PDF-Analyse Fehler:', error);
+      alert('Fehler bei der PDF-Analyse: ' + (error.response?.data?.detail || error.message));
+    } finally {
+      setPdfUploading(false);
+    }
+  };
+
+  // Auto-create contract from PDF data
+  const createContractFromPdf = async () => {
+    if (!extractedData || !contractFormCustomerId) {
+      alert('Keine PDF-Daten oder Kunde ausgewählt.');
+      return;
+    }
+
+    try {
+      const response = await axios.post(`${API}/create-contract-from-pdf`, extractedData, {
+        params: { kunde_id: contractFormCustomerId }
+      });
+
+      if (response.data.success) {
+        alert('Vertrag erfolgreich aus PDF erstellt!');
+        setContractFormVisible(false);
+        setExtractedData(null);
+        
+        // Reload contracts for the current customer
+        if (activeTab && openTabs.find(tab => tab.id === activeTab)) {
+          loadCustomerContracts(activeTab);
+        }
+      }
+    } catch (error) {
+      console.error('Fehler beim Erstellen des Vertrags:', error);
+      alert('Fehler beim Erstellen: ' + (error.response?.data?.detail || error.message));
+    }
+  };
+
   // Handle customer form changes
   const handleCustomerChange = (field, value) => {
     if (field.includes('.')) {

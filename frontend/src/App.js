@@ -1355,7 +1355,11 @@ const App = () => {
                   const contracts = customerContracts[kunde.id] || [];
                   
                   return (
-                    <div className="customer-tab-content" data-testid={`customer-tab-content-${kunde.id}`}>
+                    <div 
+                      key={`customer-${kunde.id}-${kunde.updated_at || lastUpdate}`}
+                      className="customer-tab-content" 
+                      data-testid={`customer-tab-content-${kunde.id}`}
+                    >
                       {/* Customer Header Info */}
                       <div className="customer-header">
                         <div className="customer-info-section">

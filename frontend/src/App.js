@@ -2956,7 +2956,7 @@ const App = () => {
           {/* Customer Edit Form Window */}
           {customerEditFormVisible && (
             <div 
-              className="search-window"
+              className="draggable-window"
               style={{ 
                 left: `50px`, 
                 top: `50px`,
@@ -2965,7 +2965,7 @@ const App = () => {
                 overflowY: 'auto'
               }}
             >
-              <div className="window-title">
+              <div className="window-title draggable-handle">
                 ✏️ Kunde bearbeiten: {editingCustomer?.vorname} {editingCustomer?.name} (K-ID: {editingCustomer?.kunde_id})
                 <div className="window-controls">
                   <div className="window-control">_</div>

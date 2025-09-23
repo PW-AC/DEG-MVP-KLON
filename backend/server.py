@@ -1078,23 +1078,6 @@ async def get_data_statistics():
     }
 
 
-# Basic status endpoint
-@api_router.get("/")
-async def root():
-    return {"message": "Versicherungsmakler Verwaltungssystem API", "version": "1.0.0"}
-
-
-# Include the router in the main app
-app.include_router(api_router)
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_credentials=True,
-    allow_origins=os.environ.get('CORS_ORIGINS', '*').split(','),
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
 # PDF Analysis Models
 class PDFAnalysisRequest(BaseModel):
     file_content: str  # Base64 encoded PDF content

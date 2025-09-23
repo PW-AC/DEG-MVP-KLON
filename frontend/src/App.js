@@ -232,6 +232,7 @@ const App = () => {
 
   // Intelligent search - show overview for multiple results, direct customer for single result
   const performIntelligentSearch = async () => {
+    setIsSearching(true);
     try {
       // Use the same search logic as before
       const searchParams = new URLSearchParams();
@@ -325,6 +326,8 @@ const App = () => {
     } catch (error) {
       console.error('Fehler bei der Suche:', error);
       alert('Fehler bei der Suche: ' + (error.response?.data?.detail || error.message));
+    } finally {
+      setIsSearching(false);
     }
   };
 

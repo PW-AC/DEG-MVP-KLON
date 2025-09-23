@@ -566,6 +566,15 @@ const App = () => {
         
         {/* Content Area */}
         <div className="content-area">
+          {/* Duplicate Warning */}
+          {duplicateWarning && (
+            <div className="duplicate-warning" data-testid="duplicate-warning">
+              <div className="warning-icon">⚠️</div>
+              <div className="warning-text">{duplicateWarning.message}</div>
+              <div className="warning-close" onClick={() => setDuplicateWarning(null)}>✕</div>
+            </div>
+          )}
+
           {/* Tab Bar */}
           {openTabs.length > 0 && (
             <div className="tab-bar">

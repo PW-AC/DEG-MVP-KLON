@@ -1469,30 +1469,45 @@ const App = () => {
         });
         
       } else {
-        // Multiple customers found - open customer overview
+        // Multiple customers found - convert pending tab to customer overview
         alert(`Mehrere Datensätze gefunden (${results.length}) - öffne Kundenübersicht`);
         setAllCustomers(results);
         
-        // Create/update "All Customers" tab
-        const allCustomersTab = {
-          id: 'tab-all-customers',
-          title: `Alle Kunden (${results.length})`,
-          type: 'all-customers'
-        };
-
-        const existingTabIndex = openTabs.findIndex(tab => tab.id === 'tab-all-customers');
-        if (existingTabIndex !== -1) {
-          setOpenTabs(prev => {
-            const newTabs = [...prev];
-            newTabs[existingTabIndex] = allCustomersTab;
-            return newTabs;
-          });
+        if (pendingSearchTabId) {
+          // Update the pending tab to show search results
+          setOpenTabs(prev => prev.map(tab => 
+            tab.id === pendingSearchTabId 
+              ? {
+                  id: `search-results-${Date.now()}`,
+                  title: `Suchergebnisse (${results.length})`,
+                  type: 'all-customers'
+                }
+              : tab
+          ));
+          setActiveTab(`search-results-${Date.now()}`);
+          setPendingSearchTabId(null);
         } else {
-          setOpenTabs(prev => [...prev, allCustomersTab]);
+          // Fallback to old logic
+          const allCustomersTab = {
+            id: 'tab-all-customers',
+            title: `Alle Kunden (${results.length})`,
+            type: 'all-customers'
+          };
+          const existingTabIndex = openTabs.findIndex(tab => tab.id === 'tab-all-customers');
+          if (existingTabIndex !== -1) {
+            setOpenTabs(prev => {
+              const newTabs = [...prev];
+              newTabs[existingTabIndex] = allCustomersTab;
+              return newTabs;
+            });
+          } else {
+            setOpenTabs(prev => [...prev, allCustomersTab]);
+          }
+          setActiveTab('tab-all-customers');
         }
         
-        setActiveTab('tab-all-customers');
         setSearchWindow(prev => ({ ...prev, visible: false }));
+        setSearchPerformed(true);
         
         // Clear search form
         setSearchForm({

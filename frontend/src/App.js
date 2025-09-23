@@ -111,7 +111,38 @@ const App = () => {
       searchParams.append('limit', searchForm.maxResults);
 
       const response = await axios.get(`${API}/kunden/search?${searchParams.toString()}`);
-      setSearchResults(response.data);
+      const results = response.data;
+      setSearchResults(results);
+      
+      // If customers found, close search window and open first customer in tab
+      if (results && results.length > 0) {
+        // Close search window
+        setSearchWindow(prev => ({ ...prev, visible: false }));
+        
+        // Open first customer in tab
+        const firstCustomer = results[0];
+        openCustomerTab(firstCustomer);
+        
+        // Clear search form for next search
+        setSearchForm({
+          vorname: '',
+          name: '',
+          strasse: '',
+          plz: '',
+          ort: '',
+          vertragsnummer: '',
+          kundennummer: '',
+          geburtsdatum: '',
+          kfz_kennzeichen: '',
+          antragsnummer: '',
+          schadenummer: '',
+          gesellschaft: '',
+          maxResults: '60'
+        });
+      } else {
+        // If no results found, show message but keep search window open
+        alert('Keine Kunden gefunden. Bitte Suchkriterien anpassen.');
+      }
     } catch (error) {
       console.error('Suchfehler:', error);
       alert('Fehler bei der Suche: ' + (error.response?.data?.detail || error.message));

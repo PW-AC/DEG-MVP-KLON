@@ -308,6 +308,64 @@ async def get_next_vu_internal_id():
     return f"VU-{str(next_id).zfill(3)}"
 
 
+async def find_matching_vu(gesellschaft_name: str):
+    """
+    Find matching VU based on gesellschaft name.
+    Returns (vu_object, match_type) or (None, None) if no match found.
+    """
+    if not gesellschaft_name:
+        return None, None
+    
+    gesellschaft_lower = gesellschaft_name.lower().strip()
+    
+    # 1. Try exact name match
+    exact_match = await db.vus.find_one({"name": {"$regex": f"^{gesellschaft_name}$", "$options": "i"}})
+    if exact_match:
+        return VU(**parse_from_mongo(exact_match)), "exact_name"
+    
+    # 2. Try kurzbezeichnung match
+    kurz_match = await db.vus.find_one({"kurzbezeichnung": {"$regex": f"^{gesellschaft_name}$", "$options": "i"}})
+    if kurz_match:
+        return VU(**parse_from_mongo(kurz_match)), "kurzbezeichnung"
+    
+    # 3. Try partial name match (contains)
+    partial_matches = await db.vus.find({"name": {"$regex": gesellschaft_name, "$options": "i"}}).to_list(length=None)
+    if partial_matches:
+        # Return first partial match
+        return VU(**parse_from_mongo(partial_matches[0])), "partial_name"
+    
+    # 4. Try reverse partial match (gesellschaft contains VU name)
+    all_vus = await db.vus.find({}).to_list(length=None)
+    for vu in all_vus:
+        vu_name_lower = vu.get('name', '').lower()
+        vu_kurz_lower = vu.get('kurzbezeichnung', '').lower()
+        
+        if vu_name_lower and vu_name_lower in gesellschaft_lower:
+            return VU(**parse_from_mongo(vu)), "reverse_partial"
+        if vu_kurz_lower and vu_kurz_lower in gesellschaft_lower:
+            return VU(**parse_from_mongo(vu)), "reverse_kurz"
+    
+    return None, None
+
+
+async def auto_assign_vu_to_contract(vertrag_data: dict):
+    """
+    Automatically assign VU to contract based on gesellschaft field.
+    Returns updated vertrag_data with vu_id and vu_internal_id if match found.
+    """
+    gesellschaft = vertrag_data.get('gesellschaft')
+    if not gesellschaft:
+        return vertrag_data, None
+    
+    matching_vu, match_type = await find_matching_vu(gesellschaft)
+    if matching_vu:
+        vertrag_data['vu_id'] = matching_vu.id
+        vertrag_data['vu_internal_id'] = matching_vu.vu_internal_id
+        return vertrag_data, {"vu": matching_vu, "match_type": match_type}
+    
+    return vertrag_data, None
+
+
 # Helper functions for MongoDB serialization
 def generate_kunde_id():
     """Generate customer ID in format XX-XXX-XXX (e.g., 12-345-678)"""

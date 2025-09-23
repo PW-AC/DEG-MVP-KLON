@@ -231,6 +231,42 @@ const App = () => {
     loadCustomerContracts(kunde.id);
   };
 
+  // Check for duplicate customers based on name and personal data
+  const checkForDuplicates = (customers) => {
+    const duplicates = [];
+    
+    for (let i = 0; i < customers.length; i++) {
+      for (let j = i + 1; j < customers.length; j++) {
+        const customer1 = customers[i];
+        const customer2 = customers[j];
+        
+        // Check if customers are potential duplicates
+        const nameMatch = customer1.name && customer2.name && 
+                         customer1.name.toLowerCase() === customer2.name.toLowerCase();
+        
+        const vornameMatch = customer1.vorname && customer2.vorname && 
+                            customer1.vorname.toLowerCase() === customer2.vorname.toLowerCase();
+        
+        const addressMatch = customer1.strasse && customer2.strasse && customer1.plz && customer2.plz &&
+                             customer1.strasse.toLowerCase() === customer2.strasse.toLowerCase() &&
+                             customer1.plz === customer2.plz;
+        
+        // Consider as duplicate if name + vorname match, or name + address match
+        if ((nameMatch && vornameMatch) || (nameMatch && addressMatch)) {
+          const existingDuplicate = duplicates.find(dup => 
+            dup.includes(customer1.kunde_id) || dup.includes(customer2.kunde_id)
+          );
+          
+          if (!existingDuplicate) {
+            duplicates.push([customer1.kunde_id, customer2.kunde_id]);
+          }
+        }
+      }
+    }
+    
+    return duplicates;
+  };
+
   // Intelligent search - show overview for multiple results, direct customer for single result
   const performIntelligentSearch = async () => {
     setIsSearching(true);

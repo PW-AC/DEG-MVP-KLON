@@ -2204,6 +2204,16 @@ const App = () => {
                                 </div>
                                 <div className="vu-cell">{vu.telefon || '-'}</div>
                                 <div className="vu-cell">{vu.email_zentrale || '-'}</div>
+                                <div className="vu-cell">
+                                  <button 
+                                    className="table-btn" 
+                                    onClick={() => openVUEditForm(vu)}
+                                    data-testid={`edit-vu-btn-${vu.id}`}
+                                    title="VU bearbeiten"
+                                  >
+                                    ✏️
+                                  </button>
+                                </div>
                               </div>
                             ))
                           )}

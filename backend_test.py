@@ -663,7 +663,7 @@ class InsuranceBrokerAPITester:
         contract_data = {
             "vertragsnummer": "V2024UNKNOWN001",
             "kunde_id": self.created_customers[0],
-            "gesellschaft": "Test Insurance Company",  # Should not match any VU
+            "gesellschaft": "Completely Unknown Insurance XYZ Corp",  # Should not match any VU
             "produkt_sparte": "Hausratversicherung",
             "tarif": "Standard",
             "zahlungsweise": "halbjährlich",

@@ -669,7 +669,9 @@ const App = () => {
                                 <div className="all-customers-cell">{kunde.strasse || '-'}</div>
                                 <div className="all-customers-cell">{kunde.plz || '-'}</div>
                                 <div className="all-customers-cell">{kunde.ort || '-'}</div>
-                                <div className="all-customers-cell">{kunde.kunde_id || '-'}</div>
+                                <div className={`all-customers-cell ${duplicateWarning && duplicateWarning.ids.includes(kunde.kunde_id) ? 'duplicate-kid' : ''}`}>
+                                  {kunde.kunde_id || '-'}
+                                </div>
                               </div>
                             ))
                           )}

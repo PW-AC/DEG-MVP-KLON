@@ -1,4 +1,4 @@
-from fastapi import FastAPI, APIRouter
+from fastapi import FastAPI, APIRouter, HTTPException
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -6,9 +6,10 @@ import os
 import logging
 from pathlib import Path
 from pydantic import BaseModel, Field
-from typing import List
+from typing import List, Optional, Dict, Any
 import uuid
-from datetime import datetime
+from datetime import datetime, date
+from enum import Enum
 
 
 ROOT_DIR = Path(__file__).parent
@@ -26,31 +27,370 @@ app = FastAPI()
 api_router = APIRouter(prefix="/api")
 
 
-# Define Models
-class StatusCheck(BaseModel):
+# Enums for specific fields
+class Anrede(str, Enum):
+    HERR = "Herr"
+    FRAU = "Frau"
+    FIRMA = "Firma"
+
+
+class Familienstand(str, Enum):
+    LEDIG = "ledig"
+    VERHEIRATET = "verheiratet"
+    GESCHIEDEN = "geschieden"
+    VERWITWET = "verwitwet"
+
+
+class Vertragsstatus(str, Enum):
+    AKTIV = "aktiv"
+    GEKÜNDIGT = "gekündigt"
+    RUHEND = "ruhend"
+    STORNIERT = "storniert"
+
+
+# Customer (Kunde) Models
+class KundeBankverbindung(BaseModel):
+    iban: Optional[str] = None
+    bic: Optional[str] = None
+    bank: Optional[str] = None
+    kontoinhaber: Optional[str] = None
+    betreuendes_buero: Optional[str] = None
+
+
+class KundeTelefon(BaseModel):
+    telefon_privat: Optional[str] = None
+    telefax_privat: Optional[str] = None
+    telefon_geschaeftlich: Optional[str] = None
+    telefax_geschaeftlich: Optional[str] = None
+    mobiltelefon: Optional[str] = None
+    ansprechpartner: Optional[str] = None
+    email: Optional[str] = None
+    internet_adresse: Optional[str] = None
+
+
+class KundePersoenlich(BaseModel):
+    geburtsdatum: Optional[date] = None
+    geburtsname: Optional[str] = None
+    geburtsort: Optional[str] = None
+    familienstand: Optional[Familienstand] = None
+    nationalitaet: Optional[str] = None
+
+
+class KundeArbeitgeber(BaseModel):
+    firmenname: Optional[str] = None
+    telefon: Optional[str] = None
+    telefax: Optional[str] = None
+    personalnummer: Optional[str] = None
+
+
+class Kunde(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    client_name: str
-    timestamp: datetime = Field(default_factory=datetime.utcnow)
+    # Stammdaten
+    status: Optional[str] = None
+    anrede: Optional[Anrede] = None
+    titel: Optional[str] = None
+    vorname: Optional[str] = None
+    name: Optional[str] = None
+    kunde_id: Optional[str] = None
+    zusatz: Optional[str] = None
+    strasse: Optional[str] = None
+    plz: Optional[str] = None
+    ort: Optional[str] = None
+    postfach_plz: Optional[str] = None
+    postfach_nr: Optional[str] = None
+    gewerbliche_adresse: bool = False
+    dokumentenmappe_nr: Optional[str] = None
+    
+    # Betreuer / Verwaltung
+    betreuer: Optional[str] = None
+    betreuer_name: Optional[str] = None
+    betreuer_firma: Optional[str] = None
+    bemerkung: Optional[str] = None
+    selektion: Optional[str] = None
+    
+    # Nested objects
+    bankverbindung: Optional[KundeBankverbindung] = None
+    telefon: Optional[KundeTelefon] = None
+    persoenliche_daten: Optional[KundePersoenlich] = None
+    arbeitgeber: Optional[KundeArbeitgeber] = None
+    
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
 
-class StatusCheckCreate(BaseModel):
-    client_name: str
 
-# Add your routes to the router instead of directly to app
+class KundeCreate(BaseModel):
+    # Stammdaten
+    status: Optional[str] = None
+    anrede: Optional[Anrede] = None
+    titel: Optional[str] = None
+    vorname: Optional[str] = None
+    name: Optional[str] = None
+    kunde_id: Optional[str] = None
+    zusatz: Optional[str] = None
+    strasse: Optional[str] = None
+    plz: Optional[str] = None
+    ort: Optional[str] = None
+    postfach_plz: Optional[str] = None
+    postfach_nr: Optional[str] = None
+    gewerbliche_adresse: bool = False
+    dokumentenmappe_nr: Optional[str] = None
+    
+    # Betreuer / Verwaltung
+    betreuer: Optional[str] = None
+    betreuer_name: Optional[str] = None
+    betreuer_firma: Optional[str] = None
+    bemerkung: Optional[str] = None
+    selektion: Optional[str] = None
+    
+    # Nested objects
+    bankverbindung: Optional[KundeBankverbindung] = None
+    telefon: Optional[KundeTelefon] = None
+    persoenliche_daten: Optional[KundePersoenlich] = None
+    arbeitgeber: Optional[KundeArbeitgeber] = None
+
+
+# Contract (Vertrag) Models
+class Vertrag(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    vertragsnummer: Optional[str] = None
+    interne_vertragsnummer: Optional[str] = None  # AiN
+    kunde_id: Optional[str] = None  # Reference to Kunde
+    vu_id: Optional[str] = None  # Reference to VU
+    gesellschaft: Optional[str] = None
+    kfz_kennzeichen: Optional[str] = None
+    produkt_sparte: Optional[str] = None
+    tarif: Optional[str] = None
+    zahlungsweise: Optional[str] = None
+    beitrag_brutto: Optional[float] = None
+    beitrag_netto: Optional[float] = None
+    vertragsstatus: Optional[Vertragsstatus] = None
+    beginn: Optional[date] = None
+    ablauf: Optional[date] = None
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+
+
+class VertragCreate(BaseModel):
+    vertragsnummer: Optional[str] = None
+    interne_vertragsnummer: Optional[str] = None
+    kunde_id: Optional[str] = None
+    vu_id: Optional[str] = None
+    gesellschaft: Optional[str] = None
+    kfz_kennzeichen: Optional[str] = None
+    produkt_sparte: Optional[str] = None
+    tarif: Optional[str] = None
+    zahlungsweise: Optional[str] = None
+    beitrag_brutto: Optional[float] = None
+    beitrag_netto: Optional[float] = None
+    vertragsstatus: Optional[Vertragsstatus] = None
+    beginn: Optional[date] = None
+    ablauf: Optional[date] = None
+
+
+# VU (Versicherungsunternehmen) Models
+class VU(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    name: str  # z.B. "Alte Leipziger Sachversicherung"
+    kurzbezeichnung: Optional[str] = None  # z.B. "ALS"
+    strasse: Optional[str] = None
+    plz: Optional[str] = None
+    ort: Optional[str] = None
+    telefon: Optional[str] = None
+    telefax: Optional[str] = None
+    email_zentrale: Optional[str] = None
+    email_schaden: Optional[str] = None
+    internet_adresse: Optional[str] = None
+    ansprechpartner: Optional[str] = None
+    acencia_vermittlernummer: Optional[str] = None
+    vu_id: Optional[str] = None
+    bemerkung: Optional[str] = None
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+
+
+class VUCreate(BaseModel):
+    name: str
+    kurzbezeichnung: Optional[str] = None
+    strasse: Optional[str] = None
+    plz: Optional[str] = None
+    ort: Optional[str] = None
+    telefon: Optional[str] = None
+    telefax: Optional[str] = None
+    email_zentrale: Optional[str] = None
+    email_schaden: Optional[str] = None
+    internet_adresse: Optional[str] = None
+    ansprechpartner: Optional[str] = None
+    acencia_vermittlernummer: Optional[str] = None
+    vu_id: Optional[str] = None
+    bemerkung: Optional[str] = None
+
+
+# Helper functions for MongoDB serialization
+def prepare_for_mongo(data):
+    """Convert date objects to ISO strings for MongoDB storage"""
+    if isinstance(data, dict):
+        for key, value in data.items():
+            if isinstance(value, date):
+                data[key] = value.isoformat()
+            elif isinstance(value, dict):
+                data[key] = prepare_for_mongo(value)
+    return data
+
+
+def parse_from_mongo(item):
+    """Parse date strings back to date objects from MongoDB"""
+    if isinstance(item, dict):
+        for key, value in item.items():
+            if key in ['geburtsdatum', 'beginn', 'ablauf'] and isinstance(value, str):
+                try:
+                    item[key] = datetime.fromisoformat(value).date()
+                except:
+                    pass
+            elif isinstance(value, dict):
+                item[key] = parse_from_mongo(value)
+    return item
+
+
+# Customer endpoints
+@api_router.post("/kunden", response_model=Kunde)
+async def create_kunde(kunde: KundeCreate):
+    kunde_dict = prepare_for_mongo(kunde.dict())
+    kunde_obj = Kunde(**kunde_dict)
+    result = await db.kunden.insert_one(prepare_for_mongo(kunde_obj.dict()))
+    return kunde_obj
+
+
+@api_router.get("/kunden", response_model=List[Kunde])
+async def get_kunden(skip: int = 0, limit: int = 60):
+    kunden = await db.kunden.find().skip(skip).limit(limit).to_list(length=None)
+    return [Kunde(**parse_from_mongo(kunde)) for kunde in kunden]
+
+
+@api_router.get("/kunden/search")
+async def search_kunden(
+    vorname: Optional[str] = None,
+    name: Optional[str] = None,
+    strasse: Optional[str] = None,
+    plz: Optional[str] = None,
+    ort: Optional[str] = None,
+    kunde_id: Optional[str] = None,
+    geburtsdatum: Optional[str] = None,
+    kfz_kennzeichen: Optional[str] = None,
+    limit: int = 60
+):
+    query = {}
+    
+    if vorname:
+        query["vorname"] = {"$regex": vorname, "$options": "i"}
+    if name:
+        query["name"] = {"$regex": name, "$options": "i"}
+    if strasse:
+        query["strasse"] = {"$regex": strasse, "$options": "i"}
+    if plz:
+        query["plz"] = {"$regex": plz, "$options": "i"}
+    if ort:
+        query["ort"] = {"$regex": ort, "$options": "i"}
+    if kunde_id:
+        query["kunde_id"] = {"$regex": kunde_id, "$options": "i"}
+    if geburtsdatum:
+        query["persoenliche_daten.geburtsdatum"] = geburtsdatum
+    
+    # Search in related contracts for KFZ-Kennzeichen
+    if kfz_kennzeichen:
+        # First find contracts with the license plate
+        contracts = await db.vertraege.find(
+            {"kfz_kennzeichen": {"$regex": kfz_kennzeichen, "$options": "i"}}
+        ).to_list(length=None)
+        if contracts:
+            kunde_ids = [contract.get("kunde_id") for contract in contracts]
+            query["id"] = {"$in": kunde_ids}
+    
+    kunden = await db.kunden.find(query).limit(limit).to_list(length=None)
+    return [Kunde(**parse_from_mongo(kunde)) for kunde in kunden]
+
+
+@api_router.get("/kunden/{kunde_id}", response_model=Kunde)
+async def get_kunde(kunde_id: str):
+    kunde = await db.kunden.find_one({"id": kunde_id})
+    if kunde is None:
+        raise HTTPException(status_code=404, detail="Kunde nicht gefunden")
+    return Kunde(**parse_from_mongo(kunde))
+
+
+@api_router.put("/kunden/{kunde_id}", response_model=Kunde)
+async def update_kunde(kunde_id: str, kunde_update: KundeCreate):
+    kunde_dict = prepare_for_mongo(kunde_update.dict(exclude_unset=True))
+    kunde_dict["updated_at"] = datetime.utcnow()
+    
+    result = await db.kunden.update_one(
+        {"id": kunde_id}, 
+        {"$set": kunde_dict}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Kunde nicht gefunden")
+    
+    updated_kunde = await db.kunden.find_one({"id": kunde_id})
+    return Kunde(**parse_from_mongo(updated_kunde))
+
+
+@api_router.delete("/kunden/{kunde_id}")
+async def delete_kunde(kunde_id: str):
+    result = await db.kunden.delete_one({"id": kunde_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Kunde nicht gefunden")
+    return {"message": "Kunde erfolgreich gelöscht"}
+
+
+# Contract endpoints
+@api_router.post("/vertraege", response_model=Vertrag)
+async def create_vertrag(vertrag: VertragCreate):
+    vertrag_dict = prepare_for_mongo(vertrag.dict())
+    vertrag_obj = Vertrag(**vertrag_dict)
+    result = await db.vertraege.insert_one(prepare_for_mongo(vertrag_obj.dict()))
+    return vertrag_obj
+
+
+@api_router.get("/vertraege", response_model=List[Vertrag])
+async def get_vertraege(skip: int = 0, limit: int = 100):
+    vertraege = await db.vertraege.find().skip(skip).limit(limit).to_list(length=None)
+    return [Vertrag(**parse_from_mongo(vertrag)) for vertrag in vertraege]
+
+
+@api_router.get("/vertraege/kunde/{kunde_id}", response_model=List[Vertrag])
+async def get_vertraege_by_kunde(kunde_id: str):
+    vertraege = await db.vertraege.find({"kunde_id": kunde_id}).to_list(length=None)
+    return [Vertrag(**parse_from_mongo(vertrag)) for vertrag in vertraege]
+
+
+# VU endpoints
+@api_router.post("/vus", response_model=VU)
+async def create_vu(vu: VUCreate):
+    vu_dict = prepare_for_mongo(vu.dict())
+    vu_obj = VU(**vu_dict)
+    result = await db.vus.insert_one(prepare_for_mongo(vu_obj.dict()))
+    return vu_obj
+
+
+@api_router.get("/vus", response_model=List[VU])
+async def get_vus():
+    vus = await db.vus.find().to_list(length=None)
+    return [VU(**parse_from_mongo(vu)) for vu in vus]
+
+
+@api_router.get("/vus/{vu_id}", response_model=VU)
+async def get_vu(vu_id: str):
+    vu = await db.vus.find_one({"id": vu_id})
+    if vu is None:
+        raise HTTPException(status_code=404, detail="VU nicht gefunden")
+    return VU(**parse_from_mongo(vu))
+
+
+# Basic status endpoint
 @api_router.get("/")
 async def root():
-    return {"message": "Hello World"}
+    return {"message": "Versicherungsmakler Verwaltungssystem API", "version": "1.0.0"}
 
-@api_router.post("/status", response_model=StatusCheck)
-async def create_status_check(input: StatusCheckCreate):
-    status_dict = input.dict()
-    status_obj = StatusCheck(**status_dict)
-    _ = await db.status_checks.insert_one(status_obj.dict())
-    return status_obj
-
-@api_router.get("/status", response_model=List[StatusCheck])
-async def get_status_checks():
-    status_checks = await db.status_checks.find().to_list(1000)
-    return [StatusCheck(**status_check) for status_check in status_checks]
 
 # Include the router in the main app
 app.include_router(api_router)

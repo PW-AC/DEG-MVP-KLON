@@ -7,7 +7,7 @@ import requests
 import json
 
 def fix_vu_internal_ids():
-    base_url = "https://insurance-portal-10.preview.emergentagent.com/api"
+    base_url = "https://maklerportal-1.preview.emergentagent.com/api"
     
     # Get all VUs
     response = requests.get(f"{base_url}/vus")

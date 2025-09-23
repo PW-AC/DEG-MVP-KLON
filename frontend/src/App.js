@@ -115,6 +115,10 @@ const App = () => {
   const [contractDocuments, setContractDocuments] = useState({});
   const [selectedContractId, setSelectedContractId] = useState(null);
   const [contractDocumentsVisible, setContractDocumentsVisible] = useState({});
+  // Customer editing state
+  const [editingCustomer, setEditingCustomer] = useState(null);
+  const [customerEditFormVisible, setCustomerEditFormVisible] = useState(false);
+  const [editCustomerData, setEditCustomerData] = useState({});
 
   // Update time every second
   useEffect(() => {

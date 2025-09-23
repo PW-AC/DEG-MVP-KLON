@@ -1441,6 +1441,7 @@ const App = () => {
                         <div className="vu-table-header">
                           <div className="vu-header-row">
                             <div className="vu-header-cell">Status</div>
+                            <div className="vu-header-cell">Interne ID</div>
                             <div className="vu-header-cell">Name</div>
                             <div className="vu-header-cell">Kürzel</div>
                             <div className="vu-header-cell">Adresse</div>

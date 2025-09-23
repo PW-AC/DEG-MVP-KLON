@@ -208,7 +208,8 @@ class Vertrag(BaseModel):
     vertragsnummer: Optional[str] = None
     interne_vertragsnummer: Optional[str] = None  # AiN
     kunde_id: Optional[str] = None  # Reference to Kunde
-    vu_id: Optional[str] = None  # Reference to VU
+    vu_id: Optional[str] = None  # Reference to VU (UUID)
+    vu_internal_id: Optional[str] = None  # Internal VU ID for relations (VU-001, etc.)
     gesellschaft: Optional[str] = None
     kfz_kennzeichen: Optional[str] = None
     produkt_sparte: Optional[str] = None

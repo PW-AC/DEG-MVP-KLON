@@ -106,6 +106,119 @@ const App = () => {
     }));
   };
 
+  // Handle VU form changes
+  const handleVuChange = (field, value) => {
+    setNewVU(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  // Handle VU search form changes
+  const handleVuSearchChange = (field, value) => {
+    setVuSearchForm(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  // Create new VU
+  const createVU = async () => {
+    try {
+      const response = await axios.post(`${API}/vus`, newVU);
+      alert('VU erfolgreich erstellt!');
+      setVuFormVisible(false);
+      setNewVU({
+        name: '',
+        kurzbezeichnung: '',
+        status: 'VU',
+        strasse: '',
+        plz: '',
+        ort: '',
+        telefon: '',
+        telefax: '',
+        email_zentrale: '',
+        email_schaden: '',
+        internet_adresse: '',
+        ansprechpartner: '',
+        acencia_vermittlernummer: '',
+        vu_id: '',
+        bemerkung: ''
+      });
+      // Reload VUs
+      loadAllVUs();
+    } catch (error) {
+      console.error('Fehler beim Erstellen:', error);
+      alert('Fehler beim Erstellen: ' + (error.response?.data?.detail || error.message));
+    }
+  };
+
+  // Load all VUs
+  const loadAllVUs = async () => {
+    try {
+      const response = await axios.get(`${API}/vus`);
+      setAllVUs(response.data);
+    } catch (error) {
+      console.error('Fehler beim Laden der VUs:', error);
+      setAllVUs([]);
+    }
+  };
+
+  // Search VUs
+  const searchVUs = async () => {
+    try {
+      const searchParams = new URLSearchParams();
+      Object.entries(vuSearchForm).forEach(([key, value]) => {
+        if (value) {
+          searchParams.append(key, value);
+        }
+      });
+
+      const response = await axios.get(`${API}/vus/search?${searchParams.toString()}`);
+      setAllVUs(response.data);
+    } catch (error) {
+      console.error('Fehler bei der VU-Suche:', error);
+      alert('Fehler bei der VU-Suche: ' + (error.response?.data?.detail || error.message));
+    }
+  };
+
+  // Initialize sample VU data
+  const initSampleVUData = async () => {
+    try {
+      const response = await axios.post(`${API}/vus/init-sample-data`);
+      alert(response.data.message);
+      await loadAllVUs();
+    } catch (error) {
+      console.error('Fehler beim Initialisieren der Sample-Daten:', error);
+      alert('Fehler beim Initialisieren: ' + (error.response?.data?.detail || error.message));
+    }
+  };
+
+  // Handle sidebar VU/Ges button click
+  const handleVUGesClick = () => {
+    setSelectedSidebarItem('vus');
+    
+    // Create/update VU overview tab
+    const vuTab = {
+      id: 'tab-vu-overview',
+      title: 'VU / Gesellschaften',
+      type: 'vu-overview'
+    };
+
+    const existingTabIndex = openTabs.findIndex(tab => tab.id === 'tab-vu-overview');
+    if (existingTabIndex !== -1) {
+      // Tab already exists, just activate it
+      setActiveTab('tab-vu-overview');
+    } else {
+      // Create new tab
+      setOpenTabs(prev => [...prev, vuTab]);
+      setActiveTab('tab-vu-overview');
+    }
+    
+    // Load VUs
+    loadAllVUs();
+  };
+
   // Handle customer form changes
   const handleCustomerChange = (field, value) => {
     if (field.includes('.')) {

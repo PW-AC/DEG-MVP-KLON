@@ -2603,6 +2603,356 @@ const App = () => {
             </div>
           )}
 
+          {/* Contract Edit Form Window */}
+          {contractEditFormVisible && (
+            <div 
+              className="draggable-window"
+              style={{ 
+                left: `150px`, 
+                top: `100px`,
+                width: '700px'
+              }}
+            >
+              <div className="window-title draggable-handle">
+                ✏️ Vertrag bearbeiten: {editingContract?.vertragsnummer || editingContract?.id}
+                <div className="window-controls">
+                  <div className="window-control">_</div>
+                  <div className="window-control">□</div>
+                  <div className="window-control" onClick={() => setContractEditFormVisible(false)}>✕</div>
+                </div>
+              </div>
+              
+              <div className="form-content customer-form">
+                <div className="form-group">
+                  <label>Vertragsnummer</label>
+                  <input 
+                    type="text" 
+                    value={editContractData.vertragsnummer}
+                    onChange={(e) => handleEditContractChange('vertragsnummer', e.target.value)}
+                    placeholder="Vertragsnummer"
+                    data-testid="edit-contract-number-input"
+                  />
+                </div>
+                
+                <div className="form-group">
+                  <label>Interne Vertragsnummer (AiN)</label>
+                  <input 
+                    type="text" 
+                    value={editContractData.interne_vertragsnummer}
+                    onChange={(e) => handleEditContractChange('interne_vertragsnummer', e.target.value)}
+                    placeholder="Interne Nummer"
+                    data-testid="edit-contract-internal-number-input"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>Gesellschaft *</label>
+                  <input 
+                    type="text" 
+                    value={editContractData.gesellschaft}
+                    onChange={(e) => handleEditContractChange('gesellschaft', e.target.value)}
+                    placeholder="Versicherungsgesellschaft"
+                    data-testid="edit-contract-gesellschaft-input"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>KFZ-Kennzeichen</label>
+                  <input 
+                    type="text" 
+                    value={editContractData.kfz_kennzeichen}
+                    onChange={(e) => handleEditContractChange('kfz_kennzeichen', e.target.value)}
+                    placeholder="KFZ-Kennzeichen"
+                    data-testid="edit-contract-license-plate-input"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>Produkt / Sparte</label>
+                  <input 
+                    type="text" 
+                    value={editContractData.produkt_sparte}
+                    onChange={(e) => handleEditContractChange('produkt_sparte', e.target.value)}
+                    placeholder="z.B. KFZ, Haftpflicht, Leben"
+                    data-testid="edit-contract-product-input"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>Tarif</label>
+                  <input 
+                    type="text" 
+                    value={editContractData.tarif}
+                    onChange={(e) => handleEditContractChange('tarif', e.target.value)}
+                    placeholder="Tarif"
+                    data-testid="edit-contract-tarif-input"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>Zahlungsweise</label>
+                  <select 
+                    value={editContractData.zahlungsweise}
+                    onChange={(e) => handleEditContractChange('zahlungsweise', e.target.value)}
+                    data-testid="edit-contract-payment-select"
+                  >
+                    <option value="">Bitte wählen</option>
+                    <option value="monatlich">monatlich</option>
+                    <option value="vierteljährlich">vierteljährlich</option>
+                    <option value="halbjährlich">halbjährlich</option>
+                    <option value="jährlich">jährlich</option>
+                  </select>
+                </div>
+
+                <div className="form-group">
+                  <label>Beitrag brutto (€)</label>
+                  <input 
+                    type="number" 
+                    step="0.01"
+                    value={editContractData.beitrag_brutto}
+                    onChange={(e) => handleEditContractChange('beitrag_brutto', e.target.value)}
+                    placeholder="0.00"
+                    data-testid="edit-contract-premium-gross-input"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>Beitrag netto (€)</label>
+                  <input 
+                    type="number" 
+                    step="0.01"
+                    value={editContractData.beitrag_netto}
+                    onChange={(e) => handleEditContractChange('beitrag_netto', e.target.value)}
+                    placeholder="0.00"
+                    data-testid="edit-contract-premium-net-input"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>Vertragsstatus</label>
+                  <select 
+                    value={editContractData.vertragsstatus}
+                    onChange={(e) => handleEditContractChange('vertragsstatus', e.target.value)}
+                    data-testid="edit-contract-status-select"
+                  >
+                    <option value="aktiv">aktiv</option>
+                    <option value="gekündigt">gekündigt</option>
+                    <option value="ruhend">ruhend</option>
+                    <option value="storniert">storniert</option>
+                  </select>
+                </div>
+
+                <div className="form-group">
+                  <label>Vertragsbeginn</label>
+                  <input 
+                    type="date" 
+                    value={editContractData.beginn}
+                    onChange={(e) => handleEditContractChange('beginn', e.target.value)}
+                    data-testid="edit-contract-start-date-input"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>Vertragsablauf</label>
+                  <input 
+                    type="date" 
+                    value={editContractData.ablauf}
+                    onChange={(e) => handleEditContractChange('ablauf', e.target.value)}
+                    data-testid="edit-contract-end-date-input"
+                  />
+                </div>
+              </div>
+              
+              <div className="form-bottom">
+                <div></div>
+                <div className="form-buttons">
+                  <button 
+                    className="btn" 
+                    onClick={updateContract}
+                    disabled={!editContractData.gesellschaft}
+                    data-testid="update-contract-btn"
+                  >
+                    💾 Speichern
+                  </button>
+                  <button 
+                    className="btn" 
+                    onClick={() => setContractEditFormVisible(false)}
+                    data-testid="cancel-edit-contract-btn"
+                  >
+                    Abbrechen
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* VU Edit Form Window */}
+          {vuEditFormVisible && (
+            <div 
+              className="draggable-window"
+              style={{ 
+                left: `200px`, 
+                top: `120px`,
+                width: '800px'
+              }}
+            >
+              <div className="window-title draggable-handle">
+                ✏️ VU bearbeiten: {editingVU?.name}
+                <div className="window-controls">
+                  <div className="window-control">_</div>
+                  <div className="window-control">□</div>
+                  <div className="window-control" onClick={() => setVuEditFormVisible(false)}>✕</div>
+                </div>
+              </div>
+              
+              <div className="form-content customer-form">
+                <div className="form-group">
+                  <label>Name *</label>
+                  <input 
+                    type="text" 
+                    value={editVUData.name}
+                    onChange={(e) => handleEditVUChange('name', e.target.value)}
+                    placeholder="Vollständiger Gesellschaftsname"
+                    data-testid="edit-vu-name-input"
+                  />
+                </div>
+                
+                <div className="form-group">
+                  <label>Kürzel</label>
+                  <input 
+                    type="text" 
+                    value={editVUData.kurzbezeichnung}
+                    onChange={(e) => handleEditVUChange('kurzbezeichnung', e.target.value)}
+                    placeholder="Kurze Bezeichnung"
+                    data-testid="edit-vu-kurzel-input"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>Status</label>
+                  <select 
+                    value={editVUData.status}
+                    onChange={(e) => handleEditVUChange('status', e.target.value)}
+                    data-testid="edit-vu-status-select"
+                  >
+                    <option value="VU">VU (Versicherungsunternehmen)</option>
+                    <option value="Pool">Pool</option>
+                  </select>
+                </div>
+
+                <div className="form-row-address">
+                  <div className="form-group">
+                    <label>Straße</label>
+                    <input 
+                      type="text" 
+                      value={editVUData.strasse}
+                      onChange={(e) => handleEditVUChange('strasse', e.target.value)}
+                      placeholder="Straße und Hausnummer"
+                      data-testid="edit-vu-strasse-input"
+                    />
+                  </div>
+                  
+                  <div className="form-group">
+                    <label>PLZ</label>
+                    <input 
+                      type="text" 
+                      value={editVUData.plz}
+                      onChange={(e) => handleEditVUChange('plz', e.target.value)}
+                      placeholder="PLZ"
+                      data-testid="edit-vu-plz-input"
+                    />
+                  </div>
+                  
+                  <div className="form-group">
+                    <label>Ort</label>
+                    <input 
+                      type="text" 
+                      value={editVUData.ort}
+                      onChange={(e) => handleEditVUChange('ort', e.target.value)}
+                      placeholder="Ort"
+                      data-testid="edit-vu-ort-input"
+                    />
+                  </div>
+                </div>
+
+                <div className="form-group">
+                  <label>Telefon</label>
+                  <input 
+                    type="text" 
+                    value={editVUData.telefon}
+                    onChange={(e) => handleEditVUChange('telefon', e.target.value)}
+                    placeholder="Telefonnummer"
+                    data-testid="edit-vu-telefon-input"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>E-Mail Zentrale</label>
+                  <input 
+                    type="email" 
+                    value={editVUData.email_zentrale}
+                    onChange={(e) => handleEditVUChange('email_zentrale', e.target.value)}
+                    placeholder="info@gesellschaft.de"
+                    data-testid="edit-vu-email-zentrale-input"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>E-Mail Schaden</label>
+                  <input 
+                    type="email" 
+                    value={editVUData.email_schaden}
+                    onChange={(e) => handleEditVUChange('email_schaden', e.target.value)}
+                    placeholder="schaden@gesellschaft.de"
+                    data-testid="edit-vu-email-schaden-input"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>Ansprechpartner</label>
+                  <input 
+                    type="text" 
+                    value={editVUData.ansprechpartner}
+                    onChange={(e) => handleEditVUChange('ansprechpartner', e.target.value)}
+                    placeholder="Name des Ansprechpartners"
+                    data-testid="edit-vu-ansprechpartner-input"
+                  />
+                </div>
+
+                <div className="form-group full-width">
+                  <label>Bemerkung</label>
+                  <textarea 
+                    value={editVUData.bemerkung}
+                    onChange={(e) => handleEditVUChange('bemerkung', e.target.value)}
+                    placeholder="Zusätzliche Bemerkungen"
+                    data-testid="edit-vu-bemerkung-input"
+                  />
+                </div>
+              </div>
+              
+              <div className="form-bottom">
+                <div></div>
+                <div className="form-buttons">
+                  <button 
+                    className="btn" 
+                    onClick={updateVU}
+                    disabled={!editVUData.name}
+                    data-testid="update-vu-btn"
+                  >
+                    💾 Speichern
+                  </button>
+                  <button 
+                    className="btn" 
+                    onClick={() => setVuEditFormVisible(false)}
+                    data-testid="cancel-edit-vu-btn"
+                  >
+                    Abbrechen
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Customer Edit Form Window */}
           {customerEditFormVisible && (
             <div 

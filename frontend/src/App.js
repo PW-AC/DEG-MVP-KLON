@@ -233,9 +233,12 @@ const App = () => {
 
   // Handle customer merge
   const handleMergeCustomers = (customerIds) => {
+    const warningInfo = duplicateWarning ? 
+      `\nÜbereinstimmungen (${duplicateWarning.matchCount}): ${duplicateWarning.matches.join(', ')}` : '';
+    
     // For now, show confirmation dialog
     const confirmMerge = window.confirm(
-      `Möchten Sie die Kunden ${customerIds.join(' und ')} wirklich zusammenführen?\n\n` +
+      `Möchten Sie die Kunden ${customerIds.join(' und ')} wirklich zusammenführen?${warningInfo}\n\n` +
       'Diese Aktion kann nicht rückgängig gemacht werden.'
     );
     

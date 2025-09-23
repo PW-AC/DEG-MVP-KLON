@@ -1699,6 +1699,18 @@ const App = () => {
         {/* Sidebar */}
         <div className="sidebar">
           <button 
+            className={`sidebar-item ${selectedSidebarItem === 'dashboard' ? 'selected' : ''}`}
+            onClick={() => {
+              setSelectedSidebarItem('dashboard');
+              setSearchWindow(prev => ({ ...prev, visible: false }));
+              setCustomerFormVisible(false);
+              openDashboardTab();
+            }}
+            data-testid="dashboard-sidebar-btn"
+          >
+            📊 Dashboard
+          </button>
+          <button 
             className={`sidebar-item ${selectedSidebarItem === 'search' ? 'selected' : ''}`}
             onClick={() => {setSelectedSidebarItem('search'); openSearchWithNewTab();}}
             data-testid="search-sidebar-btn"

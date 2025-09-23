@@ -529,7 +529,7 @@ const App = () => {
                         <div className="customer-actions">
                           <button 
                             className="customer-action-btn documents-btn"
-                            onClick={() => handleDocumentResultClick(kunde)}
+                            onClick={() => openDocumentsInTab(currentTab.id, kunde.id)}
                             data-testid={`customer-documents-btn-${kunde.id}`}
                           >
                             📄 Dokumente

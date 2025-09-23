@@ -1209,7 +1209,7 @@ const App = () => {
                     onClick={loadAllCustomers}
                     data-testid="all-customers-btn"
                   >
-                    Alle Kunden anzeigen
+                    Kunden anzeigen
                   </button>
                 </div>
                 

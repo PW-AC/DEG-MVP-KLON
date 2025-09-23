@@ -33,6 +33,10 @@ const App = () => {
   const [isSearching, setIsSearching] = useState(false);
   const [dropZoneProcessing, setDropZoneProcessing] = useState(false);
   const [customerFormVisible, setCustomerFormVisible] = useState(false);
+  
+  // Search tab management
+  const [pendingSearchTabId, setPendingSearchTabId] = useState(null);
+  const [searchPerformed, setSearchPerformed] = useState(false);
   const [documentsVisible, setDocumentsVisible] = useState(false);
   const [selectedCustomerId, setSelectedCustomerId] = useState(null);
   const [customerDocuments, setCustomerDocuments] = useState([]);

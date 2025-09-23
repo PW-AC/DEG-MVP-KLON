@@ -1477,6 +1477,149 @@ const App = () => {
                               </div>
                             </div>
                           )}
+                          
+                          {/* Contract Documents Sections */}
+                          {Object.keys(contractDocumentsVisible).map(contractId => {
+                            if (!contractDocumentsVisible[contractId]) return null;
+                            
+                            const contract = contracts.find(c => c.id === contractId);
+                            const documents = contractDocuments[contractId] || [];
+                            
+                            return (
+                              <div key={contractId} className="contract-documents-section">
+                                <div className="contract-documents-header">
+                                  <h4>📄 Dokumente für Vertrag: {contract?.vertragsnummer || contractId}</h4>
+                                  <button 
+                                    className="btn close-contract-docs-btn"
+                                    onClick={() => toggleContractDocuments(contractId)}
+                                  >
+                                    ✕ Schließen
+                                  </button>
+                                </div>
+                                
+                                <div className="documents-main-content">
+                                  {/* Left Panel - Documents List */}
+                                  <div className="documents-list-panel">
+                                    <div className="documents-list-header">
+                                      <h4>Dokumentenliste ({documents.length})</h4>
+                                    </div>
+                                    <div className="documents-tree">
+                                      {documents.length === 0 ? (
+                                        <div className="empty-documents">
+                                          <div className="folder-icon">📁</div>
+                                          <div className="empty-text">Keine Dokumente vorhanden</div>
+                                        </div>
+                                      ) : (
+                                        <div className="documents-table">
+                                          <div className="documents-table-header">
+                                            <div className="doc-header-cell">Name</div>
+                                            <div className="doc-header-cell">Eingepflegt am</div>
+                                          </div>
+                                          <div className="documents-table-body">
+                                            {documents.map((doc) => (
+                                              <div key={doc.id} className="document-row">
+                                                <div className="doc-cell doc-name-cell">
+                                                  <div className="document-icon">
+                                                    {doc.document_type === 'pdf' && '📄'}
+                                                    {doc.document_type === 'email' && '✉️'}
+                                                    {doc.document_type === 'word' && '📝'}
+                                                    {doc.document_type === 'excel' && '📊'}
+                                                    {doc.document_type === 'other' && '📁'}
+                                                  </div>
+                                                  <div className="document-filename">{doc.title}</div>
+                                                </div>
+                                                <div className="doc-cell doc-date-cell">
+                                                  {new Date(doc.created_at).toLocaleDateString('de-DE')}
+                                                </div>
+                                              </div>
+                                            ))}
+                                          </div>
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
+
+                                  {/* Right Panel - Upload */}
+                                  <div className="upload-panel">
+                                    <div className="upload-header">
+                                      <h4>📤 Neues Dokument hochladen</h4>
+                                    </div>
+                                    <div className="upload-form-panel">
+                                      <div className="upload-fields">
+                                        <div className="upload-field">
+                                          <label>Titel:</label>
+                                          <input 
+                                            type="text" 
+                                            value={uploadForm.title}
+                                            onChange={(e) => setUploadForm(prev => ({...prev, title: e.target.value}))}
+                                            placeholder="Dokumententitel"
+                                          />
+                                        </div>
+                                        
+                                        <div className="upload-field">
+                                          <label>Beschreibung:</label>
+                                          <input 
+                                            type="text" 
+                                            value={uploadForm.description}
+                                            onChange={(e) => setUploadForm(prev => ({...prev, description: e.target.value}))}
+                                            placeholder="Kurze Beschreibung"
+                                          />
+                                        </div>
+                                        
+                                        <div className="upload-field">
+                                          <label>Tags:</label>
+                                          <input 
+                                            type="text" 
+                                            value={uploadForm.tags}
+                                            onChange={(e) => setUploadForm(prev => ({...prev, tags: e.target.value}))}
+                                            placeholder="wichtig, vertrag, 2024"
+                                          />
+                                        </div>
+                                      </div>
+                                      
+                                      <div className="drag-drop-area">
+                                        <div 
+                                          className="drop-zone-large" 
+                                          onClick={() => document.getElementById(`contract-file-input-${contractId}`).click()}
+                                        >
+                                          <div className="drop-icon">📁</div>
+                                          <div className="drop-text">
+                                            <strong>Datei hier hineinziehen</strong><br/>
+                                            oder klicken zum Auswählen
+                                          </div>
+                                          <div className="drop-formats">
+                                            PDF, DOC, XLS, JPG, PNG, EML
+                                          </div>
+                                          
+                                          {uploadForm.file && (
+                                            <div className="selected-file">
+                                              ✓ {uploadForm.file.name}
+                                            </div>
+                                          )}
+                                        </div>
+                                        
+                                        <input
+                                          id={`contract-file-input-${contractId}`}
+                                          type="file"
+                                          style={{ display: 'none' }}
+                                          accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.eml"
+                                          onChange={(e) => setUploadForm(prev => ({...prev, file: e.target.files[0]}))}
+                                        />
+                                      </div>
+                                      
+                                      <button 
+                                        className="upload-submit-btn"
+                                        onClick={() => uploadContractDocument(contractId)}
+                                        disabled={!uploadForm.file}
+                                      >
+                                        📤 Hochladen
+                                      </button>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })}
                         </div>
                       )}
                     </div>

@@ -453,6 +453,132 @@ async def get_vu(vu_id: str):
     return VU(**parse_from_mongo(vu))
 
 
+# Document Management endpoints
+@api_router.post("/documents", response_model=Document)
+async def create_document(document: DocumentCreate):
+    document_dict = prepare_for_mongo(document.dict())
+    document_obj = Document(**document_dict)
+    result = await db.documents.insert_one(prepare_for_mongo(document_obj.dict()))
+    return document_obj
+
+
+@api_router.get("/documents", response_model=List[Document])
+async def get_documents(
+    kunde_id: Optional[str] = None,
+    vertrag_id: Optional[str] = None,
+    document_type: Optional[DocumentType] = None,
+    skip: int = 0,
+    limit: int = 100
+):
+    query = {}
+    if kunde_id:
+        query["kunde_id"] = kunde_id
+    if vertrag_id:
+        query["vertrag_id"] = vertrag_id
+    if document_type:
+        query["document_type"] = document_type.value
+        
+    documents = await db.documents.find(query).skip(skip).limit(limit).to_list(length=None)
+    return [Document(**parse_from_mongo(doc)) for doc in documents]
+
+
+@api_router.get("/documents/{document_id}", response_model=Document)
+async def get_document(document_id: str):
+    document = await db.documents.find_one({"id": document_id})
+    if document is None:
+        raise HTTPException(status_code=404, detail="Dokument nicht gefunden")
+    return Document(**parse_from_mongo(document))
+
+
+@api_router.put("/documents/{document_id}", response_model=Document)
+async def update_document(document_id: str, document_update: DocumentUpdate):
+    update_dict = prepare_for_mongo(document_update.dict(exclude_unset=True))
+    update_dict["updated_at"] = datetime.utcnow()
+    
+    result = await db.documents.update_one(
+        {"id": document_id}, 
+        {"$set": update_dict}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Dokument nicht gefunden")
+    
+    updated_document = await db.documents.find_one({"id": document_id})
+    return Document(**parse_from_mongo(updated_document))
+
+
+@api_router.delete("/documents/{document_id}")
+async def delete_document(document_id: str):
+    result = await db.documents.delete_one({"id": document_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Dokument nicht gefunden")
+    return {"message": "Dokument erfolgreich gelöscht"}
+
+
+@api_router.get("/kunden/{kunde_id}/documents", response_model=List[Document])
+async def get_customer_documents(kunde_id: str):
+    documents = await db.documents.find({"kunde_id": kunde_id}).to_list(length=None)
+    return [Document(**parse_from_mongo(doc)) for doc in documents]
+
+
+@api_router.post("/documents/upload")
+async def upload_document_file(
+    kunde_id: Optional[str] = None,
+    vertrag_id: Optional[str] = None,
+    title: str = "Uploaded Document",
+    description: Optional[str] = None,
+    tags: str = "",  # Comma separated tags
+    file_content: str = ""  # Base64 encoded file
+):
+    """
+    Upload a document via multipart form or base64 content
+    """
+    try:
+        # Determine document type from filename or content
+        document_type = DocumentType.PDF  # Default
+        
+        # Parse tags
+        tag_list = [tag.strip() for tag in tags.split(",") if tag.strip()]
+        
+        # Create document
+        document_create = DocumentCreate(
+            kunde_id=kunde_id,
+            vertrag_id=vertrag_id,
+            title=title,
+            filename=f"{title}.pdf",
+            document_type=document_type,
+            description=description,
+            tags=tag_list,
+            file_content=file_content
+        )
+        
+        return await create_document(document_create)
+        
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Fehler beim Hochladen: {str(e)}")
+
+
+# Get document statistics for dashboard
+@api_router.get("/documents/stats")
+async def get_document_stats():
+    total_docs = await db.documents.count_documents({})
+    
+    # Count by document type
+    pipeline = [
+        {"$group": {"_id": "$document_type", "count": {"$sum": 1}}}
+    ]
+    type_counts = await db.documents.aggregate(pipeline).to_list(length=None)
+    
+    # Recent documents
+    recent_docs = await db.documents.find().sort("created_at", -1).limit(5).to_list(length=None)
+    
+    return {
+        "total_documents": total_docs,
+        "by_type": {item["_id"]: item["count"] for item in type_counts},
+        "recent_documents": [Document(**parse_from_mongo(doc)) for doc in recent_docs]
+    }
+
+
 # Basic status endpoint
 @api_router.get("/")
 async def root():

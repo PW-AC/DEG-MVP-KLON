@@ -1603,6 +1603,26 @@ input[type="file"] {
   margin-bottom: 0;
 }
 
+/* Draggable Windows */
+.draggable-window {
+  position: absolute;
+  background: linear-gradient(to bottom, #ECE9D8, #E1DDD9);
+  border: 2px outset #ECE9D8;
+  box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.3);
+  border-radius: 0;
+  z-index: 1000;
+  font-family: Tahoma, Arial, sans-serif;
+}
+
+.draggable-handle {
+  cursor: move;
+  user-select: none;
+}
+
+.draggable-handle:active {
+  cursor: grabbing;
+}
+
 /* Contract Actions */
 .contract-actions {
   display: flex;

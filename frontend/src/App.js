@@ -287,6 +287,19 @@ const App = () => {
       const response = await axios.get(`${API}/kunden/search?${searchParams.toString()}`);
       const results = response.data;
       
+      // Check for duplicates in search results
+      const duplicates = checkForDuplicates(results);
+      if (duplicates.length > 0) {
+        // Show duplicate warning
+        const duplicateIds = duplicates[0]; // Show first duplicate pair found
+        setDuplicateWarning({
+          message: `Potenzielle Dublette gefunden: ${duplicateIds.join(' und ')}`,
+          ids: duplicateIds
+        });
+      } else {
+        setDuplicateWarning(null);
+      }
+      
       if (results.length === 0) {
         alert('Keine Kunden gefunden.');
         return;

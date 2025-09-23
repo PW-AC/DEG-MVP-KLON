@@ -2838,13 +2838,17 @@ const App = () => {
           {vuEditFormVisible && (
             <div 
               className="draggable-window"
+              data-window-id="vu-edit"
               style={{ 
                 left: `200px`, 
                 top: `120px`,
                 width: '800px'
               }}
             >
-              <div className="window-title draggable-handle">
+              <div 
+                className="window-title draggable-handle"
+                onMouseDown={(e) => startDrag('vu-edit', e)}
+              >
                 ✏️ VU bearbeiten: {editingVU?.name}
                 <div className="window-controls">
                   <div className="window-control">_</div>

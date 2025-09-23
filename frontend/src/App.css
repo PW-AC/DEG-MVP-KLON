@@ -813,6 +813,13 @@ textarea {
   border-right: none;
 }
 
+.duplicate-kid {
+  background-color: #FFA500 !important;
+  color: #000 !important;
+  font-weight: bold !important;
+  border: 2px solid #FF6600 !important;
+}
+
 .no-customers-message {
   padding: 20px;
   text-align: center;

@@ -216,10 +216,9 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Contract Creation API"
-    - "Contract Creation Form"
-    - "Contract Document Management UI"
-    - "Contract Document Upload Logic"
+    - "PDF Analysis API"
+    - "Contract Creation from PDF API"
+    - "PDF Dependencies and Configuration"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"

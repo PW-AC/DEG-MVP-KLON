@@ -1089,6 +1089,227 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# PDF Analysis Models
+class PDFAnalysisRequest(BaseModel):
+    file_content: str  # Base64 encoded PDF content
+    file_name: str
+
+class ExtractedContractData(BaseModel):
+    vertragsnummer: Optional[str] = None
+    gesellschaft: Optional[str] = None
+    produkt_sparte: Optional[str] = None
+    tarif: Optional[str] = None
+    zahlungsweise: Optional[str] = None
+    beitrag_brutto: Optional[str] = None
+    beitrag_netto: Optional[str] = None
+    beginn: Optional[str] = None
+    ablauf: Optional[str] = None
+    kunde_name: Optional[str] = None
+    kunde_vorname: Optional[str] = None
+    kunde_strasse: Optional[str] = None
+    kunde_plz: Optional[str] = None
+    kunde_ort: Optional[str] = None
+    confidence: float = 0.0
+    raw_analysis: str = ""
+
+@api_router.post("/analyze-contract-pdf", response_model=ExtractedContractData)
+async def analyze_contract_pdf(request: PDFAnalysisRequest):
+    """
+    Analyze PDF document and extract contract data using AI
+    """
+    try:
+        # Decode base64 content
+        pdf_content = base64.b64decode(request.file_content)
+        
+        # Create temporary file
+        with tempfile.NamedTemporaryFile(delete=False, suffix='.pdf') as temp_file:
+            temp_file.write(pdf_content)
+            temp_file_path = temp_file.name
+        
+        try:
+            # Initialize LLM chat with Gemini for file support
+            emergent_key = os.environ.get('EMERGENT_LLM_KEY')
+            if not emergent_key:
+                raise HTTPException(status_code=500, detail="AI service not configured")
+            
+            chat = LlmChat(
+                api_key=emergent_key,
+                session_id=f"contract-analysis-{uuid.uuid4()}",
+                system_message="Du bist ein spezialisierter AI-Assistent für die Analyse von Versicherungsverträgen. Extrahiere relevante Vertragsdaten aus PDF-Dokumenten."
+            ).with_model("gemini", "gemini-2.0-flash")
+            
+            # Create file attachment
+            pdf_file = FileContentWithMimeType(
+                file_path=temp_file_path,
+                mime_type="application/pdf"
+            )
+            
+            # Create analysis prompt
+            analysis_prompt = """
+Analysiere dieses PDF-Dokument eines Versicherungsvertrags und extrahiere die folgenden Informationen:
+
+**Vertragsdaten:**
+- Vertragsnummer
+- Gesellschaft (Versicherungsunternehmen)
+- Produkt/Sparte (z.B. KFZ, Haftpflicht, etc.)
+- Tarif
+- Zahlungsweise (monatlich, jährlich, etc.)
+- Beitrag brutto (mit Währung)
+- Beitrag netto (mit Währung)
+- Vertragsbeginn (Datum)
+- Vertragsablauf (Datum)
+
+**Kundendaten:**
+- Name (Nachname)
+- Vorname
+- Straße und Hausnummer
+- Postleitzahl
+- Ort
+
+Gib die Antwort im folgenden JSON-Format zurück:
+```json
+{
+  "vertragsnummer": "...",
+  "gesellschaft": "...",
+  "produkt_sparte": "...",
+  "tarif": "...",
+  "zahlungsweise": "...",
+  "beitrag_brutto": "...",
+  "beitrag_netto": "...",
+  "beginn": "YYYY-MM-DD",
+  "ablauf": "YYYY-MM-DD",
+  "kunde_name": "...",
+  "kunde_vorname": "...",
+  "kunde_strasse": "...",
+  "kunde_plz": "...",
+  "kunde_ort": "...",
+  "confidence": 0.85
+}
+```
+
+Wenn bestimmte Informationen nicht gefunden werden, setze den Wert auf null. 
+Gib bei confidence einen Wert zwischen 0 und 1 an, der deine Sicherheit bei der Extraktion widerspiegelt.
+Verwende für Datumsangaben das Format YYYY-MM-DD.
+"""
+            
+            # Send message with file attachment
+            user_message = UserMessage(
+                text=analysis_prompt,
+                file_contents=[pdf_file]
+            )
+            
+            response = await chat.send_message(user_message)
+            
+            # Parse the response (assuming it returns JSON)
+            import json
+            try:
+                # Try to extract JSON from response
+                response_text = str(response)
+                # Find JSON content in response
+                json_start = response_text.find('{')
+                json_end = response_text.rfind('}') + 1
+                
+                if json_start != -1 and json_end > json_start:
+                    json_content = response_text[json_start:json_end]
+                    extracted_data = json.loads(json_content)
+                    
+                    # Create response with extracted data
+                    return ExtractedContractData(
+                        vertragsnummer=extracted_data.get('vertragsnummer'),
+                        gesellschaft=extracted_data.get('gesellschaft'),
+                        produkt_sparte=extracted_data.get('produkt_sparte'),
+                        tarif=extracted_data.get('tarif'),
+                        zahlungsweise=extracted_data.get('zahlungsweise'),
+                        beitrag_brutto=extracted_data.get('beitrag_brutto'),
+                        beitrag_netto=extracted_data.get('beitrag_netto'),
+                        beginn=extracted_data.get('beginn'),
+                        ablauf=extracted_data.get('ablauf'),
+                        kunde_name=extracted_data.get('kunde_name'),
+                        kunde_vorname=extracted_data.get('kunde_vorname'),
+                        kunde_strasse=extracted_data.get('kunde_strasse'),
+                        kunde_plz=extracted_data.get('kunde_plz'),
+                        kunde_ort=extracted_data.get('kunde_ort'),
+                        confidence=extracted_data.get('confidence', 0.5),
+                        raw_analysis=response_text
+                    )
+                else:
+                    raise ValueError("No valid JSON found in response")
+                    
+            except (json.JSONDecodeError, ValueError) as e:
+                # If JSON parsing fails, return raw response with low confidence
+                logger.warning(f"Failed to parse AI response as JSON: {e}")
+                return ExtractedContractData(
+                    confidence=0.1,
+                    raw_analysis=str(response)
+                )
+                
+        finally:
+            # Clean up temporary file
+            try:
+                os.unlink(temp_file_path)
+            except:
+                pass
+                
+    except Exception as e:
+        logger.error(f"Error analyzing PDF: {e}")
+        raise HTTPException(status_code=500, detail=f"Error analyzing PDF: {str(e)}")
+
+# Auto-create contract with PDF data and upload document
+@api_router.post("/create-contract-from-pdf")
+async def create_contract_from_pdf(
+    kunde_id: str,
+    extracted_data: ExtractedContractData
+):
+    """
+    Create a contract automatically from extracted PDF data
+    """
+    try:
+        # Check if customer exists
+        customer = await db.kunden.find_one({"id": kunde_id})
+        if not customer:
+            raise HTTPException(status_code=404, detail="Kunde nicht gefunden")
+        
+        # Create contract with extracted data
+        contract_data = {
+            "id": str(uuid.uuid4()),
+            "kunde_id": kunde_id,
+            "vertragsnummer": extracted_data.vertragsnummer or "",
+            "interne_vertragsnummer": "",
+            "gesellschaft": extracted_data.gesellschaft or "",
+            "kfz_kennzeichen": "",
+            "produkt_sparte": extracted_data.produkt_sparte or "",
+            "tarif": extracted_data.tarif or "",
+            "zahlungsweise": extracted_data.zahlungsweise or "",
+            "beitrag_brutto": extracted_data.beitrag_brutto or "",
+            "beitrag_netto": extracted_data.beitrag_netto or "",
+            "vertragsstatus": "aktiv",
+            "beginn": extracted_data.beginn or "",
+            "ablauf": extracted_data.ablauf or "",
+            "created_at": datetime.utcnow(),
+            "updated_at": datetime.utcnow()
+        }
+        
+        # Auto-assign VU if gesellschaft is found
+        if extracted_data.gesellschaft:
+            # Use existing VU matching logic
+            vu_assignment = await find_matching_vu(extracted_data.gesellschaft)
+            if vu_assignment:
+                contract_data["vu_internal_id"] = vu_assignment
+        
+        # Insert contract
+        await db.vertraege.insert_one(contract_data)
+        
+        return {
+            "success": True,
+            "contract_id": contract_data["id"],
+            "message": "Vertrag erfolgreich aus PDF erstellt",
+            "extracted_data": extracted_data
+        }
+        
+    except Exception as e:
+        logger.error(f"Error creating contract from PDF: {e}")
+        raise HTTPException(status_code=500, detail=f"Error creating contract: {str(e)}")
+
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,

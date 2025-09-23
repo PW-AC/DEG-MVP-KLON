@@ -901,11 +901,11 @@ const App = () => {
             🔍 Suchen
           </button>
           <button 
-            className={`sidebar-item ${selectedSidebarItem === 'customers' ? 'selected' : ''}`}
-            onClick={() => setSelectedSidebarItem('customers')}
-            data-testid="customers-sidebar-btn"
+            className={`sidebar-item ${selectedSidebarItem === 'newcustomer' ? 'selected' : ''}`}
+            onClick={() => {setSelectedSidebarItem('newcustomer'); setCustomerFormVisible(true);}}
+            data-testid="newcustomer-sidebar-btn"
           >
-            👥 Kunden
+            👤 Kunden Neuerfassen
           </button>
           <button 
             className={`sidebar-item ${selectedSidebarItem === 'vus' ? 'selected' : ''}`}
@@ -913,13 +913,6 @@ const App = () => {
             data-testid="vus-sidebar-btn"
           >
             🏢 VU / Ges.
-          </button>
-          <button 
-            className={`sidebar-item ${selectedSidebarItem === 'contracts' ? 'selected' : ''}`}
-            onClick={() => setSelectedSidebarItem('contracts')}
-            data-testid="contracts-sidebar-btn"
-          >
-            📄 Verträge
           </button>
           
           {/* Drag & Drop Area */}

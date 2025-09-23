@@ -280,6 +280,31 @@ class VUCreate(BaseModel):
     bemerkung: Optional[str] = None
 
 
+# Helper functions for VU ID generation
+def generate_vu_internal_id():
+    """Generate internal VU ID in format VU-XXX (e.g., VU-001, VU-002)"""
+    import asyncio
+    # This will be called in async context, so we need to handle it properly
+    return f"VU-{str(random.randint(1000, 9999))}"
+
+
+async def get_next_vu_internal_id():
+    """Get next sequential VU internal ID"""
+    # Get highest existing internal VU ID
+    existing_vus = await db.vus.find({}, {"vu_internal_id": 1}).to_list(length=None)
+    max_id = 0
+    for vu in existing_vus:
+        if vu.get('vu_internal_id') and vu['vu_internal_id'].startswith('VU-'):
+            try:
+                num = int(vu['vu_internal_id'][3:])  # Extract number after 'VU-'
+                max_id = max(max_id, num)
+            except ValueError:
+                continue
+    
+    next_id = max_id + 1
+    return f"VU-{str(next_id).zfill(3)}"
+
+
 # Helper functions for MongoDB serialization
 def generate_kunde_id():
     """Generate customer ID in format XX-XXX-XXX (e.g., 12-345-678)"""

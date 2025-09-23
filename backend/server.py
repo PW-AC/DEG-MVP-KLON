@@ -227,6 +227,14 @@ class VUCreate(BaseModel):
 
 
 # Helper functions for MongoDB serialization
+def generate_kunde_id():
+    """Generate customer ID in format XX-XXX-XXX (e.g., 12-345-678)"""
+    part1 = str(random.randint(10, 99))
+    part2 = str(random.randint(100, 999))
+    part3 = str(random.randint(100, 999))
+    return f"{part1}-{part2}-{part3}"
+
+
 def prepare_for_mongo(data):
     """Convert date objects to ISO strings for MongoDB storage"""
     if isinstance(data, dict):

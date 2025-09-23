@@ -1575,6 +1575,48 @@ input[type="file"] {
   font-size: 10px;
 }
 
+/* Contract Actions */
+.contract-actions {
+  display: flex;
+  gap: 4px;
+}
+
+/* Contract Documents Section */
+.contract-documents-section {
+  margin-top: 16px;
+  border: 2px inset #ECE9D8;
+  background-color: white;
+}
+
+.contract-documents-header {
+  background: linear-gradient(to bottom, #E1DDD9, #D4CDCA);
+  padding: 8px 12px;
+  border-bottom: 1px solid #ACA899;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.contract-documents-header h4 {
+  font-size: 11px;
+  font-weight: bold;
+  color: #000;
+  margin: 0;
+}
+
+.close-contract-docs-btn {
+  padding: 4px 8px;
+  font-size: 9px;
+  border: 1px outset #ECE9D8;
+  background: linear-gradient(to bottom, #F0F0F0, #E0E0E0);
+  cursor: pointer;
+  font-family: Tahoma, Arial, sans-serif;
+}
+
+.close-contract-docs-btn:hover {
+  background: linear-gradient(to bottom, #E0E0E0, #D0D0D0);
+}
+
 /* VU Assignment Dialog */
 .vu-assignment-message {
   text-align: center;

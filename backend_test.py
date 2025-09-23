@@ -143,6 +143,49 @@ class InsuranceBrokerAPITester:
             self.created_customers.append(response['id'])
         return self.log_test("Create Customer (German Chars)", success, f"Status: {status_code}")
 
+    def test_create_customer_frontend_payload(self):
+        """Test customer creation with exact frontend payload structure"""
+        print("\n🔍 Testing Customer Creation (Frontend Payload)...")
+        
+        # This is the exact payload that frontend sends
+        frontend_payload = {
+            "anrede": "",
+            "titel": "",
+            "vorname": "Test",
+            "name": "Customer",
+            "kunde_id": "",
+            "strasse": "Test Str",
+            "plz": "12345",
+            "ort": "Test City",
+            "telefon": { "telefon_privat": "123456", "email": "test@test.com" },
+            "persoenliche_daten": { "geburtsdatum": "1990-01-01" },
+            "bemerkung": "Test"
+        }
+        
+        status_code, response = self.make_request('POST', 'kunden', frontend_payload)
+        
+        # Log detailed response for analysis
+        print(f"   📋 Frontend Payload Test Details:")
+        print(f"   📋 Status Code: {status_code}")
+        print(f"   📋 Response: {response}")
+        
+        if status_code == 422:
+            print(f"   ❌ Validation Error (HTTP 422) - Backend expects different structure")
+            print(f"   📋 Error Details: {response}")
+            success = False
+            details = f"Status: {status_code} - VALIDATION ERROR. Backend structure mismatch with frontend payload."
+        elif status_code == 200 and 'id' in response:
+            print(f"   ✅ Customer created successfully with frontend payload")
+            self.created_customers.append(response['id'])
+            success = True
+            details = f"Status: {status_code} - SUCCESS. Frontend payload compatible with backend."
+        else:
+            print(f"   ❓ Unexpected response")
+            success = False
+            details = f"Status: {status_code} - UNEXPECTED RESPONSE"
+        
+        return self.log_test("Create Customer (Frontend Payload)", success, details)
+
     def test_get_customers(self):
         """Test retrieving all customers"""
         print("\n🔍 Testing Get All Customers...")

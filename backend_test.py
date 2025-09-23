@@ -1144,6 +1144,7 @@ class InsuranceBrokerAPITester:
         self.test_create_customer_german_chars()
         self.test_create_customer_frontend_payload()  # NEW: Test exact frontend payload
         self.test_create_customer_frontend_payload_fixed()  # NEW: Test fixed frontend payload
+        self.test_create_customer_frontend_payload_null_anrede()  # NEW: Test null anrede
         self.test_get_customers()
         self.test_get_customer_by_id()
         

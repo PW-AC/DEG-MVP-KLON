@@ -733,6 +733,7 @@ async def init_sample_vu_data():
         {
             "name": "Allianz Versicherung AG",
             "kurzbezeichnung": "Allianz",
+            "vu_internal_id": "VU-001",
             "status": "VU",
             "strasse": "Königinstr. 28",
             "plz": "80802",
@@ -749,6 +750,7 @@ async def init_sample_vu_data():
         {
             "name": "Alte Leipziger Lebensversicherung AG",
             "kurzbezeichnung": "Alte Leipziger",
+            "vu_internal_id": "VU-002",
             "status": "VU",
             "strasse": "Alte-Leipziger-Platz 1",
             "plz": "61440",
@@ -765,6 +767,7 @@ async def init_sample_vu_data():
         {
             "name": "Dialog Versicherung AG",
             "kurzbezeichnung": "Dialog",
+            "vu_internal_id": "VU-003",
             "status": "VU",
             "strasse": "Adenauerring 9",
             "plz": "81737",
@@ -781,6 +784,7 @@ async def init_sample_vu_data():
         {
             "name": "Itzehoer Versicherung",
             "kurzbezeichnung": "Itzehoer",
+            "vu_internal_id": "VU-004",
             "status": "VU",
             "strasse": "Schützenstraße 19",
             "plz": "25524",

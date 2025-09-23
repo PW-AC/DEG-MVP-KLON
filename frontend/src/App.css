@@ -933,73 +933,101 @@ input[type="file"] {
 
 .documents-tree {
   flex: 1;
-  padding: 8px;
+  padding: 0;
   overflow-y: auto;
   max-height: 400px;
 }
 
-.empty-documents {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 40px;
-  color: #666;
+/* Documents Table */
+.documents-table {
+  width: 100%;
+  border-collapse: collapse;
 }
 
-.folder-icon {
-  font-size: 48px;
-  margin-bottom: 8px;
+.documents-table-header {
+  background: linear-gradient(to bottom, #E1DDD9, #D4CDCA);
+  border-bottom: 2px solid #ACA899;
+  display: grid;
+  grid-template-columns: 1fr 100px;
+  min-height: 24px;
 }
 
-.empty-text {
+.doc-header-cell {
+  padding: 4px 8px;
   font-size: 10px;
-  font-style: italic;
-}
-
-.documents-list {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.document-tree-item {
+  font-weight: bold;
+  color: #000;
+  border-right: 1px solid #ACA899;
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 4px 6px;
-  border: 1px solid #E0E0E0;
-  border-radius: 2px;
+  background: inherit;
+}
+
+.doc-header-cell:last-child {
+  border-right: none;
+}
+
+.documents-table-body {
+  background-color: white;
+}
+
+.document-row {
+  display: grid;
+  grid-template-columns: 1fr 100px;
+  border-bottom: 1px solid #E0E0E0;
+  min-height: 26px;
   cursor: pointer;
-  background-color: #F8F9FA;
-  min-height: 28px;
 }
 
-.document-tree-item:hover {
+.document-row:hover {
   background-color: #E3F2FD;
-  border-color: #001f3c;
 }
 
-.document-tree-item .document-icon {
-  font-size: 14px;
+.document-row:nth-child(even) {
+  background-color: #F8F9FA;
+}
+
+.document-row:nth-child(even):hover {
+  background-color: #E3F2FD;
+}
+
+.doc-cell {
+  padding: 3px 8px;
+  font-size: 9px;
+  color: #333;
+  border-right: 1px solid #E0E0E0;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+}
+
+.doc-cell:last-child {
+  border-right: none;
+}
+
+.doc-name-cell {
+  gap: 6px;
+}
+
+.doc-name-cell .document-icon {
+  font-size: 12px;
   flex-shrink: 0;
-  width: 16px;
+  width: 14px;
   text-align: center;
 }
 
-.document-info-compact {
-  flex: 1;
-  min-width: 0;
-}
-
-.document-filename {
-  font-size: 9px;
-  color: #000;
-  font-weight: normal;
+.doc-name-cell .document-filename {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  line-height: 1.4;
+  color: #000;
+}
+
+.doc-date-cell {
+  font-size: 8px;
+  color: #666;
+  text-align: center;
+  justify-content: center;
 }
 
 /* Right Panel - Upload */

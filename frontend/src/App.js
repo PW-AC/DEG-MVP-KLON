@@ -95,6 +95,26 @@ const App = () => {
     persoenliche_daten: { geburtsdatum: '' },
     bemerkung: ''
   });
+  // Contract Management State
+  const [contractFormVisible, setContractFormVisible] = useState(false);
+  const [contractFormCustomerId, setContractFormCustomerId] = useState(null);
+  const [newContract, setNewContract] = useState({
+    vertragsnummer: '',
+    interne_vertragsnummer: '',
+    gesellschaft: '',
+    kfz_kennzeichen: '',
+    produkt_sparte: '',
+    tarif: '',
+    zahlungsweise: '',
+    beitrag_brutto: '',
+    beitrag_netto: '',
+    vertragsstatus: 'aktiv',
+    beginn: '',
+    ablauf: ''
+  });
+  const [contractDocuments, setContractDocuments] = useState({});
+  const [selectedContractId, setSelectedContractId] = useState(null);
+  const [contractDocumentsVisible, setContractDocumentsVisible] = useState({});
 
   // Update time every second
   useEffect(() => {

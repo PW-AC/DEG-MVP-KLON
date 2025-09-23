@@ -482,6 +482,171 @@ const App = () => {
     }
   };
 
+  // Handle contract editing
+  const openContractEditForm = (contract) => {
+    console.log('Öffne Vertrags-Bearbeitungsformular für:', contract);
+    setEditingContract(contract);
+    
+    const formData = {
+      vertragsnummer: contract.vertragsnummer || '',
+      interne_vertragsnummer: contract.interne_vertragsnummer || '',
+      gesellschaft: contract.gesellschaft || '',
+      kfz_kennzeichen: contract.kfz_kennzeichen || '',
+      produkt_sparte: contract.produkt_sparte || '',
+      tarif: contract.tarif || '',
+      zahlungsweise: contract.zahlungsweise || '',
+      beitrag_brutto: contract.beitrag_brutto || '',
+      beitrag_netto: contract.beitrag_netto || '',
+      vertragsstatus: contract.vertragsstatus || 'aktiv',
+      beginn: contract.beginn || '',
+      ablauf: contract.ablauf || ''
+    };
+    
+    console.log('Vertrag-Formulardaten strukturiert:', formData);
+    setEditContractData(formData);
+    setContractEditFormVisible(true);
+  };
+
+  // Handle edit contract form changes
+  const handleEditContractChange = (field, value) => {
+    console.log(`Ändere Vertragsfeld ${field} zu:`, value);
+    setEditContractData(prev => {
+      const updated = { ...prev, [field]: value };
+      console.log('Aktualisierte Vertragsdaten:', field, '=', value);
+      return updated;
+    });
+  };
+
+  // Update existing contract
+  const updateContract = async () => {
+    if (!editingContract) {
+      console.error('Kein Vertrag zum Bearbeiten ausgewählt');
+      return;
+    }
+
+    console.log('Starte Vertrags-Update für:', editingContract.id);
+    console.log('Vertragsdaten:', editContractData);
+
+    try {
+      // Validate required fields
+      if (!editContractData.gesellschaft) {
+        alert('Gesellschaft ist ein Pflichtfeld!');
+        return;
+      }
+
+      const completeData = {
+        ...editContractData,
+        beginn: editContractData.beginn || null,
+        ablauf: editContractData.ablauf || null,
+        beitrag_brutto: editContractData.beitrag_brutto ? parseFloat(editContractData.beitrag_brutto) : null,
+        beitrag_netto: editContractData.beitrag_netto ? parseFloat(editContractData.beitrag_netto) : null
+      };
+
+      console.log('Sende PUT Request für Vertrag an:', `${API}/vertraege/${editingContract.id}`);
+      
+      const response = await axios.put(`${API}/vertraege/${editingContract.id}`, completeData);
+      const updatedContract = response.data;
+      
+      console.log('Vertrag Backend Response:', updatedContract);
+      
+      alert('Vertrag erfolgreich aktualisiert!');
+      setContractEditFormVisible(false);
+      setEditingContract(null);
+      setEditContractData({});
+
+      // Update contract in customer contracts list
+      if (editingContract.kunde_id) {
+        await loadCustomerContracts(editingContract.kunde_id);
+      }
+
+      console.log('Vertrag Frontend-Status aktualisiert');
+
+    } catch (error) {
+      console.error('Fehler beim Vertrags-Update:', error);
+      console.error('Error response:', error.response?.data);
+      alert('Fehler beim Aktualisieren: ' + (error.response?.data?.detail || error.message));
+    }
+  };
+
+  // Handle VU editing
+  const openVUEditForm = (vu) => {
+    console.log('Öffne VU-Bearbeitungsformular für:', vu);
+    setEditingVU(vu);
+    
+    const formData = {
+      name: vu.name || '',
+      kurzbezeichnung: vu.kurzbezeichnung || '',
+      status: vu.status || 'VU',
+      strasse: vu.strasse || '',
+      plz: vu.plz || '',
+      ort: vu.ort || '',
+      telefon: vu.telefon || '',
+      telefax: vu.telefax || '',
+      email_zentrale: vu.email_zentrale || '',
+      email_schaden: vu.email_schaden || '',
+      internet_adresse: vu.internet_adresse || '',
+      ansprechpartner: vu.ansprechpartner || '',
+      acencia_vermittlernummer: vu.acencia_vermittlernummer || '',
+      vu_id: vu.vu_id || '',
+      bemerkung: vu.bemerkung || ''
+    };
+    
+    console.log('VU-Formulardaten strukturiert:', formData);
+    setEditVUData(formData);
+    setVuEditFormVisible(true);
+  };
+
+  // Handle edit VU form changes
+  const handleEditVUChange = (field, value) => {
+    console.log(`Ändere VU-Feld ${field} zu:`, value);
+    setEditVUData(prev => {
+      const updated = { ...prev, [field]: value };
+      console.log('Aktualisierte VU-Daten:', field, '=', value);
+      return updated;
+    });
+  };
+
+  // Update existing VU
+  const updateVU = async () => {
+    if (!editingVU) {
+      console.error('Keine VU zum Bearbeiten ausgewählt');
+      return;
+    }
+
+    console.log('Starte VU-Update für:', editingVU.id);
+    console.log('VU-Daten:', editVUData);
+
+    try {
+      // Validate required fields
+      if (!editVUData.name) {
+        alert('Name ist ein Pflichtfeld!');
+        return;
+      }
+
+      console.log('Sende PUT Request für VU an:', `${API}/vus/${editingVU.id}`);
+      
+      const response = await axios.put(`${API}/vus/${editingVU.id}`, editVUData);
+      const updatedVU = response.data;
+      
+      console.log('VU Backend Response:', updatedVU);
+      
+      alert('VU erfolgreich aktualisiert!');
+      setVuEditFormVisible(false);
+      setEditingVU(null);
+      setEditVUData({});
+
+      // Reload VU list
+      await loadAllVUs();
+
+      console.log('VU Frontend-Status aktualisiert');
+
+    } catch (error) {
+      console.error('Fehler beim VU-Update:', error);
+      console.error('Error response:', error.response?.data);
+      alert('Fehler beim Aktualisieren: ' + (error.response?.data?.detail || error.message));
+    }
+  };
+
   // Reload customer data from backend
   const reloadCustomerData = async (customerId) => {
     try {

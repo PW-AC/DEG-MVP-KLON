@@ -205,6 +205,26 @@ body {
   color: #000;
 }
 
+.merge-btn {
+  padding: 4px 12px;
+  font-size: 10px;
+  border: 2px outset #FF6600;
+  background: linear-gradient(to bottom, #FFD700, #FFA500);
+  cursor: pointer;
+  font-family: Tahoma, Arial, sans-serif;
+  color: #000;
+  font-weight: bold;
+  margin-right: 8px;
+}
+
+.merge-btn:hover {
+  background: linear-gradient(to bottom, #FFA500, #FF8C00);
+}
+
+.merge-btn:active {
+  border: 2px inset #FF6600;
+}
+
 .warning-close {
   cursor: pointer;
   font-size: 14px;

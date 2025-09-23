@@ -1898,6 +1898,7 @@ const App = () => {
                                         </button>
                                         <button 
                                           className="table-btn" 
+                                          onClick={() => openContractEditForm(vertrag)}
                                           data-testid={`edit-contract-btn-${vertrag.id}`}
                                           title="Vertrag bearbeiten"
                                         >

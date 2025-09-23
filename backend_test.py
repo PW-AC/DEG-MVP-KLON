@@ -1465,6 +1465,15 @@ class InsuranceBrokerAPITester:
         self.test_document_crud_operations()                   # Test document CRUD
         self.test_document_statistics()                        # Test document stats
         
+        # NEW PDF ANALYSIS AND CONTRACT CREATION TESTS
+        print("\n🎯 Testing NEW PDF Analysis and Contract Creation Features...")
+        self.test_emergentintegrations_library_import()        # Test library installation
+        self.test_emergent_llm_key_configuration()             # Test API key configuration
+        self.test_pdf_analysis_endpoint_accessibility()        # Test endpoint accessibility
+        self.test_pdf_analysis_with_realistic_data()           # Test with realistic PDF data
+        self.test_create_contract_from_pdf_endpoint_accessibility()  # Test contract creation endpoint
+        self.test_pdf_contract_creation_with_vu_assignment()    # Test VU auto-assignment from PDF
+        
         # Error handling tests
         self.test_data_validation_errors()
         self.test_nonexistent_customer()

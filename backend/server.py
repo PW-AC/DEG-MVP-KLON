@@ -243,6 +243,7 @@ class VertragCreate(BaseModel):
 # VU (Versicherungsunternehmen) Models
 class VU(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    vu_internal_id: Optional[str] = None  # Interne ID für Relation (VU-001, VU-002, etc.)
     name: str  # z.B. "Alte Leipziger Sachversicherung"
     kurzbezeichnung: Optional[str] = None  # z.B. "ALS"
     status: Optional[VUStatus] = VUStatus.VU  # VU oder Pool

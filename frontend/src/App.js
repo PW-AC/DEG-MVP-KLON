@@ -391,10 +391,10 @@ const App = () => {
       // Check for duplicates in search results
       const duplicates = checkForDuplicates(results);
       if (duplicates.length > 0) {
-        // Show duplicate warning with match details
+        // Show duplicate warning with match count only
         const duplicate = duplicates[0]; // Show first duplicate pair found
         setDuplicateWarning({
-          message: `Potenzielle Dublette gefunden: ${duplicate.ids.join(' und ')} (${duplicate.matchCount} Übereinstimmungen: ${duplicate.matches.join(', ')})`,
+          message: `Potenzielle Dublette gefunden: ${duplicate.ids.join(' und ')} (${duplicate.matchCount} Übereinstimmungen)`,
           ids: duplicate.ids,
           matchCount: duplicate.matchCount,
           matches: duplicate.matches

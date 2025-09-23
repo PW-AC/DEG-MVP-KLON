@@ -503,11 +503,11 @@ const App = () => {
       setEditingCustomer(null);
       setEditCustomerData({});
 
-      // Update customer data in all relevant places
+      // Update customer data in all relevant places immediately
       const currentTab = openTabs.find(tab => tab.id === activeTab);
       
       if (currentTab?.type === 'customer-detail' && currentTab.kunde.id === editingCustomer.id) {
-        // Update the customer in the active tab
+        // Update the customer in the active tab with the response data
         setOpenTabs(prev => prev.map(tab => 
           tab.id === activeTab 
             ? { 
@@ -531,8 +531,8 @@ const App = () => {
         kunde.id === editingCustomer.id ? updatedCustomer : kunde
       ));
 
-      // Force re-render by updating a timestamp
-      setLastUpdate(Date.now());
+      // Also reload data from backend to ensure consistency
+      await reloadCustomerData(editingCustomer.id);
 
     } catch (error) {
       console.error('Fehler beim Aktualisieren:', error);

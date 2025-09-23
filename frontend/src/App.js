@@ -39,6 +39,7 @@ const App = () => {
   const [openTabs, setOpenTabs] = useState([]);
   const [activeTab, setActiveTab] = useState(null);
   const [customerContracts, setCustomerContracts] = useState({});
+  const [tabDocumentsView, setTabDocumentsView] = useState({}); // Track which tabs show documents
   const [uploadForm, setUploadForm] = useState({
     title: '',
     description: '',

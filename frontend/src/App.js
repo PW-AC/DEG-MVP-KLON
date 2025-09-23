@@ -2651,13 +2651,17 @@ const App = () => {
           {contractEditFormVisible && (
             <div 
               className="draggable-window"
+              data-window-id="contract-edit"
               style={{ 
                 left: `150px`, 
                 top: `100px`,
                 width: '700px'
               }}
             >
-              <div className="window-title draggable-handle">
+              <div 
+                className="window-title draggable-handle"
+                onMouseDown={(e) => startDrag('contract-edit', e)}
+              >
                 ✏️ Vertrag bearbeiten: {editingContract?.vertragsnummer || editingContract?.id}
                 <div className="window-controls">
                   <div className="window-control">_</div>

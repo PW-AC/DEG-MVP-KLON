@@ -178,13 +178,19 @@ body {
 }
 
 .search-window,
-.search-results-window {
+.search-results-window,
+.documents-window {
   position: absolute;
   width: 600px;
   background-color: #ECE9D8;
   border: 2px outset #ECE9D8;
   box-shadow: 2px 2px 4px rgba(0,0,0,0.3);
   z-index: 10;
+}
+
+.documents-window {
+  width: 800px;
+  max-height: 700px;
 }
 
 .search-results-window {

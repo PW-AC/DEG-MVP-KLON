@@ -706,6 +706,15 @@ const App = () => {
                       {kunde.strasse}, {kunde.plz} {kunde.ort}
                     </div>
                     <div className="result-id">ID: {kunde.kunde_id || kunde.id}</div>
+                    <div className="result-actions">
+                      <button 
+                        className="result-btn"
+                        onClick={() => handleDocumentResultClick(kunde)}
+                        data-testid={`documents-btn-${kunde.id}`}
+                      >
+                        📄 Dokumente
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>

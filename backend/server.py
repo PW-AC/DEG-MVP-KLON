@@ -941,6 +941,109 @@ async def upload_document_file(
 
 
 
+# Data cleanup endpoints for development/testing
+@api_router.post("/admin/cleanup-duplicates")
+async def cleanup_duplicate_data():
+    """
+    Clean up duplicate customers and VUs created during testing.
+    Keep only essential data and remove test duplicates.
+    """
+    cleanup_results = {
+        "customers_deleted": 0,
+        "vus_deleted": 0,
+        "customers_kept": [],
+        "vus_kept": []
+    }
+    
+    # Define customers to keep (only Dr. Max Mustermann)
+    customers_to_keep = [
+        {"name": "Mustermann", "vorname": "Dr. Max", "kunde_id": "00-00-07"}
+    ]
+    
+    # Define VUs to keep (original 4 sample VUs)
+    vus_to_keep = [
+        {"name": "Allianz Versicherung AG", "vu_internal_id": "VU-001"},
+        {"name": "Alte Leipziger Lebensversicherung AG", "vu_internal_id": "VU-002"}, 
+        {"name": "Dialog Versicherung AG", "vu_internal_id": "VU-003"},
+        {"name": "Itzehoer Versicherung", "vu_internal_id": "VU-004"}
+    ]
+    
+    # Get all customers
+    all_customers = await db.kunden.find().to_list(length=None)
+    
+    # Delete all customers except Dr. Max Mustermann
+    for customer in all_customers:
+        should_keep = False
+        for keep_customer in customers_to_keep:
+            if (customer.get('name') == keep_customer['name'] and 
+                customer.get('vorname') == keep_customer['vorname']):
+                should_keep = True
+                cleanup_results["customers_kept"].append({
+                    "name": customer.get('name'),
+                    "vorname": customer.get('vorname'),
+                    "kunde_id": customer.get('kunde_id')
+                })
+                break
+        
+        if not should_keep:
+            await db.kunden.delete_one({"id": customer["id"]})
+            cleanup_results["customers_deleted"] += 1
+    
+    # Get all VUs
+    all_vus = await db.vus.find().to_list(length=None)
+    
+    # Delete duplicate VUs
+    kept_vu_names = set()
+    for vu in all_vus:
+        should_keep = False
+        vu_name = vu.get('name', '')
+        
+        # Check if this VU should be kept and hasn't been kept yet
+        for keep_vu in vus_to_keep:
+            if (vu_name == keep_vu['name'] and 
+                vu_name not in kept_vu_names):
+                should_keep = True
+                kept_vu_names.add(vu_name)
+                cleanup_results["vus_kept"].append({
+                    "name": vu.get('name'),
+                    "kurzbezeichnung": vu.get('kurzbezeichnung'),
+                    "vu_internal_id": vu.get('vu_internal_id')
+                })
+                break
+        
+        if not should_keep:
+            await db.vus.delete_one({"id": vu["id"]})
+            cleanup_results["vus_deleted"] += 1
+    
+    return cleanup_results
+
+
+@api_router.get("/admin/data-statistics")
+async def get_data_statistics():
+    """
+    Get current data statistics for monitoring.
+    """
+    customer_count = await db.kunden.count_documents({})
+    vu_count = await db.vus.count_documents({})
+    contract_count = await db.vertraege.count_documents({})
+    document_count = await db.documents.count_documents({})
+    
+    # Get sample data
+    sample_customers = await db.kunden.find({}, {"name": 1, "vorname": 1, "kunde_id": 1}).limit(5).to_list(length=None)
+    sample_vus = await db.vus.find({}, {"name": 1, "kurzbezeichnung": 1, "vu_internal_id": 1}).limit(10).to_list(length=None)
+    
+    return {
+        "totals": {
+            "customers": customer_count,
+            "vus": vu_count,
+            "contracts": contract_count,
+            "documents": document_count
+        },
+        "sample_customers": sample_customers,
+        "sample_vus": sample_vus
+    }
+
+
 # Basic status endpoint
 @api_router.get("/")
 async def root():

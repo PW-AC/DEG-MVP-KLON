@@ -33,6 +33,15 @@ const App = () => {
   const [isSearching, setIsSearching] = useState(false);
   const [dropZoneProcessing, setDropZoneProcessing] = useState(false);
   const [customerFormVisible, setCustomerFormVisible] = useState(false);
+  const [documentsVisible, setDocumentsVisible] = useState(false);
+  const [selectedCustomerId, setSelectedCustomerId] = useState(null);
+  const [customerDocuments, setCustomerDocuments] = useState([]);
+  const [uploadForm, setUploadForm] = useState({
+    title: '',
+    description: '',
+    tags: '',
+    file: null
+  });
   const [newCustomer, setNewCustomer] = useState({
     anrede: '',
     titel: '',

@@ -1644,16 +1644,6 @@ const App = () => {
             👤 Kunden Neuerfassen
           </button>
           <button 
-            className="sidebar-item"
-            onClick={() => {
-              setContractFormCustomerId('demo-customer-id');
-              setContractFormVisible(true);
-            }}
-            data-testid="demo-contract-btn"
-          >
-            📄 Demo Contract Form
-          </button>
-          <button 
             className={`sidebar-item ${selectedSidebarItem === 'vus' ? 'selected' : ''}`}
             onClick={handleVUGesClick}
             data-testid="vus-sidebar-btn"

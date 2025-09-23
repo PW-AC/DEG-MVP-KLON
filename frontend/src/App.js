@@ -272,7 +272,7 @@ const App = () => {
   // Open customer in new tab
   const openCustomerTab = (kunde) => {
     // Check if tab is already open
-    const existingTab = openTabs.find(tab => tab.kunde.id === kunde.id);
+    const existingTab = openTabs.find(tab => tab.kunde && tab.kunde.id === kunde.id);
     if (existingTab) {
       setActiveTab(existingTab.id);
       return;
@@ -282,13 +282,12 @@ const App = () => {
     const newTab = {
       id: `tab-${kunde.id}`,
       kunde: kunde,
-      title: `${kunde.vorname} ${kunde.name}`,
+      title: `${kunde.vorname || ''} ${kunde.name || ''}`.trim(),
       type: 'customer'
     };
 
     setOpenTabs(prev => [...prev, newTab]);
     setActiveTab(newTab.id);
-    setSearchWindow(prev => ({ ...prev, visible: false }));
     
     // Load customer contracts
     loadCustomerContracts(kunde.id);

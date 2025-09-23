@@ -720,6 +720,121 @@ const App = () => {
               </div>
             </div>
           )}
+
+          {/* Document Management Window */}
+          {documentsVisible && selectedCustomerId && (
+            <div 
+              className="documents-window"
+              style={{ 
+                left: `${searchWindow.position.x + 100}px`, 
+                top: `${searchWindow.position.y + 100}px` 
+              }}
+            >
+              <div className="window-title">
+                📄 Dokumentenverwaltung
+                <div className="window-controls">
+                  <div className="window-control">_</div>
+                  <div className="window-control">□</div>
+                  <div className="window-control" onClick={() => setDocumentsVisible(false)}>✕</div>
+                </div>
+              </div>
+              
+              <div className="documents-content">
+                {/* Upload Section */}
+                <div className="upload-section">
+                  <h3>Neues Dokument hochladen</h3>
+                  <div className="upload-form">
+                    <div className="form-group">
+                      <label>Titel</label>
+                      <input 
+                        type="text" 
+                        value={uploadForm.title}
+                        onChange={(e) => setUploadForm(prev => ({...prev, title: e.target.value}))}
+                        placeholder="Dokument Titel"
+                        data-testid="document-title-input"
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label>Beschreibung</label>
+                      <textarea 
+                        value={uploadForm.description}
+                        onChange={(e) => setUploadForm(prev => ({...prev, description: e.target.value}))}
+                        placeholder="Beschreibung (optional)"
+                        rows="2"
+                        data-testid="document-description-input"
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label>Tags (Komma getrennt)</label>
+                      <input 
+                        type="text" 
+                        value={uploadForm.tags}
+                        onChange={(e) => setUploadForm(prev => ({...prev, tags: e.target.value}))}
+                        placeholder="vertrag, pdf, wichtig"
+                        data-testid="document-tags-input"
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label>Datei auswählen</label>
+                      <input 
+                        type="file" 
+                        accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.eml,.msg"
+                        onChange={(e) => setUploadForm(prev => ({...prev, file: e.target.files[0]}))}
+                        data-testid="document-file-input"
+                      />
+                    </div>
+                    <button 
+                      className="btn upload-btn"
+                      onClick={() => uploadDocument(selectedCustomerId)}
+                      disabled={!uploadForm.file}
+                      data-testid="upload-document-btn"
+                    >
+                      📤 Hochladen
+                    </button>
+                  </div>
+                </div>
+
+                {/* Documents List */}
+                <div className="documents-list">
+                  <h3>Vorhandene Dokumente ({customerDocuments.length})</h3>
+                  {customerDocuments.length === 0 ? (
+                    <div className="no-documents">
+                      Keine Dokumente vorhanden.
+                    </div>
+                  ) : (
+                    <div className="documents-grid">
+                      {customerDocuments.map((doc) => (
+                        <div key={doc.id} className="document-item" data-testid={`document-item-${doc.id}`}>
+                          <div className="document-icon">
+                            {doc.document_type === 'pdf' && '📄'}
+                            {doc.document_type === 'email' && '✉️'}
+                            {doc.document_type === 'word' && '📝'}
+                            {doc.document_type === 'excel' && '📊'}
+                            {doc.document_type === 'image' && '🖼️'}
+                            {doc.document_type === 'other' && '📁'}
+                          </div>
+                          <div className="document-details">
+                            <div className="document-title">{doc.title}</div>
+                            <div className="document-filename">{doc.filename}</div>
+                            <div className="document-meta">
+                              Erstellt: {new Date(doc.created_at).toLocaleDateString('de-DE')}
+                            </div>
+                            {doc.tags && doc.tags.length > 0 && (
+                              <div className="document-tags">
+                                {doc.tags.map((tag, index) => (
+                                  <span key={index} className="tag">{tag}</span>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
       

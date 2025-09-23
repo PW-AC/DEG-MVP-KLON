@@ -2624,15 +2624,17 @@ const App = () => {
             </div>
           )}
 
-          {/* Search Window */}
+          {/* Search Window with Modal Overlay */}
           {searchWindow.visible && !customerFormVisible && (
-            <div 
-              className="search-window"
-              style={{ 
-                left: `${searchWindow.position.x}px`, 
-                top: `${searchWindow.position.y}px` 
-              }}
-            >
+            <>
+              <div className="search-modal-overlay"></div>
+              <div 
+                className="search-window modal"
+                style={{ 
+                  left: `${searchWindow.position.x}px`, 
+                  top: `${searchWindow.position.y}px` 
+                }}
+              >
               <div className="window-title" onMouseDown={handleMouseDown}>
                 Kunde(n) suchen
                 <div className="window-controls">

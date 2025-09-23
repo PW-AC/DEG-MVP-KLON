@@ -1532,7 +1532,7 @@ const App = () => {
   const handleSidebarClick = (item) => {
     setSelectedSidebarItem(item);
     if (item === 'search') {
-      setSearchWindow(prev => ({ ...prev, visible: true }));
+      openSearchWithNewTab();
       setCustomerFormVisible(false);
       setDocumentsVisible(false);
     } else if (item === 'newcustomer') {

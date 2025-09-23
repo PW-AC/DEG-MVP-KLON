@@ -231,6 +231,22 @@ const App = () => {
     loadCustomerContracts(kunde.id);
   };
 
+  // Handle customer merge
+  const handleMergeCustomers = (customerIds) => {
+    // For now, show confirmation dialog
+    const confirmMerge = window.confirm(
+      `Möchten Sie die Kunden ${customerIds.join(' und ')} wirklich zusammenführen?\n\n` +
+      'Diese Aktion kann nicht rückgängig gemacht werden.'
+    );
+    
+    if (confirmMerge) {
+      // TODO: Implement actual merge logic
+      alert('Zusammenführung wird implementiert...');
+      // After merge, clear the warning
+      setDuplicateWarning(null);
+    }
+  };
+
   // Check for duplicate customers based on name and personal data
   const checkForDuplicates = (customers) => {
     const duplicates = [];

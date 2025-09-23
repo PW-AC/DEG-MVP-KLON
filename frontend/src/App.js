@@ -461,22 +461,43 @@ const App = () => {
 
     try {
       const response = await axios.put(`${API}/kunden/${editingCustomer.id}`, editCustomerData);
+      const updatedCustomer = response.data;
+      
       alert('Kunde erfolgreich aktualisiert!');
       setCustomerEditFormVisible(false);
       setEditingCustomer(null);
       setEditCustomerData({});
 
-      // Reload customer data if in detail view
+      // Update customer data in all relevant places
       const currentTab = openTabs.find(tab => tab.id === activeTab);
+      
       if (currentTab?.type === 'customer-detail' && currentTab.kunde.id === editingCustomer.id) {
-        // Refresh the customer in the tab
-        const updatedCustomer = response.data;
+        // Update the customer in the active tab
         setOpenTabs(prev => prev.map(tab => 
           tab.id === activeTab 
-            ? { ...tab, kunde: updatedCustomer, title: `${updatedCustomer.vorname} ${updatedCustomer.name}` }
+            ? { 
+                ...tab, 
+                kunde: updatedCustomer, 
+                title: `${updatedCustomer.vorname} ${updatedCustomer.name}` 
+              }
             : tab
         ));
       }
+      
+      // Update customer in search results if they exist
+      if (searchResults.length > 0) {
+        setSearchResults(prev => prev.map(kunde => 
+          kunde.id === editingCustomer.id ? updatedCustomer : kunde
+        ));
+      }
+      
+      // Update customer in all customers list if it exists
+      setAllCustomers(prev => prev.map(kunde => 
+        kunde.id === editingCustomer.id ? updatedCustomer : kunde
+      ));
+
+      // Force re-render by updating a timestamp
+      setLastUpdate(Date.now());
 
     } catch (error) {
       console.error('Fehler beim Aktualisieren:', error);

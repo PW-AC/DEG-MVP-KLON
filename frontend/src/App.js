@@ -294,8 +294,33 @@ const App = () => {
     loadCustomerContracts(kunde.id);
   };
 
-  // Load customer contracts
-  const loadCustomerContracts = async (kundeId) => {
+  // Load all customers
+  const loadAllCustomers = async () => {
+    try {
+      const response = await axios.get(`${API}/kunden?limit=1000`); // Get all customers
+      setAllCustomers(response.data);
+      
+      // Create "All Customers" tab
+      const allCustomersTab = {
+        id: 'tab-all-customers',
+        title: 'Alle Kunden',
+        type: 'all-customers'
+      };
+
+      // Check if tab already exists
+      const existingTab = openTabs.find(tab => tab.id === 'tab-all-customers');
+      if (!existingTab) {
+        setOpenTabs(prev => [...prev, allCustomersTab]);
+      }
+      
+      setActiveTab('tab-all-customers');
+      setSearchWindow(prev => ({ ...prev, visible: false }));
+      
+    } catch (error) {
+      console.error('Fehler beim Laden aller Kunden:', error);
+      alert('Fehler beim Laden aller Kunden: ' + (error.response?.data?.detail || error.message));
+    }
+  };
     try {
       const response = await axios.get(`${API}/vertraege/kunde/${kundeId}`);
       setCustomerContracts(prev => ({

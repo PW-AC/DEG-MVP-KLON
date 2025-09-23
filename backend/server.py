@@ -841,6 +841,27 @@ async def get_documents(
     return [Document(**parse_from_mongo(doc)) for doc in documents]
 
 
+# Get document statistics for dashboard
+@api_router.get("/documents/stats")
+async def get_document_stats():
+    total_docs = await db.documents.count_documents({})
+    
+    # Count by document type
+    pipeline = [
+        {"$group": {"_id": "$document_type", "count": {"$sum": 1}}}
+    ]
+    type_counts = await db.documents.aggregate(pipeline).to_list(length=None)
+    
+    # Recent documents
+    recent_docs = await db.documents.find().sort("created_at", -1).limit(5).to_list(length=None)
+    
+    return {
+        "total_documents": total_docs,
+        "by_type": {item["_id"]: item["count"] for item in type_counts},
+        "recent_documents": [Document(**parse_from_mongo(doc)) for doc in recent_docs]
+    }
+
+
 @api_router.get("/documents/{document_id}", response_model=Document)
 async def get_document(document_id: str):
     document = await db.documents.find_one({"id": document_id})

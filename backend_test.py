@@ -172,6 +172,19 @@ class InsuranceBrokerAPITester:
         if status_code == 422:
             print(f"   ❌ Validation Error (HTTP 422) - Backend expects different structure")
             print(f"   📋 Error Details: {response}")
+            
+            # Analyze validation errors
+            if 'detail' in response and isinstance(response['detail'], list):
+                print(f"   📋 Validation Issues Found:")
+                for error in response['detail']:
+                    field_path = ' -> '.join(str(loc) for loc in error.get('loc', []))
+                    error_msg = error.get('msg', 'Unknown error')
+                    input_value = error.get('input', 'N/A')
+                    print(f"      🔸 Field: {field_path}")
+                    print(f"      🔸 Error: {error_msg}")
+                    print(f"      🔸 Input: {input_value}")
+                    print(f"      🔸 ---")
+            
             success = False
             details = f"Status: {status_code} - VALIDATION ERROR. Backend structure mismatch with frontend payload."
         elif status_code == 200 and 'id' in response:
@@ -185,6 +198,47 @@ class InsuranceBrokerAPITester:
             details = f"Status: {status_code} - UNEXPECTED RESPONSE"
         
         return self.log_test("Create Customer (Frontend Payload)", success, details)
+
+    def test_create_customer_frontend_payload_fixed(self):
+        """Test customer creation with frontend payload but with fixed validation issues"""
+        print("\n🔍 Testing Customer Creation (Frontend Payload Fixed)...")
+        
+        # Frontend payload with validation issues fixed
+        frontend_payload_fixed = {
+            "anrede": "Herr",  # Fixed: was empty string, now valid enum value
+            "titel": "",
+            "vorname": "Test",
+            "name": "Customer",
+            "kunde_id": "",
+            "strasse": "Test Str",
+            "plz": "12345",
+            "ort": "Test City",
+            "telefon": { "telefon_privat": "123456", "email": "test@test.com" },
+            "persoenliche_daten": { "geburtsdatum": "1990-01-01" },
+            "bemerkung": "Test"
+        }
+        
+        status_code, response = self.make_request('POST', 'kunden', frontend_payload_fixed)
+        
+        print(f"   📋 Fixed Frontend Payload Test Details:")
+        print(f"   📋 Status Code: {status_code}")
+        
+        if status_code == 200 and 'id' in response:
+            print(f"   ✅ Customer created successfully with fixed frontend payload")
+            self.created_customers.append(response['id'])
+            success = True
+            details = f"Status: {status_code} - SUCCESS. Fixed frontend payload works with backend."
+        elif status_code == 422:
+            print(f"   ❌ Still validation errors with fixed payload")
+            print(f"   📋 Error Details: {response}")
+            success = False
+            details = f"Status: {status_code} - STILL VALIDATION ERRORS after fix."
+        else:
+            print(f"   ❓ Unexpected response")
+            success = False
+            details = f"Status: {status_code} - UNEXPECTED RESPONSE"
+        
+        return self.log_test("Create Customer (Frontend Payload Fixed)", success, details)
 
     def test_get_customers(self):
         """Test retrieving all customers"""

@@ -377,6 +377,213 @@ class InsuranceBrokerAPITester:
         details = f"Status: {status_code}, Found: {found_vus}"
         return self.log_test("Verify Sample Data Content", success, details)
 
+    def test_vu_internal_id_generation(self):
+        """Test VU creation with automatic internal ID generation"""
+        print("\n🔍 Testing VU Internal ID Generation...")
+        vu_data = {
+            "name": "Test VU für Internal ID",
+            "kurzbezeichnung": "TESTID",
+            "status": "VU"
+        }
+        
+        status_code, response = self.make_request('POST', 'vus', vu_data)
+        success = (status_code == 200 and 'id' in response and 
+                  'vu_internal_id' in response and 
+                  response['vu_internal_id'].startswith('VU-'))
+        
+        if success:
+            self.created_vus.append(response['id'])
+            details = f"Status: {status_code}, Internal ID: {response.get('vu_internal_id')}"
+        else:
+            details = f"Status: {status_code}"
+        
+        return self.log_test("VU Internal ID Generation", success, details)
+
+    def test_vu_matching_exact_name(self):
+        """Test VU matching with exact gesellschaft name"""
+        print("\n🔍 Testing VU Matching (Exact Name)...")
+        
+        # Test with Allianz (should match exactly)
+        gesellschaft_data = "Allianz Versicherung AG"
+        status_code, response = self.make_request('POST', 'vus/match-gesellschaft', 
+                                                {"gesellschaft": gesellschaft_data})
+        
+        success = (status_code == 200 and response.get('match') == True and 
+                  'vu' in response and response.get('match_type') == 'exact_name')
+        
+        details = f"Status: {status_code}, Match: {response.get('match')}, Type: {response.get('match_type')}"
+        return self.log_test("VU Matching (Exact Name)", success, details)
+
+    def test_vu_matching_kurzbezeichnung(self):
+        """Test VU matching with kurzbezeichnung"""
+        print("\n🔍 Testing VU Matching (Kurzbezeichnung)...")
+        
+        # Test with "Allianz" kurzbezeichnung
+        gesellschaft_data = "Allianz"
+        status_code, response = self.make_request('POST', 'vus/match-gesellschaft', 
+                                                {"gesellschaft": gesellschaft_data})
+        
+        success = (status_code == 200 and response.get('match') == True and 
+                  'vu' in response and response.get('match_type') == 'kurzbezeichnung')
+        
+        details = f"Status: {status_code}, Match: {response.get('match')}, Type: {response.get('match_type')}"
+        return self.log_test("VU Matching (Kurzbezeichnung)", success, details)
+
+    def test_vu_matching_partial_name(self):
+        """Test VU matching with partial name"""
+        print("\n🔍 Testing VU Matching (Partial Name)...")
+        
+        # Test with "Dialog" (should match Dialog Versicherung AG)
+        gesellschaft_data = "Dialog"
+        status_code, response = self.make_request('POST', 'vus/match-gesellschaft', 
+                                                {"gesellschaft": gesellschaft_data})
+        
+        success = (status_code == 200 and response.get('match') == True and 
+                  'vu' in response and response.get('match_type') in ['kurzbezeichnung', 'partial_name'])
+        
+        details = f"Status: {status_code}, Match: {response.get('match')}, Type: {response.get('match_type')}"
+        return self.log_test("VU Matching (Partial Name)", success, details)
+
+    def test_vu_matching_reverse_partial(self):
+        """Test VU matching with reverse partial matching"""
+        print("\n🔍 Testing VU Matching (Reverse Partial)...")
+        
+        # Test with "ALS Versicherungsgruppe" (should match "Alte Leipziger")
+        gesellschaft_data = "ALS Versicherungsgruppe"
+        status_code, response = self.make_request('POST', 'vus/match-gesellschaft', 
+                                                {"gesellschaft": gesellschaft_data})
+        
+        success = (status_code == 200 and response.get('match') == True and 
+                  'vu' in response and response.get('match_type') in ['reverse_kurz', 'reverse_partial'])
+        
+        details = f"Status: {status_code}, Match: {response.get('match')}, Type: {response.get('match_type')}"
+        return self.log_test("VU Matching (Reverse Partial)", success, details)
+
+    def test_vu_matching_no_match(self):
+        """Test VU matching with no match found"""
+        print("\n🔍 Testing VU Matching (No Match)...")
+        
+        # Test with non-existent gesellschaft
+        gesellschaft_data = "Nicht Existierende Versicherung"
+        status_code, response = self.make_request('POST', 'vus/match-gesellschaft', 
+                                                {"gesellschaft": gesellschaft_data})
+        
+        success = (status_code == 200 and response.get('match') == False and 
+                  response.get('vu') is None)
+        
+        details = f"Status: {status_code}, Match: {response.get('match')}"
+        return self.log_test("VU Matching (No Match)", success, details)
+
+    def test_contract_auto_vu_assignment(self):
+        """Test automatic VU assignment during contract creation"""
+        if not self.created_customers:
+            return self.log_test("Contract Auto VU Assignment", False, "No customers created to test")
+        
+        print("\n🔍 Testing Contract Auto VU Assignment...")
+        contract_data = {
+            "vertragsnummer": "V2024AUTO001",
+            "kunde_id": self.created_customers[0],
+            "gesellschaft": "Allianz",  # Should auto-assign to Allianz VU
+            "kfz_kennzeichen": "M-AUTO 123",
+            "produkt_sparte": "KFZ-Versicherung",
+            "beitrag_brutto": 800.00,
+            "vertragsstatus": "aktiv",
+            "beginn": "2024-01-01"
+        }
+        
+        status_code, response = self.make_request('POST', 'vertraege', contract_data)
+        success = (status_code == 200 and 'id' in response and 
+                  'vu_internal_id' in response and response['vu_internal_id'] is not None)
+        
+        if success:
+            self.created_contracts.append(response['id'])
+            details = f"Status: {status_code}, VU Internal ID: {response.get('vu_internal_id')}"
+        else:
+            details = f"Status: {status_code}"
+        
+        return self.log_test("Contract Auto VU Assignment", success, details)
+
+    def test_contract_creation_dialog_ag(self):
+        """Test contract creation with Dialog AG gesellschaft"""
+        if not self.created_customers:
+            return self.log_test("Contract Creation (Dialog AG)", False, "No customers created to test")
+        
+        print("\n🔍 Testing Contract Creation (Dialog AG)...")
+        contract_data = {
+            "vertragsnummer": "V2024DIALOG001",
+            "kunde_id": self.created_customers[0],
+            "gesellschaft": "Dialog AG",  # Should match Dialog VU
+            "produkt_sparte": "Lebensversicherung",
+            "beitrag_brutto": 1500.00,
+            "vertragsstatus": "aktiv",
+            "beginn": "2024-01-01"
+        }
+        
+        status_code, response = self.make_request('POST', 'vertraege', contract_data)
+        success = (status_code == 200 and 'id' in response and 
+                  'vu_internal_id' in response and response['vu_internal_id'] is not None)
+        
+        if success:
+            self.created_contracts.append(response['id'])
+            details = f"Status: {status_code}, VU Internal ID: {response.get('vu_internal_id')}"
+        else:
+            details = f"Status: {status_code}"
+        
+        return self.log_test("Contract Creation (Dialog AG)", success, details)
+
+    def test_contract_migration_api(self):
+        """Test contract migration API for VU assignments"""
+        print("\n🔍 Testing Contract Migration API...")
+        
+        status_code, response = self.make_request('POST', 'vertraege/migrate-vu-assignments')
+        success = (status_code == 200 and 'total_contracts' in response and 
+                  'matched' in response and 'unmatched' in response)
+        
+        if success:
+            details = (f"Status: {status_code}, Total: {response.get('total_contracts')}, "
+                      f"Matched: {response.get('matched')}, Unmatched: {response.get('unmatched')}")
+        else:
+            details = f"Status: {status_code}"
+        
+        return self.log_test("Contract Migration API", success, details)
+
+    def test_vu_statistics_api(self):
+        """Test VU statistics API"""
+        print("\n🔍 Testing VU Statistics API...")
+        
+        status_code, response = self.make_request('GET', 'vertraege/vu-statistics')
+        success = (status_code == 200 and 'total_contracts' in response and 
+                  'contracts_with_vu' in response and 'assignment_percentage' in response)
+        
+        if success:
+            details = (f"Status: {status_code}, Total: {response.get('total_contracts')}, "
+                      f"With VU: {response.get('contracts_with_vu')}, "
+                      f"Percentage: {response.get('assignment_percentage')}%")
+        else:
+            details = f"Status: {status_code}"
+        
+        return self.log_test("VU Statistics API", success, details)
+
+    def test_sample_vus_internal_ids(self):
+        """Test that sample VUs have proper internal IDs"""
+        print("\n🔍 Testing Sample VUs Internal IDs...")
+        
+        status_code, response = self.make_request('GET', 'vus')
+        if status_code != 200 or not isinstance(response, list):
+            return self.log_test("Sample VUs Internal IDs", False, f"Failed to get VUs: {status_code}")
+        
+        expected_internal_ids = ["VU-001", "VU-002", "VU-003", "VU-004"]
+        found_internal_ids = []
+        
+        for vu in response:
+            internal_id = vu.get('vu_internal_id')
+            if internal_id and internal_id in expected_internal_ids:
+                found_internal_ids.append(internal_id)
+        
+        success = len(found_internal_ids) >= 4
+        details = f"Status: {status_code}, Found Internal IDs: {found_internal_ids}"
+        return self.log_test("Sample VUs Internal IDs", success, details)
+
     def test_create_contract(self):
         """Test contract creation"""
         if not self.created_customers or not self.created_vus:

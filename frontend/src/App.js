@@ -379,6 +379,111 @@ const App = () => {
     loadAllVUs();
   };
 
+  // Handle customer editing
+  const openCustomerEditForm = (kunde) => {
+    setEditingCustomer(kunde);
+    setEditCustomerData({
+      anrede: kunde.anrede || '',
+      titel: kunde.titel || '',
+      vorname: kunde.vorname || '',
+      name: kunde.name || '',
+      zusatz: kunde.zusatz || '',
+      strasse: kunde.strasse || '',
+      plz: kunde.plz || '',
+      ort: kunde.ort || '',
+      postfach_plz: kunde.postfach_plz || '',
+      postfach_nr: kunde.postfach_nr || '',
+      gewerbliche_adresse: kunde.gewerbliche_adresse || false,
+      dokumentenmappe_nr: kunde.dokumentenmappe_nr || '',
+      betreuer: kunde.betreuer || '',
+      betreuer_name: kunde.betreuer_name || '',
+      betreuer_firma: kunde.betreuer_firma || '',
+      bemerkung: kunde.bemerkung || '',
+      selektion: kunde.selektion || '',
+      bankverbindung: {
+        iban: kunde.bankverbindung?.iban || '',
+        bic: kunde.bankverbindung?.bic || '',
+        bank: kunde.bankverbindung?.bank || '',
+        kontoinhaber: kunde.bankverbindung?.kontoinhaber || ''
+      },
+      telefon: {
+        telefon_privat: kunde.telefon?.telefon_privat || '',
+        telefax_privat: kunde.telefon?.telefax_privat || '',
+        telefon_geschaeftlich: kunde.telefon?.telefon_geschaeftlich || '',
+        telefax_geschaeftlich: kunde.telefon?.telefax_geschaeftlich || '',
+        mobiltelefon: kunde.telefon?.mobiltelefon || '',
+        ansprechpartner: kunde.telefon?.ansprechpartner || '',
+        email: kunde.telefon?.email || '',
+        internet_adresse: kunde.telefon?.internet_adresse || ''
+      },
+      persoenliche_daten: {
+        geburtsdatum: kunde.persoenliche_daten?.geburtsdatum || '',
+        geburtsname: kunde.persoenliche_daten?.geburtsname || '',
+        geburtsort: kunde.persoenliche_daten?.geburtsort || '',
+        familienstand: kunde.persoenliche_daten?.familienstand || '',
+        nationalitaet: kunde.persoenliche_daten?.nationalitaet || ''
+      },
+      arbeitgeber: {
+        firma: kunde.arbeitgeber?.firma || '',
+        strasse: kunde.arbeitgeber?.strasse || '',
+        plz: kunde.arbeitgeber?.plz || '',
+        ort: kunde.arbeitgeber?.ort || '',
+        telefon: kunde.arbeitgeber?.telefon || '',
+        ansprechpartner: kunde.arbeitgeber?.ansprechpartner || ''
+      }
+    });
+    setCustomerEditFormVisible(true);
+  };
+
+  // Handle edit customer form changes
+  const handleEditCustomerChange = (field, value) => {
+    const fieldParts = field.split('.');
+    if (fieldParts.length === 1) {
+      setEditCustomerData(prev => ({
+        ...prev,
+        [field]: value
+      }));
+    } else {
+      // Handle nested objects like telefon.email, persoenliche_daten.geburtsdatum
+      setEditCustomerData(prev => ({
+        ...prev,
+        [fieldParts[0]]: {
+          ...prev[fieldParts[0]],
+          [fieldParts[1]]: value
+        }
+      }));
+    }
+  };
+
+  // Update existing customer
+  const updateCustomer = async () => {
+    if (!editingCustomer) return;
+
+    try {
+      const response = await axios.put(`${API}/kunden/${editingCustomer.id}`, editCustomerData);
+      alert('Kunde erfolgreich aktualisiert!');
+      setCustomerEditFormVisible(false);
+      setEditingCustomer(null);
+      setEditCustomerData({});
+
+      // Reload customer data if in detail view
+      const currentTab = openTabs.find(tab => tab.id === activeTab);
+      if (currentTab?.type === 'customer-detail' && currentTab.kunde.id === editingCustomer.id) {
+        // Refresh the customer in the tab
+        const updatedCustomer = response.data;
+        setOpenTabs(prev => prev.map(tab => 
+          tab.id === activeTab 
+            ? { ...tab, kunde: updatedCustomer, title: `${updatedCustomer.vorname} ${updatedCustomer.name}` }
+            : tab
+        ));
+      }
+
+    } catch (error) {
+      console.error('Fehler beim Aktualisieren:', error);
+      alert('Fehler beim Aktualisieren: ' + (error.response?.data?.detail || error.message));
+    }
+  };
+
   // Handle contract form changes
   const handleContractChange = (field, value) => {
     setNewContract(prev => ({

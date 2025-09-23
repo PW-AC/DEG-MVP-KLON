@@ -1422,11 +1422,34 @@ const App = () => {
       }
       
       if (results.length === 1) {
-        // Single customer found - open direct customer view
+        // Single customer found - convert pending tab to customer tab
         alert('Kunde gefunden - öffne Gesamtübersicht');
         const customer = results[0];
-        openCustomerTab(customer);
+        
+        if (pendingSearchTabId) {
+          // Update the pending tab to show customer details
+          setOpenTabs(prev => prev.map(tab => 
+            tab.id === pendingSearchTabId 
+              ? {
+                  id: customer.id,
+                  title: `${customer.vorname || ''} ${customer.name || ''}`.trim(),
+                  type: 'customer',
+                  customer: customer
+                }
+              : tab
+          ));
+          setActiveTab(customer.id);
+          setPendingSearchTabId(null);
+          
+          // Load customer contracts
+          loadCustomerContracts(customer.id);
+        } else {
+          // Fallback to old logic if no pending tab
+          openCustomerTab(customer);
+        }
+        
         setSearchWindow(prev => ({ ...prev, visible: false }));
+        setSearchPerformed(true);
         
         // Clear search form
         setSearchForm({

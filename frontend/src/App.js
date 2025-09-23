@@ -112,6 +112,136 @@ const App = () => {
     }));
   };
 
+  // Check for VU assignment when gesellschaft changes
+  const checkVuAssignment = async (gesellschaft, contractData = null) => {
+    if (!gesellschaft) return null;
+
+    try {
+      const response = await axios.post(`${API}/vus/match-gesellschaft`, null, {
+        params: { gesellschaft: gesellschaft }
+      });
+      
+      if (!response.data.match) {
+        // No VU found - show assignment dialog
+        setVuAssignmentDialog({
+          visible: true,
+          gesellschaft: gesellschaft,
+          contractData: contractData,
+          matchingVUs: []
+        });
+        return null;
+      } else {
+        // VU found - return VU info
+        return response.data.vu;
+      }
+    } catch (error) {
+      console.error('Fehler bei VU-Zuordnung:', error);
+      return null;
+    }
+  };
+
+  // Handle VU assignment dialog actions
+  const handleVuAssignmentAction = async (action, data = null) => {
+    const { gesellschaft, contractData } = vuAssignmentDialog;
+
+    switch (action) {
+      case 'auto_create':
+        // Create new VU automatically
+        try {
+          const newVUData = {
+            name: gesellschaft,
+            kurzbezeichnung: gesellschaft.substring(0, 10),
+            status: 'VU'
+          };
+          const response = await axios.post(`${API}/vus`, newVUData);
+          alert(`VU "${gesellschaft}" wurde automatisch erstellt.`);
+          
+          // If we have contract data, proceed with contract creation
+          if (contractData) {
+            contractData.vu_id = response.data.id;
+            contractData.vu_internal_id = response.data.vu_internal_id;
+            // Continue with contract creation...
+          }
+          
+          setVuAssignmentDialog({ visible: false, gesellschaft: '', contractData: null, matchingVUs: [] });
+          await loadAllVUs(); // Reload VU list
+        } catch (error) {
+          console.error('Fehler beim automatischen VU-Erstellen:', error);
+          alert('Fehler beim automatischen VU-Erstellen: ' + (error.response?.data?.detail || error.message));
+        }
+        break;
+
+      case 'save_without_vu':
+        // Save contract without VU assignment
+        if (contractData) {
+          try {
+            const response = await axios.post(`${API}/vertraege`, contractData);
+            alert('Vertrag ohne VU-Zuordnung gespeichert.');
+            setVuAssignmentDialog({ visible: false, gesellschaft: '', contractData: null, matchingVUs: [] });
+          } catch (error) {
+            console.error('Fehler beim Speichern:', error);
+            alert('Fehler beim Speichern: ' + (error.response?.data?.detail || error.message));
+          }
+        } else {
+          setVuAssignmentDialog({ visible: false, gesellschaft: '', contractData: null, matchingVUs: [] });
+        }
+        break;
+
+      case 'manual_create':
+        // Open VU creation form
+        setNewVU({
+          name: gesellschaft,
+          kurzbezeichnung: gesellschaft.length > 10 ? gesellschaft.substring(0, 10) : gesellschaft,
+          status: 'VU',
+          strasse: '',
+          plz: '',
+          ort: '',
+          telefon: '',
+          telefax: '',
+          email_zentrale: '',
+          email_schaden: '',
+          internet_adresse: '',
+          ansprechpartner: '',
+          acencia_vermittlernummer: '',
+          vu_id: '',
+          bemerkung: ''
+        });
+        setVuFormVisible(true);
+        setVuAssignmentDialog({ visible: false, gesellschaft: '', contractData: null, matchingVUs: [] });
+        break;
+
+      case 'cancel':
+        setVuAssignmentDialog({ visible: false, gesellschaft: '', contractData: null, matchingVUs: [] });
+        break;
+
+      default:
+        break;
+    }
+  };
+
+  // Migrate existing contracts
+  const migrateExistingContracts = async () => {
+    try {
+      const response = await axios.post(`${API}/vertraege/migrate-vu-assignments`);
+      const results = response.data;
+      
+      alert(
+        `Migration abgeschlossen:\n` +
+        `Verarbeitet: ${results.total_contracts} Verträge\n` +
+        `Zugeordnet: ${results.matched} VUs\n` +
+        `Aktualisiert: ${results.updated} Verträge\n` +
+        `Nicht zugeordnet: ${results.unmatched} Verträge`
+      );
+      
+      if (results.unmatched_gesellschaften.length > 0) {
+        console.log('Nicht zugeordnete Gesellschaften:', results.unmatched_gesellschaften);
+      }
+    } catch (error) {
+      console.error('Fehler bei Migration:', error);
+      alert('Fehler bei Migration: ' + (error.response?.data?.detail || error.message));
+    }
+  };
+
   // Handle VU form changes
   const handleVuChange = (field, value) => {
     setNewVU(prev => ({

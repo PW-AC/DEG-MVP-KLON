@@ -1853,6 +1853,88 @@ const App = () => {
             </div>
           )}
 
+          {/* VU Assignment Dialog */}
+          {vuAssignmentDialog.visible && (
+            <div 
+              className="search-window"
+              style={{ 
+                left: `200px`, 
+                top: `150px`,
+                width: '600px'
+              }}
+            >
+              <div className="window-title">
+                ⚠️ VU-Zuordnung erforderlich
+                <div className="window-controls">
+                  <div className="window-control">_</div>
+                  <div className="window-control">□</div>
+                  <div className="window-control" onClick={() => handleVuAssignmentAction('cancel')}>✕</div>
+                </div>
+              </div>
+              
+              <div className="form-content">
+                <div className="vu-assignment-message">
+                  <h3>Keine VU gefunden für: "{vuAssignmentDialog.gesellschaft}"</h3>
+                  <p>Bitte wählen Sie eine der folgenden Optionen:</p>
+                </div>
+
+                <div className="vu-assignment-options">
+                  <div className="assignment-option">
+                    <button 
+                      className="btn assignment-btn auto-create"
+                      onClick={() => handleVuAssignmentAction('auto_create')}
+                      data-testid="auto-create-vu-btn"
+                    >
+                      🤖 VU automatisch anlegen
+                    </button>
+                    <p className="option-description">
+                      Erstellt automatisch eine neue VU mit dem Namen "{vuAssignmentDialog.gesellschaft}"
+                    </p>
+                  </div>
+
+                  <div className="assignment-option">
+                    <button 
+                      className="btn assignment-btn manual-create"
+                      onClick={() => handleVuAssignmentAction('manual_create')}
+                      data-testid="manual-create-vu-btn"
+                    >
+                      ✏️ VU manuell anlegen
+                    </button>
+                    <p className="option-description">
+                      Öffnet das VU-Erstellungsformular zum manuellen Eingeben aller Daten
+                    </p>
+                  </div>
+
+                  <div className="assignment-option">
+                    <button 
+                      className="btn assignment-btn save-without"
+                      onClick={() => handleVuAssignmentAction('save_without_vu')}
+                      data-testid="save-without-vu-btn"
+                    >
+                      📋 Ohne VU-Zuordnung speichern
+                    </button>
+                    <p className="option-description">
+                      Speichert den Vertrag ohne VU-Zuordnung (kann später nachgetragen werden)
+                    </p>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="form-bottom">
+                <div></div>
+                <div className="form-buttons">
+                  <button 
+                    className="btn" 
+                    onClick={() => handleVuAssignmentAction('cancel')}
+                    data-testid="cancel-assignment-btn"
+                  >
+                    Abbrechen
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* VU Form Window */}
           {vuFormVisible && (
             <div 

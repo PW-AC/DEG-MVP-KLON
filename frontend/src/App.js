@@ -759,24 +759,31 @@ const App = () => {
         <div className="sidebar">
           <button 
             className={`sidebar-item ${selectedSidebarItem === 'search' ? 'selected' : ''}`}
-            onClick={() => handleSidebarClick('search')}
-            data-testid="neue-suche-btn"
+            onClick={() => {setSelectedSidebarItem('search'); setSearchWindow(prev => ({...prev, visible: true}));}}
+            data-testid="search-sidebar-btn"
           >
-            🔎 Neue Suche
+            🔍 Suchen
           </button>
           <button 
-            className={`sidebar-item ${selectedSidebarItem === 'newcustomer' ? 'selected' : ''}`}
-            onClick={() => handleSidebarClick('newcustomer')}
-            data-testid="kunde-neuerfassen-btn"
+            className={`sidebar-item ${selectedSidebarItem === 'customers' ? 'selected' : ''}`}
+            onClick={() => setSelectedSidebarItem('customers')}
+            data-testid="customers-sidebar-btn"
           >
-            👤 Kunde Neuerfassen
+            👥 Kunden
           </button>
           <button 
-            className={`sidebar-item ${selectedSidebarItem === 'vu' ? 'selected' : ''}`}
-            onClick={() => handleSidebarClick('vu')}
-            data-testid="vu-ges-btn"
+            className={`sidebar-item ${selectedSidebarItem === 'vus' ? 'selected' : ''}`}
+            onClick={handleVUGesClick}
+            data-testid="vus-sidebar-btn"
           >
             🏢 VU / Ges.
+          </button>
+          <button 
+            className={`sidebar-item ${selectedSidebarItem === 'contracts' ? 'selected' : ''}`}
+            onClick={() => setSelectedSidebarItem('contracts')}
+            data-testid="contracts-sidebar-btn"
+          >
+            📄 Verträge
           </button>
           
           {/* Drag & Drop Area */}

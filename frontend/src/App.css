@@ -1476,7 +1476,7 @@ input[type="file"] {
 
 .vu-header-row {
   display: grid;
-  grid-template-columns: 80px 2fr 1fr 2fr 1.2fr 1.5fr;
+  grid-template-columns: 80px 100px 2fr 1fr 2fr 1.2fr 1.5fr;
   min-height: 24px;
 }
 

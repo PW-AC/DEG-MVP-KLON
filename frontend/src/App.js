@@ -2570,6 +2570,90 @@ const App = () => {
                     </div>
                   );
                 }
+
+                if (currentTab.type === 'dashboard') {
+                  return (
+                    <div className="dashboard-tab-content" data-testid="dashboard-tab-content">
+                      <div className="dashboard-header">
+                        <h2>📊 Dashboard - Übersicht</h2>
+                        <div className="dashboard-time">
+                          {new Date().toLocaleString('de-DE')}
+                        </div>
+                      </div>
+                      
+                      <div className="dashboard-stats-grid">
+                        <div className="dashboard-stat-card">
+                          <div className="stat-icon">👥</div>
+                          <div className="stat-content">
+                            <div className="stat-number">{dashboardStats.totalCustomers}</div>
+                            <div className="stat-label">Kunden gesamt</div>
+                          </div>
+                        </div>
+                        
+                        <div className="dashboard-stat-card">
+                          <div className="stat-icon">📄</div>
+                          <div className="stat-content">
+                            <div className="stat-number">{dashboardStats.totalContracts}</div>
+                            <div className="stat-label">Verträge gesamt</div>
+                          </div>
+                        </div>
+                        
+                        <div className="dashboard-stat-card">
+                          <div className="stat-icon">💰</div>
+                          <div className="stat-content">
+                            <div className="stat-number">{dashboardStats.totalPremium.toLocaleString('de-DE')}€</div>
+                            <div className="stat-label">Gesamtprämien</div>
+                          </div>
+                        </div>
+                        
+                        <div className="dashboard-stat-card">
+                          <div className="stat-icon">🆕</div>
+                          <div className="stat-content">
+                            <div className="stat-number">{dashboardStats.newContractsThisMonth}</div>
+                            <div className="stat-label">Neue Verträge</div>
+                          </div>
+                        </div>
+                        
+                        <div className="dashboard-stat-card warning">
+                          <div className="stat-icon">⚠️</div>
+                          <div className="stat-content">
+                            <div className="stat-number">{dashboardStats.expiringContracts}</div>
+                            <div className="stat-label">Ablaufende Verträge</div>
+                          </div>
+                        </div>
+                        
+                        <div className="dashboard-stat-card">
+                          <div className="stat-icon">🏢</div>
+                          <div className="stat-content">
+                            <div className="stat-number">{vus.length}</div>
+                            <div className="stat-label">Versicherer</div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="dashboard-actions">
+                        <button 
+                          className="dashboard-action-btn"
+                          onClick={() => {setSelectedSidebarItem('search'); openSearchWithNewTab();}}
+                        >
+                          🔍 Kunde suchen
+                        </button>
+                        <button 
+                          className="dashboard-action-btn"
+                          onClick={() => setCustomerFormVisible(true)}
+                        >
+                          👥 Neuer Kunde
+                        </button>
+                        <button 
+                          className="dashboard-action-btn"
+                          onClick={() => loadDashboardStats()}
+                        >
+                          🔄 Aktualisieren
+                        </button>
+                      </div>
+                    </div>
+                  );
+                }
                 
                 return null;
               })()}

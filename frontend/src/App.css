@@ -175,6 +175,247 @@ body {
   flex: 1;
   background-color: #F5F5F5;
   position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Tab Bar Styles */
+.tab-bar {
+  background-color: #ECE9D8;
+  border-bottom: 1px solid #ACA899;
+  display: flex;
+  padding: 0;
+  min-height: 25px;
+  flex-shrink: 0;
+}
+
+.tab {
+  background: linear-gradient(to bottom, #F0F0F0, #E0E0E0);
+  border: 1px outset #ECE9D8;
+  border-bottom: none;
+  padding: 4px 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 10px;
+  color: #000;
+  min-width: 120px;
+  max-width: 200px;
+  position: relative;
+  margin-right: -1px;
+}
+
+.tab.active {
+  background: linear-gradient(to bottom, #FFFFFF, #F5F5F5);
+  border: 1px inset #ECE9D8;
+  border-bottom: 1px solid #F5F5F5;
+  z-index: 2;
+}
+
+.tab:hover:not(.active) {
+  background: linear-gradient(to bottom, #E0E0E0, #D0D0D0);
+}
+
+.tab-title {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tab-close {
+  width: 12px;
+  height: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 8px;
+  cursor: pointer;
+  border-radius: 2px;
+}
+
+.tab-close:hover {
+  background-color: #FF6B6B;
+  color: white;
+}
+
+/* Tab Content Styles */
+.tab-content {
+  flex: 1;
+  background-color: #F5F5F5;
+  overflow: auto;
+  padding: 0;
+}
+
+.customer-tab-content {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Customer Header Info */
+.customer-header {
+  background-color: white;
+  border-bottom: 2px solid #ACA899;
+  padding: 8px 12px;
+  flex-shrink: 0;
+}
+
+.customer-info-grid {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 8px;
+  font-size: 10px;
+}
+
+.info-item {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.info-item label {
+  font-weight: bold;
+  color: #000;
+  font-size: 9px;
+  margin-bottom: 2px;
+}
+
+.info-item span {
+  color: #333;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding: 2px 4px;
+  background-color: #FFFFFF;
+  border: 1px inset #ECE9D8;
+  min-height: 16px;
+  display: flex;
+  align-items: center;
+}
+
+/* Contracts Section */
+.contracts-section {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 8px;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  padding: 4px 0;
+}
+
+.section-header h3 {
+  font-size: 12px;
+  color: #000;
+  margin: 0;
+}
+
+.add-contract-btn {
+  font-size: 9px;
+  padding: 3px 8px;
+}
+
+.contracts-table,
+.no-contracts {
+  flex: 1;
+  border: 1px solid #ACA899;
+  background-color: white;
+}
+
+.contracts-table-header {
+  background: linear-gradient(to bottom, #E1DDD9, #D4CDCA);
+  border-bottom: 1px solid #ACA899;
+}
+
+.table-header-row {
+  display: grid;
+  grid-template-columns: 100px 120px 100px 100px 80px 90px 80px 60px;
+  min-height: 20px;
+}
+
+.table-header-cell {
+  padding: 4px 6px;
+  font-size: 10px;
+  font-weight: bold;
+  color: #000;
+  border-right: 1px solid #ACA899;
+  display: flex;
+  align-items: center;
+  background: inherit;
+}
+
+.table-header-cell:last-child {
+  border-right: none;
+}
+
+.contracts-table-body {
+  overflow-y: auto;
+  max-height: 300px;
+}
+
+.table-row {
+  display: grid;
+  grid-template-columns: 100px 120px 100px 100px 80px 90px 80px 60px;
+  border-bottom: 1px solid #E0E0E0;
+  min-height: 22px;
+}
+
+.table-row:hover {
+  background-color: #E3F2FD;
+}
+
+.table-row:nth-child(even) {
+  background-color: #F8F9FA;
+}
+
+.table-row:nth-child(even):hover {
+  background-color: #E3F2FD;
+}
+
+.table-cell {
+  padding: 2px 6px;
+  font-size: 9px;
+  color: #333;
+  border-right: 1px solid #E0E0E0;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.table-cell:last-child {
+  border-right: none;
+  justify-content: center;
+}
+
+.table-btn {
+  padding: 1px 4px;
+  font-size: 8px;
+  border: 1px outset #ECE9D8;
+  background: linear-gradient(to bottom, #F0F0F0, #E0E0E0);
+  cursor: pointer;
+  font-family: Tahoma, Arial, sans-serif;
+}
+
+.table-btn:hover {
+  background: linear-gradient(to bottom, #E0E0E0, #D0D0D0);
+}
+
+.empty-message {
+  padding: 20px;
+  text-align: center;
+  color: #666;
+  font-style: italic;
+  font-size: 10px;
+  background-color: #F8F9FA;
 }
 
 .search-window,

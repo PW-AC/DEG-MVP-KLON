@@ -37,6 +37,15 @@ const App = () => {
   // Search tab management
   const [pendingSearchTabId, setPendingSearchTabId] = useState(null);
   const [searchPerformed, setSearchPerformed] = useState(false);
+  
+  // Dashboard state
+  const [dashboardStats, setDashboardStats] = useState({
+    totalCustomers: 0,
+    totalContracts: 0,
+    totalPremium: 0,
+    expiringContracts: 0,
+    newContractsThisMonth: 0
+  });
   const [documentsVisible, setDocumentsVisible] = useState(false);
   const [selectedCustomerId, setSelectedCustomerId] = useState(null);
   const [customerDocuments, setCustomerDocuments] = useState([]);

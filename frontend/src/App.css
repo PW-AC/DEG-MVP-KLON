@@ -75,6 +75,7 @@ body {
 .App {
   height: 100vh;
   display: flex;
+  flex-direction: column;
   background: var(--bg-secondary);
   overflow: hidden;
 }
@@ -89,6 +90,7 @@ body {
   box-shadow: var(--shadow-sm);
   position: relative;
   z-index: 10;
+  flex-shrink: 0;
 }
 
 .menu-item {
@@ -126,8 +128,8 @@ body {
 .main-container {
   display: flex;
   flex: 1;
-  height: calc(100vh - 60px);
   background: var(--bg-secondary);
+  overflow: hidden;
 }
 
 /* Modern Sidebar */
@@ -782,6 +784,7 @@ textarea {
   padding: 0 1rem;
   font-size: 0.75rem;
   color: var(--text-tertiary);
+  flex-shrink: 0;
 }
 
 .status-section {

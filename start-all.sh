@@ -3,8 +3,16 @@
 echo "🚀 Starting DEG-MVP Application..."
 echo "=================================="
 
-# Get the script directory
-SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+# Detect the actual path
+if [ -d "/workspace" ]; then
+    BASE_DIR="/workspace"
+elif [ -d "/workspaces/DEG-MVP-KLON" ]; then
+    BASE_DIR="/workspaces/DEG-MVP-KLON"
+else
+    BASE_DIR="$(pwd)"
+fi
+
+echo "📁 Using base directory: $BASE_DIR"
 
 # Function to kill processes on exit
 cleanup() {
@@ -20,7 +28,7 @@ trap cleanup SIGINT SIGTERM
 # Start Backend
 echo "📦 Starting Backend Server..."
 (
-    cd "$SCRIPT_DIR/backend"
+    cd "$BASE_DIR/backend"
     if [ ! -d "venv" ]; then
         python3 -m venv venv
     fi
@@ -37,7 +45,7 @@ sleep 3
 # Start Frontend
 echo "📦 Starting Frontend Server..."
 (
-    cd "$SCRIPT_DIR/frontend"
+    cd "$BASE_DIR/frontend"
     if [ ! -d "node_modules" ]; then
         yarn install
     fi

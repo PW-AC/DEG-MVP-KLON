@@ -2,11 +2,17 @@
 
 echo "🚀 Starting Frontend Server..."
 
-# Get the script directory
-SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+# Detect the actual path
+if [ -d "/workspace" ]; then
+    BASE_DIR="/workspace"
+elif [ -d "/workspaces/DEG-MVP-KLON" ]; then
+    BASE_DIR="/workspaces/DEG-MVP-KLON"
+else
+    BASE_DIR="$(pwd)"
+fi
 
 # Navigate to frontend directory
-cd "$SCRIPT_DIR/frontend"
+cd "$BASE_DIR/frontend"
 
 # Check if node_modules exists, if not install
 if [ ! -d "node_modules" ]; then

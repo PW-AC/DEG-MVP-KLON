@@ -1327,6 +1327,28 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+@app.get("/health")
+async def health_root():
+    """Basic health check for root path."""
+    db_status = "unknown"
+    try:
+        await db.command("ping")
+        db_status = "ok"
+    except Exception as e:
+        db_status = f"error: {str(e)}"
+    return {"status": "ok", "db": db_status}
+
+@api_router.get("/health")
+async def health_api():
+    """Health check under /api."""
+    db_status = "unknown"
+    try:
+        await db.command("ping")
+        db_status = "ok"
+    except Exception as e:
+        db_status = f"error: {str(e)}"
+    return {"status": "ok", "db": db_status}
+
 @app.on_event("shutdown")
 async def shutdown_db_client():
     client.close()

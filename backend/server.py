@@ -1,7 +1,7 @@
 from fastapi import FastAPI, APIRouter, HTTPException, UploadFile, File
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
-from motor.motor_asyncio import AsyncIOMotorClient
+import re
 import os
 import logging
 from pathlib import Path
@@ -27,17 +27,162 @@ logger = logging.getLogger(__name__)
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
-# MongoDB connection
-mongo_url = os.environ['MONGO_URL']
-client = AsyncIOMotorClient(mongo_url)
-db = client[os.environ['DB_NAME']]
-
 # Create the main app without a prefix
 app = FastAPI()
 
 # Create a router with the /api prefix
 api_router = APIRouter(prefix="/api")
 
+
+# ------------------------------
+# In-memory data store (temporary)
+# ------------------------------
+
+class SimpleResult:
+    def __init__(self, matched_count: int = 0, modified_count: int = 0, deleted_count: int = 0):
+        self.matched_count = matched_count
+        self.modified_count = modified_count
+        self.deleted_count = deleted_count
+
+
+class SimpleQuery:
+    def __init__(self, data_list):
+        self._data = list(data_list)
+
+    def skip(self, n: int):
+        self._data = self._data[n:]
+        return self
+
+    def limit(self, n: int):
+        self._data = self._data[:n]
+        return self
+
+    def sort(self, field: str, direction: int):
+        reverse = True if direction == -1 else False
+        self._data = sorted(self._data, key=lambda d: d.get(field), reverse=reverse)
+        return self
+
+    async def to_list(self, length=None):
+        return list(self._data)
+
+
+class SimpleCollection:
+    def __init__(self):
+        self._docs = []
+
+    def _match_condition(self, value, condition):
+        if isinstance(condition, dict):
+            # Supported operators: $regex, $options, $exists, $ne, $in
+            if "$regex" in condition:
+                pattern = condition.get("$regex", "")
+                options = condition.get("$options", "")
+                flags = re.IGNORECASE if "i" in str(options) else 0
+                try:
+                    return re.search(pattern, str(value) if value is not None else "", flags) is not None
+                except re.error:
+                    # Fallback to substring check if regex fails
+                    val = str(value) if value is not None else ""
+                    return pattern.lower() in val.lower()
+            if "$exists" in condition:
+                exists = condition["$exists"]
+                has_value = value is not None
+                return (has_value and exists) or ((not has_value) and (not exists))
+            if "$ne" in condition:
+                return value != condition["$ne"]
+            if "$in" in condition and isinstance(condition["$in"], list):
+                return value in condition["$in"]
+        return value == condition
+
+    def _matches(self, doc, filter_dict):
+        if not filter_dict:
+            return True
+        for key, expected in filter_dict.items():
+            if key == "$or" and isinstance(expected, list):
+                if any(self._matches(doc, sub) for sub in expected):
+                    return True
+                return False
+            # Nested field support like "persoenliche_daten.geburtsdatum"
+            parts = key.split(".")
+            current = doc
+            for part in parts:
+                if isinstance(current, dict) and part in current:
+                    current = current[part]
+                else:
+                    current = None
+                    break
+            if isinstance(expected, dict):
+                if not self._match_condition(current, expected):
+                    return False
+            else:
+                if current != expected:
+                    return False
+        return True
+
+    async def find(self, filter_dict=None, projection=None):
+        data = [d for d in self._docs if self._matches(d, filter_dict or {})]
+        return SimpleQuery(data)
+
+    async def find_one(self, filter_dict):
+        for d in self._docs:
+            if self._matches(d, filter_dict or {}):
+                return d
+        return None
+
+    async def insert_one(self, document_dict):
+        self._docs.append(dict(document_dict))
+        return SimpleResult(matched_count=1, modified_count=1)
+
+    async def update_one(self, filter_dict, update_dict):
+        for idx, d in enumerate(self._docs):
+            if self._matches(d, filter_dict or {}):
+                if "$set" in update_dict and isinstance(update_dict["$set"], dict):
+                    self._docs[idx] = {**d, **update_dict["$set"]}
+                else:
+                    # Full replacement
+                    self._docs[idx] = {**d, **update_dict}
+                return SimpleResult(matched_count=1, modified_count=1)
+        return SimpleResult(matched_count=0, modified_count=0)
+
+    async def delete_one(self, filter_dict):
+        for idx, d in enumerate(self._docs):
+            if self._matches(d, filter_dict or {}):
+                self._docs.pop(idx)
+                return SimpleResult(deleted_count=1)
+        return SimpleResult(deleted_count=0)
+
+    async def count_documents(self, filter_dict):
+        return len([d for d in self._docs if self._matches(d, filter_dict or {})])
+
+    async def aggregate(self, pipeline):
+        # Very limited support: [{"$group": {"_id": "$field", "count": {"$sum": 1}}}]
+        if not pipeline:
+            return []
+        stage = pipeline[0]
+        if "$group" in stage:
+            group = stage["$group"]
+            field_expr = group.get("_id", None)
+            if isinstance(field_expr, str) and field_expr.startswith("$"):
+                field = field_expr[1:]
+            else:
+                field = None
+            buckets = {}
+            for d in self._docs:
+                key = d.get(field) if field else None
+                buckets[key] = buckets.get(key, 0) + 1
+            results = [{"_id": k, "count": v} for k, v in buckets.items()]
+            return SimpleQuery(results)
+        return SimpleQuery([])
+
+
+class InMemoryDB:
+    def __init__(self):
+        self.kunden = SimpleCollection()
+        self.vertraege = SimpleCollection()
+        self.vus = SimpleCollection()
+        self.documents = SimpleCollection()
+
+
+db = InMemoryDB()
 
 # Enums for specific fields
 class Anrede(str, Enum):
@@ -442,7 +587,7 @@ async def create_kunde(kunde: KundeCreate):
 
 @api_router.get("/kunden", response_model=List[Kunde])
 async def get_kunden(skip: int = 0, limit: int = 60):
-    kunden = await db.kunden.find().skip(skip).limit(limit).to_list(length=None)
+    kunden = await (await db.kunden.find({})).skip(skip).limit(limit).to_list(length=None)
     return [Kunde(**parse_from_mongo(kunde)) for kunde in kunden]
 
 
@@ -539,7 +684,7 @@ async def create_vertrag(vertrag: VertragCreate):
 
 @api_router.get("/vertraege", response_model=List[Vertrag])
 async def get_vertraege(skip: int = 0, limit: int = 100):
-    vertraege = await db.vertraege.find().skip(skip).limit(limit).to_list(length=None)
+    vertraege = await (await db.vertraege.find({})).skip(skip).limit(limit).to_list(length=None)
     return [Vertrag(**parse_from_mongo(vertrag)) for vertrag in vertraege]
 
 
@@ -590,7 +735,7 @@ async def create_vu(vu: VUCreate):
 
 @api_router.get("/vus", response_model=List[VU])
 async def get_vus(skip: int = 0, limit: int = 100):
-    vus = await db.vus.find().skip(skip).limit(limit).to_list(length=None)
+    vus = await (await db.vus.find({})).skip(skip).limit(limit).to_list(length=None)
     return [VU(**parse_from_mongo(vu)) for vu in vus]
 
 
@@ -693,7 +838,7 @@ async def migrate_existing_contracts():
     Migrate existing contracts to assign VU IDs based on gesellschaft field.
     """
     # Get all contracts without vu_internal_id
-    contracts_without_vu = await db.vertraege.find({"vu_internal_id": {"$exists": False}}).to_list(length=None)
+    contracts_without_vu = await (await db.vertraege.find({"vu_internal_id": {"$exists": False}})).to_list(length=None)
     
     migration_results = {
         "total_contracts": len(contracts_without_vu),
@@ -747,10 +892,7 @@ async def get_contract_vu_statistics():
     contracts_without_vu = total_contracts - contracts_with_vu
     
     # Get gesellschaften without VU assignment
-    unassigned_contracts = await db.vertraege.find(
-        {"vu_internal_id": {"$exists": False}}, 
-        {"gesellschaft": 1}
-    ).to_list(length=None)
+    unassigned_contracts = await (await db.vertraege.find({"vu_internal_id": {"$exists": False}})).to_list(length=None)
     
     unique_gesellschaften = list(set([
         c.get('gesellschaft') for c in unassigned_contracts 
@@ -853,7 +995,7 @@ async def init_sample_vu_data():
     
     return {
         "message": f"{len(created_vus)} Sample VUs erfolgreich erstellt",
-        "vus": created_vus
+        "vus": [vu.dict() for vu in created_vus]
     }
 
 
@@ -895,10 +1037,10 @@ async def get_document_stats():
     pipeline = [
         {"$group": {"_id": "$document_type", "count": {"$sum": 1}}}
     ]
-    type_counts = await db.documents.aggregate(pipeline).to_list(length=None)
+    type_counts = await (await db.documents.aggregate(pipeline)).to_list(length=None)
     
     # Recent documents
-    recent_docs = await db.documents.find().sort("created_at", -1).limit(5).to_list(length=None)
+    recent_docs = await (await db.documents.find({})).sort("created_at", -1).limit(5).to_list(length=None)
     
     return {
         "total_documents": total_docs,
@@ -1074,8 +1216,8 @@ async def get_data_statistics():
     document_count = await db.documents.count_documents({})
     
     # Get sample data
-    sample_customers = await db.kunden.find({}, {"name": 1, "vorname": 1, "kunde_id": 1}).limit(5).to_list(length=None)
-    sample_vus = await db.vus.find({}, {"name": 1, "kurzbezeichnung": 1, "vu_internal_id": 1}).limit(10).to_list(length=None)
+    sample_customers = await (await db.kunden.find({})).limit(5).to_list(length=None)
+    sample_vus = await (await db.vus.find({})).limit(10).to_list(length=None)
     
     return {
         "totals": {
@@ -1329,26 +1471,15 @@ app.add_middleware(
 
 @app.get("/health")
 async def health_root():
-    """Basic health check for root path."""
-    db_status = "unknown"
-    try:
-        await db.command("ping")
-        db_status = "ok"
-    except Exception as e:
-        db_status = f"error: {str(e)}"
-    return {"status": "ok", "db": db_status}
+    """Basic health check for root path (no DB)."""
+    return {"status": "ok"}
 
 @api_router.get("/health")
 async def health_api():
-    """Health check under /api."""
-    db_status = "unknown"
-    try:
-        await db.command("ping")
-        db_status = "ok"
-    except Exception as e:
-        db_status = f"error: {str(e)}"
-    return {"status": "ok", "db": db_status}
+    """Health check under /api (no DB)."""
+    return {"status": "ok"}
 
 @app.on_event("shutdown")
 async def shutdown_db_client():
-    client.close()
+    # No DB to close in in-memory mode
+    return None

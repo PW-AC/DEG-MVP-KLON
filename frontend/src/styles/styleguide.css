@@ -1,0 +1,2 @@
+.container { margin-top: var(--space-6); }
+section + section { border-top: 1px solid hsl(var(--gray-200)); padding-top: var(--space-6); }

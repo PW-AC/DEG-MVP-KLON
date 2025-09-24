@@ -1,0 +1,108 @@
+/* Global visual overrides using tokens; layout structure preserved */
+
+body {
+  background: hsl(var(--color-white));
+}
+
+.menu-bar {
+  background: hsl(var(--color-white));
+  border-bottom: 1px solid hsl(var(--gray-200));
+  color: hsl(var(--gray-900));
+  font-family: var(--font-body);
+}
+.menu-item {
+  color: hsl(var(--gray-900));
+}
+.menu-item:hover {
+  background: hsl(var(--color-primary-50));
+  border: 1px solid hsl(var(--color-primary-900));
+}
+
+.main-container { background: hsl(var(--color-white)); }
+
+.sidebar {
+  background: hsl(var(--color-primary-50));
+  border-right: 1px solid hsl(var(--gray-200));
+}
+.sidebar-item { color: hsl(var(--gray-900)); font-family: var(--font-body); }
+.sidebar-item:hover { background: hsl(var(--gray-100)); }
+.sidebar-item.selected {
+  background: hsl(var(--color-primary-900));
+  color: hsl(var(--color-white));
+}
+.drag-drop-header {
+  background: hsl(var(--color-primary-900));
+}
+
+.content-area {
+  background: hsl(var(--gray-50));
+}
+
+.tab-bar { background: hsl(var(--color-white)); border-bottom: 1px solid hsl(var(--gray-200)); }
+.tab {
+  background: hsl(var(--gray-100));
+  border: 1px solid hsl(var(--gray-200));
+}
+.tab.active {
+  background: hsl(var(--color-white));
+  border-bottom-color: hsl(var(--color-white));
+}
+
+/* Buttons */
+.btn, .customer-action-btn, .status-btn, .table-btn, .upload-submit-btn, .close-documents-btn, .all-customers-btn {
+  background: hsl(var(--color-accent));
+  color: hsl(var(--color-white));
+  border: none;
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-sm);
+  transition: background-color var(--motion-normal) var(--ease-out), transform var(--motion-fast) var(--ease-out);
+}
+.btn:hover, .customer-action-btn:hover, .status-btn:hover, .table-btn:hover, .upload-submit-btn:hover, .close-documents-btn:hover, .all-customers-btn:hover {
+  filter: brightness(0.92);
+}
+.btn:active, .customer-action-btn:active, .status-btn:active, .table-btn:active, .upload-submit-btn:active, .close-documents-btn:active, .all-customers-btn:active {
+  transform: translateY(1px);
+}
+.btn:disabled { opacity: .6; }
+
+/* Warning banner */
+.duplicate-warning {
+  background: hsl(var(--color-accent-50));
+  border: 1px solid hsl(var(--color-accent));
+  color: hsl(var(--gray-900));
+}
+.merge-btn { background: hsl(var(--color-accent)); color: hsl(var(--color-white)); border: none; }
+
+/* Card/surfaces */
+.customer-header, .contracts-table, .no-contracts, .all-customers-table, .documents-list-panel, .upload-panel, .documents-table-body {
+  background: hsl(var(--color-white));
+  border: 1px solid hsl(var(--gray-200));
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+}
+
+/* Inputs */
+input[type="text"], input[type="email"], input[type="date"], select, textarea, input[type="file"] {
+  border: 1px solid hsl(var(--gray-300));
+  border-radius: var(--radius-sm);
+  font-family: var(--font-body);
+}
+input[type="text"]:focus, input[type="email"]:focus, input[type="date"]:focus, select:focus, textarea:focus {
+  outline: var(--focus-ring-width) solid hsl(var(--color-primary-900));
+}
+
+/* Tables */
+.table-row:hover, .all-customers-row:hover, .document-row:hover { background: hsl(var(--color-primary-50)); }
+
+/* Dashboard */
+.dashboard-tab-content { background: hsl(var(--gray-50)); }
+.dashboard-header { border-bottom: 1px solid hsl(var(--gray-300)); }
+.dashboard-stat-card { background: hsl(var(--color-white)); border: 1px solid hsl(var(--gray-200)); box-shadow: var(--shadow-sm); }
+.dashboard-action-btn { background: hsl(var(--color-accent)); color: hsl(var(--color-white)); border: none; border-radius: var(--radius-sm); box-shadow: var(--shadow-sm); }
+.dashboard-action-btn:hover { filter: brightness(0.92); }
+
+/* Reduced motion respect */
+@media (prefers-reduced-motion: reduce) {
+  .btn, .customer-action-btn, .status-btn, .table-btn, .upload-submit-btn, .close-documents-btn, .all-customers-btn { transition: none; }
+}
+

@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from "react";
 import "./App.css";
+import "./styles/tokens.css";
+import "./styles/base.css";
+import "./styles/app-theme.css";
 import axios from "axios";
 import { API_BASE } from "./config";
 
@@ -1769,7 +1772,7 @@ const App = () => {
   };
 
   return (
-    <div className="App">
+    <div className="App" id="main-content" role="main">
       {/* Menu Bar */}
       <div className="menu-bar">
         <span className="menu-item">Datei</span>

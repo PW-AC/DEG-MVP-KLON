@@ -2,6 +2,14 @@ import React, { useState, useEffect } from "react";
 import "./App.css";
 import axios from "axios";
 import { API_BASE } from "./config";
+import { 
+  Search, Users, FileText, Home, Building2, Upload, 
+  X, Plus, Edit, Trash2, Eye, Download, ChevronRight,
+  AlertCircle, CheckCircle, Clock, TrendingUp, Package,
+  DollarSign, Calendar, Mail, Phone, MapPin, User,
+  FolderOpen, File, Filter, RefreshCw, Settings,
+  Database, Shield, Activity, BarChart3, PieChart
+} from "lucide-react";
 
 const API = `${API_BASE ? API_BASE : ""}/api`;
 
@@ -1624,7 +1632,7 @@ const App = () => {
     // Create new dashboard tab
     const dashboardTab = {
       id: dashboardTabId,
-      title: '📊 Dashboard',
+      title: 'Dashboard',
       type: 'dashboard'
     };
 
@@ -1795,14 +1803,16 @@ const App = () => {
             }}
             data-testid="dashboard-sidebar-btn"
           >
-            📊 Dashboard
+            <Home size={18} />
+            <span>Dashboard</span>
           </button>
           <button 
             className={`sidebar-item ${selectedSidebarItem === 'search' ? 'selected' : ''}`}
             onClick={() => {setSelectedSidebarItem('search'); openSearchWithNewTab();}}
             data-testid="search-sidebar-btn"
           >
-            🔍 Suchen
+            <Search size={18} />
+            <span>Suchen</span>
           </button>
           <button 
             className={`sidebar-item ${selectedSidebarItem === 'newcustomer' ? 'selected' : ''}`}
@@ -1813,20 +1823,23 @@ const App = () => {
             }}
             data-testid="newcustomer-sidebar-btn"
           >
-            👤 Kunden Neuerfassen
+            <User size={18} />
+            <span>Kunden Neuerfassen</span>
           </button>
           <button 
             className={`sidebar-item ${selectedSidebarItem === 'vus' ? 'selected' : ''}`}
             onClick={handleVUGesClick}
             data-testid="vus-sidebar-btn"
           >
-            🏢 VU / Ges.
+            <Building2 size={18} />
+            <span>VU / Ges.</span>
           </button>
           
           {/* Drag & Drop Area */}
           <div className="drag-drop-sidebar">
             <div className="drag-drop-header">
-              📧 E-Mail & PDF
+              <Upload size={14} />
+              <span>E-Mail & PDF</span>
             </div>
             <div 
               className="drop-zone-small" 
@@ -1835,7 +1848,7 @@ const App = () => {
               onDragEnter={(e) => e.preventDefault()}
               data-testid="drop-zone"
             >
-              <div className="drop-icon-small">📁</div>
+              <div className="drop-icon-small"><FolderOpen size={24} /></div>
               <div className="drop-text-small">
                 <strong>Dateien<br/>hinziehen</strong>
               </div>
@@ -1857,7 +1870,7 @@ const App = () => {
           {/* Duplicate Warning */}
           {duplicateWarning && (
             <div className="duplicate-warning" data-testid="duplicate-warning">
-              <div className="warning-icon">⚠️</div>
+              <div className="warning-icon"><AlertCircle size={24} /></div>
               <div className="warning-text">{duplicateWarning.message}</div>
               <button 
                 className="merge-btn" 
@@ -1866,7 +1879,7 @@ const App = () => {
               >
                 Kunden & Vertragsdaten zusammenführen
               </button>
-              <div className="warning-close" onClick={() => setDuplicateWarning(null)}>✕</div>
+              <div className="warning-close" onClick={() => setDuplicateWarning(null)}><X size={14} /></div>
             </div>
           )}
 
@@ -1908,7 +1921,7 @@ const App = () => {
                   return (
                     <div className="all-customers-tab-content" data-testid="all-customers-tab-content">
                       <div className="all-customers-header">
-                        <h3>📋 Alle Kunden ({allCustomers.length})</h3>
+                        <h3><Users size={18} style={{display: 'inline', marginRight: '8px'}} />Alle Kunden ({allCustomers.length})</h3>
                       </div>
                       
                       <div className="all-customers-table">
@@ -1996,7 +2009,8 @@ const App = () => {
                             onClick={() => openCustomerEditForm(kunde)}
                             data-testid={`customer-edit-btn-${kunde.id}`}
                           >
-                            ✏️ Bearbeiten
+                            <Edit size={14} />
+                            <span>Bearbeiten</span>
                           </button>
                         </div>
                       </div>
@@ -2005,7 +2019,7 @@ const App = () => {
                       {tabDocumentsView[currentTab.id] ? (
                         <div className="documents-management-view">
                           <div className="documents-header">
-                            <h3>📄 Dokumentenverwaltung - {kunde.vorname} {kunde.name}</h3>
+                            <h3><FileText size={18} style={{display: 'inline', marginRight: '8px'}} />Dokumentenverwaltung - {kunde.vorname} {kunde.name}</h3>
                             <button 
                               className="close-documents-btn"
                               onClick={() => closeDocumentsInTab(currentTab.id)}
@@ -2042,12 +2056,12 @@ const App = () => {
                                         <div key={doc.id} className="document-row" data-testid={`doc-item-${doc.id}`}>
                                           <div className="doc-cell doc-name-cell">
                                             <div className="document-icon">
-                                              {doc.document_type === 'pdf' && '📄'}
-                                              {doc.document_type === 'email' && '✉️'}
-                                              {doc.document_type === 'word' && '📝'}
-                                              {doc.document_type === 'excel' && '📊'}
-                                              {doc.document_type === 'image' && '🖼️'}
-                                              {doc.document_type === 'other' && '📁'}
+                                              {doc.document_type === 'pdf' && <FileText size={16} />}
+                                              {doc.document_type === 'email' && <Mail size={16} />}
+                                              {doc.document_type === 'word' && <FileText size={16} />}
+                                              {doc.document_type === 'excel' && <BarChart3 size={16} />}
+                                              {doc.document_type === 'image' && <File size={16} />}
+                                              {doc.document_type === 'other' && <FolderOpen size={16} />}
                                             </div>
                                             <span className="document-filename">{doc.filename}</span>
                                           </div>
@@ -2242,7 +2256,7 @@ const App = () => {
                                           data-testid={`edit-contract-btn-${vertrag.id}`}
                                           title="Vertrag bearbeiten"
                                         >
-                                          ✏️
+                                          <Edit size={12} />
                                         </button>
                                       </div>
                                     </div>
@@ -2579,7 +2593,7 @@ const App = () => {
                   return (
                     <div className="dashboard-tab-content" data-testid="dashboard-tab-content">
                       <div className="dashboard-header">
-                        <h2>📊 Dashboard - Übersicht</h2>
+                        <h2><BarChart3 size={24} style={{display: 'inline', marginRight: '8px'}} />Dashboard - Übersicht</h2>
                         <div className="dashboard-time">
                           {new Date().toLocaleString('de-DE')}
                         </div>
@@ -2587,7 +2601,7 @@ const App = () => {
                       
                       <div className="dashboard-stats-grid">
                         <div className="dashboard-stat-card">
-                          <div className="stat-icon">👥</div>
+                          <div className="stat-icon"><Users size={32} /></div>
                           <div className="stat-content">
                             <div className="stat-number">{dashboardStats.totalCustomers}</div>
                             <div className="stat-label">Kunden gesamt</div>
@@ -2595,7 +2609,7 @@ const App = () => {
                         </div>
                         
                         <div className="dashboard-stat-card">
-                          <div className="stat-icon">📄</div>
+                          <div className="stat-icon"><FileText size={32} /></div>
                           <div className="stat-content">
                             <div className="stat-number">{dashboardStats.totalContracts}</div>
                             <div className="stat-label">Verträge gesamt</div>
@@ -2603,7 +2617,7 @@ const App = () => {
                         </div>
                         
                         <div className="dashboard-stat-card">
-                          <div className="stat-icon">💰</div>
+                          <div className="stat-icon"><DollarSign size={32} /></div>
                           <div className="stat-content">
                             <div className="stat-number">{dashboardStats.totalPremium.toLocaleString('de-DE')}€</div>
                             <div className="stat-label">Gesamtprämien</div>
@@ -2611,7 +2625,7 @@ const App = () => {
                         </div>
                         
                         <div className="dashboard-stat-card">
-                          <div className="stat-icon">🆕</div>
+                          <div className="stat-icon"><Plus size={32} /></div>
                           <div className="stat-content">
                             <div className="stat-number">{dashboardStats.newContractsThisMonth}</div>
                             <div className="stat-label">Neue Verträge</div>
@@ -2619,7 +2633,7 @@ const App = () => {
                         </div>
                         
                         <div className="dashboard-stat-card warning">
-                          <div className="stat-icon">⚠️</div>
+                          <div className="stat-icon"><AlertCircle size={32} /></div>
                           <div className="stat-content">
                             <div className="stat-number">{dashboardStats.expiringContracts}</div>
                             <div className="stat-label">Ablaufende Verträge</div>
@@ -2627,7 +2641,7 @@ const App = () => {
                         </div>
                         
                         <div className="dashboard-stat-card">
-                          <div className="stat-icon">🏢</div>
+                          <div className="stat-icon"><Building2 size={32} /></div>
                           <div className="stat-content">
                             <div className="stat-number">{allVUs.length}</div>
                             <div className="stat-label">Versicherer</div>
@@ -2640,19 +2654,22 @@ const App = () => {
                           className="dashboard-action-btn"
                           onClick={() => {setSelectedSidebarItem('search'); openSearchWithNewTab();}}
                         >
-                          🔍 Kunde suchen
+                          <Search size={16} />
+                          <span>Kunde suchen</span>
                         </button>
                         <button 
                           className="dashboard-action-btn"
                           onClick={() => setCustomerFormVisible(true)}
                         >
-                          👥 Neuer Kunde
+                          <User size={16} />
+                          <span>Neuer Kunde</span>
                         </button>
                         <button 
                           className="dashboard-action-btn"
                           onClick={() => loadDashboardStats()}
                         >
-                          🔄 Aktualisieren
+                          <RefreshCw size={16} />
+                          <span>Aktualisieren</span>
                         </button>
                       </div>
                     </div>
@@ -2677,9 +2694,7 @@ const App = () => {
               <div className="window-title" onMouseDown={handleMouseDown}>
                 Neuen Kunden erfassen
                 <div className="window-controls">
-                  <div className="window-control">_</div>
-                  <div className="window-control">□</div>
-                  <div className="window-control" onClick={() => setCustomerFormVisible(false)}>✕</div>
+                  <div className="window-control" onClick={() => setCustomerFormVisible(false)}><X size={14} /></div>
                 </div>
               </div>
               
@@ -2836,9 +2851,7 @@ const App = () => {
               <div className="window-title" onMouseDown={handleMouseDown}>
                 Kunde(n) suchen
                 <div className="window-controls">
-                  <div className="window-control">_</div>
-                  <div className="window-control">□</div>
-                  <div className="window-control" onClick={closeSearch}>✕</div>
+                  <div className="window-control" onClick={closeSearch}><X size={14} /></div>
                 </div>
               </div>
               
@@ -3057,11 +3070,9 @@ const App = () => {
                 className="window-title draggable-handle"
                 onMouseDown={(e) => startDrag('contract-edit', e)}
               >
-                ✏️ Vertrag bearbeiten: {editingContract?.vertragsnummer || editingContract?.id}
+                Vertrag bearbeiten: {editingContract?.vertragsnummer || editingContract?.id}
                 <div className="window-controls">
-                  <div className="window-control">_</div>
-                  <div className="window-control">□</div>
-                  <div className="window-control" onClick={() => setContractEditFormVisible(false)}>✕</div>
+                  <div className="window-control" onClick={() => setContractEditFormVisible(false)}><X size={14} /></div>
                 </div>
               </div>
               
@@ -3244,11 +3255,9 @@ const App = () => {
                 className="window-title draggable-handle"
                 onMouseDown={(e) => startDrag('vu-edit', e)}
               >
-                ✏️ VU bearbeiten: {editingVU?.name}
+                VU bearbeiten: {editingVU?.name}
                 <div className="window-controls">
-                  <div className="window-control">_</div>
-                  <div className="window-control">□</div>
-                  <div className="window-control" onClick={() => setVuEditFormVisible(false)}>✕</div>
+                  <div className="window-control" onClick={() => setVuEditFormVisible(false)}><X size={14} /></div>
                 </div>
               </div>
               
@@ -3417,11 +3426,9 @@ const App = () => {
                 className="window-title draggable-handle"
                 onMouseDown={(e) => startDrag('customer-edit', e)}
               >
-                ✏️ Kunde bearbeiten: {editingCustomer?.vorname} {editingCustomer?.name} (K-ID: {editingCustomer?.kunde_id})
+                Kunde bearbeiten: {editingCustomer?.vorname} {editingCustomer?.name} (K-ID: {editingCustomer?.kunde_id})
                 <div className="window-controls">
-                  <div className="window-control">_</div>
-                  <div className="window-control">□</div>
-                  <div className="window-control" onClick={() => setCustomerEditFormVisible(false)}>✕</div>
+                  <div className="window-control" onClick={() => setCustomerEditFormVisible(false)}><X size={14} /></div>
                 </div>
               </div>
               
@@ -3728,11 +3735,9 @@ const App = () => {
               }}
             >
               <div className="window-title" onMouseDown={(e) => startDrag('contract-form', e)}>
-                📄 Neuer Vertrag erstellen
+                Neuer Vertrag erstellen
                 <div className="window-controls">
-                  <div className="window-control">_</div>
-                  <div className="window-control">□</div>
-                  <div className="window-control" onClick={() => setContractFormVisible(false)}>✕</div>
+                  <div className="window-control" onClick={() => setContractFormVisible(false)}><X size={14} /></div>
                 </div>
               </div>
               
@@ -3972,11 +3977,9 @@ const App = () => {
               }}
             >
               <div className="window-title">
-                ⚠️ VU-Zuordnung erforderlich
+                VU-Zuordnung erforderlich
                 <div className="window-controls">
-                  <div className="window-control">_</div>
-                  <div className="window-control">□</div>
-                  <div className="window-control" onClick={() => handleVuAssignmentAction('cancel')}>✕</div>
+                  <div className="window-control" onClick={() => handleVuAssignmentAction('cancel')}><X size={14} /></div>
                 </div>
               </div>
               
@@ -4054,11 +4057,9 @@ const App = () => {
               }}
             >
               <div className="window-title">
-                📄 Neue VU / Gesellschaft anlegen
+                Neue VU / Gesellschaft anlegen
                 <div className="window-controls">
-                  <div className="window-control">_</div>
-                  <div className="window-control">□</div>
-                  <div className="window-control" onClick={() => setVuFormVisible(false)}>✕</div>
+                  <div className="window-control" onClick={() => setVuFormVisible(false)}><X size={14} /></div>
                 </div>
               </div>
               
@@ -4264,11 +4265,9 @@ const App = () => {
               }}
             >
               <div className="window-title">
-                📄 Dokumentenverwaltung
+                Dokumentenverwaltung
                 <div className="window-controls">
-                  <div className="window-control">_</div>
-                  <div className="window-control">□</div>
-                  <div className="window-control" onClick={() => setDocumentsVisible(false)}>✕</div>
+                  <div className="window-control" onClick={() => setDocumentsVisible(false)}><X size={14} /></div>
                 </div>
               </div>
               

@@ -2,8 +2,11 @@
 
 echo "🚀 Starting Backend Server..."
 
+# Get the script directory
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
 # Navigate to backend directory
-cd /workspace/backend
+cd "$SCRIPT_DIR/backend"
 
 # Check if virtual environment exists, if not create it
 if [ ! -d "venv" ]; then

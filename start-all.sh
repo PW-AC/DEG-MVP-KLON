@@ -3,6 +3,9 @@
 echo "🚀 Starting DEG-MVP Application..."
 echo "=================================="
 
+# Get the script directory
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
 # Function to kill processes on exit
 cleanup() {
     echo -e "\n🛑 Shutting down servers..."
@@ -17,7 +20,7 @@ trap cleanup SIGINT SIGTERM
 # Start Backend
 echo "📦 Starting Backend Server..."
 (
-    cd /workspace/backend
+    cd "$SCRIPT_DIR/backend"
     if [ ! -d "venv" ]; then
         python3 -m venv venv
     fi
@@ -34,7 +37,7 @@ sleep 3
 # Start Frontend
 echo "📦 Starting Frontend Server..."
 (
-    cd /workspace/frontend
+    cd "$SCRIPT_DIR/frontend"
     if [ ! -d "node_modules" ]; then
         yarn install
     fi

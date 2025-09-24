@@ -14,8 +14,18 @@ import random
 import base64
 from typing import Union
 import tempfile
-import aiofiles
-from emergentintegrations.llm.chat import LlmChat, UserMessage, FileContentWithMimeType
+try:
+    import aiofiles  # type: ignore
+except Exception:
+    aiofiles = None  # type: ignore
+try:
+    from emergentintegrations.llm.chat import LlmChat, UserMessage, FileContentWithMimeType
+    AI_ANALYSIS_AVAILABLE = True
+except Exception:
+    LlmChat = None  # type: ignore
+    UserMessage = None  # type: ignore
+    FileContentWithMimeType = None  # type: ignore
+    AI_ANALYSIS_AVAILABLE = False
 
 # Configure logging
 logging.basicConfig(
@@ -1259,6 +1269,8 @@ async def analyze_contract_pdf(request: PDFAnalysisRequest):
     """
     Analyze PDF document and extract contract data using AI
     """
+    if not AI_ANALYSIS_AVAILABLE:
+        raise HTTPException(status_code=501, detail="AI analysis not available in this environment")
     try:
         # Decode base64 content
         pdf_content = base64.b64decode(request.file_content)

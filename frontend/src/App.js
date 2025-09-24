@@ -4384,6 +4384,13 @@ const App = () => {
         <div className="status-section" data-testid="time-display">
           {formatTime(currentTime)}
         </div>
+        <button
+          className="status-btn"
+          onClick={() => window.scrollTo({ top: 0, behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' })}
+          aria-label="Back to top"
+        >
+          ↑ Top
+        </button>
       </div>
     </div>
   );

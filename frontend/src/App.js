@@ -157,6 +157,8 @@ const App = () => {
   const [pdfUploading, setPdfUploading] = useState(false);
   const [pdfDragActive, setPdfDragActive] = useState(false);
   const [extractedData, setExtractedData] = useState(null);
+  // Positions of draggable windows
+  const [windowPositions, setWindowPositions] = useState({});
 
   // Drag & Drop functionality for windows
   useEffect(() => {
@@ -211,6 +213,7 @@ const App = () => {
       const top = rect.top - containerRect.top;
       winEl.style.left = `${left}px`;
       winEl.style.top = `${top}px`;
+      setWindowPositions(prev => ({ ...prev, [windowId]: { x: left, y: top } }));
     }
   };
 
@@ -2705,14 +2708,15 @@ const App = () => {
           {/* Customer Creation Form */}
           {customerFormVisible && (
             <div 
-              className="search-window"
+              className="search-window draggable-window"
+              data-window-id="customer-create"
               style={{ 
-                left: `${searchWindow.position.x}px`, 
-                top: `${searchWindow.position.y}px`,
+                left: `${windowPositions['customer-create']?.x ?? searchWindow.position.x}px`, 
+                top: `${windowPositions['customer-create']?.y ?? searchWindow.position.y}px`,
                 width: '700px'
               }}
             >
-              <div className="window-title" onMouseDown={handleMouseDown}>
+              <div className="window-title" onMouseDown={(e) => startDrag('customer-create', e)}>
                 Neuen Kunden erfassen
                 <div className="window-controls">
                   <div className="window-control" onClick={() => setCustomerFormVisible(false)}><X size={14} /></div>
@@ -3082,8 +3086,8 @@ const App = () => {
               className="draggable-window"
               data-window-id="contract-edit"
               style={{ 
-                left: `150px`, 
-                top: `100px`,
+                left: `${windowPositions['contract-edit']?.x ?? 150}px`, 
+                top: `${windowPositions['contract-edit']?.y ?? 100}px`,
                 width: '700px'
               }}
             >
@@ -3267,8 +3271,8 @@ const App = () => {
               className="draggable-window"
               data-window-id="vu-edit"
               style={{ 
-                left: `200px`, 
-                top: `120px`,
+                left: `${windowPositions['vu-edit']?.x ?? 200}px`, 
+                top: `${windowPositions['vu-edit']?.y ?? 120}px`,
                 width: '800px'
               }}
             >
@@ -3436,8 +3440,8 @@ const App = () => {
               className="draggable-window"
               data-window-id="customer-edit"
               style={{ 
-                left: `50px`, 
-                top: `50px`,
+                left: `${windowPositions['customer-edit']?.x ?? 50}px`, 
+                top: `${windowPositions['customer-edit']?.y ?? 50}px`,
                 width: '900px',
                 height: '600px',
                 overflowY: 'auto'
@@ -3750,8 +3754,8 @@ const App = () => {
               className="search-window draggable-window"
               data-window-id="contract-form"
               style={{ 
-                left: `100px`, 
-                top: `80px`,
+                left: `${windowPositions['contract-form']?.x ?? 100}px`, 
+                top: `${windowPositions['contract-form']?.y ?? 80}px`,
                 width: '800px'
               }}
             >
@@ -3990,14 +3994,15 @@ const App = () => {
           {/* VU Assignment Dialog */}
           {vuAssignmentDialog.visible && (
             <div 
-              className="search-window"
+              className="search-window draggable-window"
+              data-window-id="vu-assignment"
               style={{ 
-                left: `200px`, 
-                top: `150px`,
+                left: `${windowPositions['vu-assignment']?.x ?? 200}px`, 
+                top: `${windowPositions['vu-assignment']?.y ?? 150}px`,
                 width: '600px'
               }}
             >
-              <div className="window-title">
+              <div className="window-title" onMouseDown={(e) => startDrag('vu-assignment', e)}>
                 VU-Zuordnung erforderlich
                 <div className="window-controls">
                   <div className="window-control" onClick={() => handleVuAssignmentAction('cancel')}><X size={14} /></div>
@@ -4070,14 +4075,15 @@ const App = () => {
           {/* VU Form Window */}
           {vuFormVisible && (
             <div 
-              className="search-window"
+              className="search-window draggable-window"
+              data-window-id="vu-form"
               style={{ 
-                left: `100px`, 
-                top: `80px`,
+                left: `${windowPositions['vu-form']?.x ?? 100}px`, 
+                top: `${windowPositions['vu-form']?.y ?? 80}px`,
                 width: '800px'
               }}
             >
-              <div className="window-title">
+              <div className="window-title" onMouseDown={(e) => startDrag('vu-form', e)}>
                 Neue VU / Gesellschaft anlegen
                 <div className="window-controls">
                   <div className="window-control" onClick={() => setVuFormVisible(false)}><X size={14} /></div>

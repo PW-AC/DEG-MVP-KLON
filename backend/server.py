@@ -583,15 +583,13 @@ async def create_kunde(kunde: KundeCreate):
     if not (kunde_dict.get('name') or kunde_dict.get('vorname')):
         raise HTTPException(status_code=422, detail="Bitte mindestens Vorname oder Name angeben")
     
-    # Auto-generate kunde_id if not provided
-    if not kunde_dict.get('kunde_id'):
-        # Ensure unique kunde_id
-        while True:
-            new_id = generate_kunde_id()
-            existing = await db.kunden.find_one({"kunde_id": new_id})
-            if not existing:
-                kunde_dict['kunde_id'] = new_id
-                break
+    # Always auto-generate a unique kunde_id (ignore provided values)
+    while True:
+        new_id = generate_kunde_id()
+        existing = await db.kunden.find_one({"kunde_id": new_id})
+        if not existing:
+            kunde_dict['kunde_id'] = new_id
+            break
     
     kunde_obj = Kunde(**kunde_dict)
     result = await db.kunden.insert_one(prepare_for_mongo(kunde_obj.dict()))
@@ -671,6 +669,9 @@ async def get_kunde(kunde_id: str):
 async def update_kunde(kunde_id: str, kunde_update: KundeCreate):
     kunde_dict = prepare_for_mongo(kunde_update.dict(exclude_unset=True))
     kunde_dict["updated_at"] = datetime.utcnow()
+    # Do not allow changing kunde_id after creation
+    if 'kunde_id' in kunde_dict:
+        kunde_dict.pop('kunde_id', None)
     
     result = await db.kunden.update_one(
         {"id": kunde_id}, 

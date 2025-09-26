@@ -2768,15 +2768,7 @@ const App = () => {
                   />
                 </div>
                 
-                <div className="form-group">
-                  <label>Kunden-ID</label>
-                  <input 
-                    type="text" 
-                    value={newCustomer.kunde_id}
-                    onChange={(e) => handleCustomerChange('kunde_id', e.target.value)}
-                    data-testid="kunde-id-input"
-                  />
-                </div>
+                {/* Kunden-ID wird automatisch erstellt und ist nicht editierbar */}
                 
                 <div className="form-group">
                   <label>Straße</label>

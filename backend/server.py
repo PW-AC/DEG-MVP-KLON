@@ -1,4 +1,4 @@
-from fastapi import FastAPI, APIRouter, HTTPException, UploadFile, File
+from fastapi import FastAPI, APIRouter, HTTPException, UploadFile, File, Form
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 import re
@@ -579,16 +579,17 @@ def parse_from_mongo(item):
 @api_router.post("/kunden", response_model=Kunde)
 async def create_kunde(kunde: KundeCreate):
     kunde_dict = prepare_for_mongo(kunde.dict())
+    # Basic logical validation: require at least a last name or first name
+    if not (kunde_dict.get('name') or kunde_dict.get('vorname')):
+        raise HTTPException(status_code=422, detail="Bitte mindestens Vorname oder Name angeben")
     
-    # Auto-generate kunde_id if not provided
-    if not kunde_dict.get('kunde_id'):
-        # Ensure unique kunde_id
-        while True:
-            new_id = generate_kunde_id()
-            existing = await db.kunden.find_one({"kunde_id": new_id})
-            if not existing:
-                kunde_dict['kunde_id'] = new_id
-                break
+    # Always auto-generate a unique kunde_id (ignore provided values)
+    while True:
+        new_id = generate_kunde_id()
+        existing = await db.kunden.find_one({"kunde_id": new_id})
+        if not existing:
+            kunde_dict['kunde_id'] = new_id
+            break
     
     kunde_obj = Kunde(**kunde_dict)
     result = await db.kunden.insert_one(prepare_for_mongo(kunde_obj.dict()))
@@ -611,6 +612,8 @@ async def search_kunden(
     kunde_id: Optional[str] = None,
     geburtsdatum: Optional[str] = None,
     kfz_kennzeichen: Optional[str] = None,
+    vertragsnummer: Optional[str] = None,
+    gesellschaft: Optional[str] = None,
     limit: int = 60
 ):
     query = {}
@@ -630,15 +633,25 @@ async def search_kunden(
     if geburtsdatum:
         query["persoenliche_daten.geburtsdatum"] = geburtsdatum
     
-    # Search in related contracts for KFZ-Kennzeichen
+    # Search in related contracts: collect matching customer id sets per criterion and intersect if multiple
+    contract_kunde_ids_sets = []
     if kfz_kennzeichen:
-        # First find contracts with the license plate
-        contracts = await db.vertraege.find(
-            {"kfz_kennzeichen": {"$regex": kfz_kennzeichen, "$options": "i"}}
-        ).to_list(length=None)
-        if contracts:
-            kunde_ids = [contract.get("kunde_id") for contract in contracts]
-            query["id"] = {"$in": kunde_ids}
+        contracts = await db.vertraege.find({"kfz_kennzeichen": {"$regex": kfz_kennzeichen, "$options": "i"}}).to_list(length=None)
+        contract_kunde_ids_sets.append(set([c.get("kunde_id") for c in contracts if c.get("kunde_id")]))
+    if vertragsnummer:
+        contracts = await db.vertraege.find({"vertragsnummer": {"$regex": vertragsnummer, "$options": "i"}}).to_list(length=None)
+        contract_kunde_ids_sets.append(set([c.get("kunde_id") for c in contracts if c.get("kunde_id")]))
+    if gesellschaft:
+        contracts = await db.vertraege.find({"gesellschaft": {"$regex": gesellschaft, "$options": "i"}}).to_list(length=None)
+        contract_kunde_ids_sets.append(set([c.get("kunde_id") for c in contracts if c.get("kunde_id")]))
+
+    if contract_kunde_ids_sets:
+        # Intersect all non-empty sets to satisfy all contract-based filters simultaneously
+        intersect_ids = set.intersection(*[s for s in contract_kunde_ids_sets if s]) if any(contract_kunde_ids_sets) else set()
+        # If intersection is empty but at least one set exists, fall back to union (for lenient behavior)
+        candidate_ids = intersect_ids if intersect_ids else set.union(*contract_kunde_ids_sets)
+        if candidate_ids:
+            query["id"] = {"$in": list(candidate_ids)}
     
     kunden = await db.kunden.find(query).limit(limit).to_list(length=None)
     return [Kunde(**parse_from_mongo(kunde)) for kunde in kunden]
@@ -656,6 +669,9 @@ async def get_kunde(kunde_id: str):
 async def update_kunde(kunde_id: str, kunde_update: KundeCreate):
     kunde_dict = prepare_for_mongo(kunde_update.dict(exclude_unset=True))
     kunde_dict["updated_at"] = datetime.utcnow()
+    # Do not allow changing kunde_id after creation
+    if 'kunde_id' in kunde_dict:
+        kunde_dict.pop('kunde_id', None)
     
     result = await db.kunden.update_one(
         {"id": kunde_id}, 
@@ -681,6 +697,8 @@ async def delete_kunde(kunde_id: str):
 @api_router.post("/vertraege", response_model=Vertrag)
 async def create_vertrag(vertrag: VertragCreate):
     vertrag_dict = prepare_for_mongo(vertrag.dict())
+    if not vertrag_dict.get('kunde_id'):
+        raise HTTPException(status_code=422, detail="kunde_id ist erforderlich")
     
     # Auto-assign VU based on gesellschaft if not already assigned
     if not vertrag_dict.get('vu_id') and vertrag_dict.get('gesellschaft'):
@@ -1100,19 +1118,54 @@ async def get_customer_documents(kunde_id: str):
 
 @api_router.post("/documents/upload")
 async def upload_document_file(
-    kunde_id: Optional[str] = None,
-    vertrag_id: Optional[str] = None,
-    title: str = "Uploaded Document",
-    description: Optional[str] = None,
-    tags: str = "",  # Comma separated tags
-    file_content: str = ""  # Base64 encoded file
+    kunde_id: Optional[str] = Form(None),
+    vertrag_id: Optional[str] = Form(None),
+    title: str = Form("Uploaded Document"),
+    description: Optional[str] = Form(None),
+    tags: str = Form("") ,  # Comma separated tags
+    file_content: str = Form(""),  # Base64 encoded file (DataURL or raw)
+    filename: Optional[str] = Form(None),
+    mime_type: Optional[str] = Form(None)
 ):
     """
     Upload a document via multipart form or base64 content
     """
     try:
         # Determine document type from filename or content
-        document_type = DocumentType.PDF  # Default
+        def guess_type(name: Optional[str], mime: Optional[str]) -> DocumentType:
+            ext = (name.rsplit('.', 1)[-1].lower() if name and '.' in name else None)
+            if mime:
+                if 'pdf' in mime:
+                    return DocumentType.PDF
+                if 'word' in mime or 'doc' in mime:
+                    return DocumentType.WORD
+                if 'excel' in mime or 'sheet' in mime or 'xls' in mime:
+                    return DocumentType.EXCEL
+                if 'image' in mime or (mime.startswith('image/')):
+                    return DocumentType.IMAGE
+                if 'message' in mime or 'email' in mime:
+                    return DocumentType.EMAIL
+            if ext in ['pdf']:
+                return DocumentType.PDF
+            if ext in ['doc', 'docx']:
+                return DocumentType.WORD
+            if ext in ['xls', 'xlsx', 'csv']:
+                return DocumentType.EXCEL
+            if ext in ['png', 'jpg', 'jpeg', 'gif']:
+                return DocumentType.IMAGE
+            if ext in ['eml', 'msg']:
+                return DocumentType.EMAIL
+            return DocumentType.OTHER
+
+        # Normalize base64: strip DataURL prefix if present
+        normalized_b64 = file_content
+        if file_content and file_content.startswith('data:'):
+            try:
+                normalized_b64 = file_content.split(',', 1)[1]
+            except Exception:
+                normalized_b64 = file_content
+
+        document_type = guess_type(filename, mime_type)
         
         # Parse tags
         tag_list = [tag.strip() for tag in tags.split(",") if tag.strip()]
@@ -1122,11 +1175,11 @@ async def upload_document_file(
             kunde_id=kunde_id,
             vertrag_id=vertrag_id,
             title=title,
-            filename=f"{title}.pdf",
+            filename=filename or f"{title}.pdf",
             document_type=document_type,
             description=description,
             tags=tag_list,
-            file_content=file_content
+            file_content=normalized_b64
         )
         
         return await create_document(document_create)

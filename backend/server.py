@@ -190,6 +190,7 @@ class InMemoryDB:
         self.vertraege = SimpleCollection()
         self.vus = SimpleCollection()
         self.documents = SimpleCollection()
+        self.schadensmeldungen = SimpleCollection()
 
 
 db = InMemoryDB()
@@ -227,6 +228,126 @@ class DocumentType(str, Enum):
     EXCEL = "excel"
     IMAGE = "image"
     OTHER = "other"
+
+
+class SchadenStatus(str, Enum):
+    GEMELDET = "gemeldet"
+    IN_BEARBEITUNG = "in_bearbeitung"
+    DOKUMENTE_ANGEFORDERT = "dokumente_angefordert"
+    BEI_VU = "bei_vu"
+    REGULIERT = "reguliert"
+    ABGELEHNT = "abgelehnt"
+    GESCHLOSSEN = "geschlossen"
+
+
+class SchadenTyp(str, Enum):
+    KFZ_HAFTPFLICHT = "kfz_haftpflicht"
+    KFZ_KASKO = "kfz_kasko"
+    HAFTPFLICHT = "haftpflicht"
+    HAUSRAT = "hausrat"
+    WOHNGEBAEUDE = "wohngebaeude"
+    RECHTSSCHUTZ = "rechtsschutz"
+    UNFALL = "unfall"
+    BERUFSUNFAEHIGKEIT = "berufsunfaehigkeit"
+    SONSTIGE = "sonstige"
+
+
+# Schadensmeldung Models
+class Schadensmeldung(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    schadennummer: Optional[str] = None  # Interne Schadennummer
+    vu_schadennummer: Optional[str] = None  # Schadennummer der Versicherung
+    kunde_id: Optional[str] = None  # Reference to Kunde
+    vertrag_id: Optional[str] = None  # Reference to Vertrag
+    vu_id: Optional[str] = None  # Reference to VU
+    
+    # Schadendaten
+    schadendatum: Optional[date] = None
+    meldedatum: datetime = Field(default_factory=datetime.utcnow)
+    schadentyp: Optional[SchadenTyp] = None
+    status: SchadenStatus = SchadenStatus.GEMELDET
+    
+    # Schadenbeschreibung
+    schadenort: Optional[str] = None
+    schadenbeschreibung: Optional[str] = None
+    schadenverursacher: Optional[str] = None
+    zeugen: Optional[str] = None
+    polizei_aktenzeichen: Optional[str] = None
+    
+    # Schadenhöhe
+    schadenhoehe_geschaetzt: Optional[float] = None
+    schadenhoehe_reguliert: Optional[float] = None
+    selbstbeteiligung: Optional[float] = None
+    
+    # Bearbeitung
+    sachbearbeiter_vu: Optional[str] = None
+    sachbearbeiter_intern: Optional[str] = None
+    letzte_kommunikation: Optional[datetime] = None
+    naechste_aktion: Optional[str] = None
+    naechste_aktion_datum: Optional[date] = None
+    
+    # Dokumente
+    dokumente_ids: List[str] = []  # References to Document
+    fotos_vorhanden: bool = False
+    gutachten_beauftragt: bool = False
+    gutachten_erhalten: bool = False
+    
+    # Regulierung
+    regulierungsdatum: Optional[date] = None
+    auszahlungsdatum: Optional[date] = None
+    auszahlungsbetrag: Optional[float] = None
+    ablehnungsgrund: Optional[str] = None
+    
+    # Notizen
+    interne_notizen: Optional[str] = None
+    kommunikationsverlauf: Optional[str] = None
+    
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+
+
+class SchadensmeldungCreate(BaseModel):
+    schadennummer: Optional[str] = None
+    vu_schadennummer: Optional[str] = None
+    kunde_id: Optional[str] = None
+    vertrag_id: Optional[str] = None
+    vu_id: Optional[str] = None
+    schadendatum: Optional[date] = None
+    schadentyp: Optional[SchadenTyp] = None
+    status: Optional[SchadenStatus] = SchadenStatus.GEMELDET
+    schadenort: Optional[str] = None
+    schadenbeschreibung: Optional[str] = None
+    schadenverursacher: Optional[str] = None
+    zeugen: Optional[str] = None
+    polizei_aktenzeichen: Optional[str] = None
+    schadenhoehe_geschaetzt: Optional[float] = None
+    selbstbeteiligung: Optional[float] = None
+    sachbearbeiter_intern: Optional[str] = None
+    naechste_aktion: Optional[str] = None
+    naechste_aktion_datum: Optional[date] = None
+    fotos_vorhanden: bool = False
+    interne_notizen: Optional[str] = None
+
+
+class SchadensmeldungUpdate(BaseModel):
+    vu_schadennummer: Optional[str] = None
+    status: Optional[SchadenStatus] = None
+    schadenhoehe_geschaetzt: Optional[float] = None
+    schadenhoehe_reguliert: Optional[float] = None
+    sachbearbeiter_vu: Optional[str] = None
+    sachbearbeiter_intern: Optional[str] = None
+    letzte_kommunikation: Optional[datetime] = None
+    naechste_aktion: Optional[str] = None
+    naechste_aktion_datum: Optional[date] = None
+    fotos_vorhanden: Optional[bool] = None
+    gutachten_beauftragt: Optional[bool] = None
+    gutachten_erhalten: Optional[bool] = None
+    regulierungsdatum: Optional[date] = None
+    auszahlungsdatum: Optional[date] = None
+    auszahlungsbetrag: Optional[float] = None
+    ablehnungsgrund: Optional[str] = None
+    interne_notizen: Optional[str] = None
+    kommunikationsverlauf: Optional[str] = None
 
 
 # Document Management Models
@@ -1116,6 +1237,187 @@ async def get_customer_documents(kunde_id: str):
     return [Document(**parse_from_mongo(doc)) for doc in documents]
 
 
+# Schadensmeldung Endpoints
+@api_router.post("/schadensmeldungen", response_model=Schadensmeldung)
+async def create_schadensmeldung(schaden: SchadensmeldungCreate):
+    """Create a new Schadensmeldung"""
+    schaden_dict = prepare_for_mongo(schaden.dict())
+    
+    # Validate required fields
+    if not schaden_dict.get('kunde_id'):
+        raise HTTPException(status_code=422, detail="kunde_id ist erforderlich")
+    
+    # Generate unique Schadennummer if not provided
+    if not schaden_dict.get('schadennummer'):
+        # Format: S-YYYY-XXXXX (e.g., S-2024-00123)
+        year = datetime.utcnow().year
+        count = await db.schadensmeldungen.count_documents({}) + 1
+        schaden_dict['schadennummer'] = f"S-{year}-{count:05d}"
+    
+    # Auto-assign VU from contract if available
+    if schaden_dict.get('vertrag_id'):
+        vertrag = await db.vertraege.find_one({"id": schaden_dict['vertrag_id']})
+        if vertrag and vertrag.get('vu_id'):
+            schaden_dict['vu_id'] = vertrag['vu_id']
+    
+    schaden_obj = Schadensmeldung(**schaden_dict)
+    result = await db.schadensmeldungen.insert_one(prepare_for_mongo(schaden_obj.dict()))
+    return schaden_obj
+
+
+@api_router.get("/schadensmeldungen", response_model=List[Schadensmeldung])
+async def get_schadensmeldungen(
+    kunde_id: Optional[str] = None,
+    vertrag_id: Optional[str] = None,
+    status: Optional[SchadenStatus] = None,
+    schadentyp: Optional[SchadenTyp] = None,
+    skip: int = 0,
+    limit: int = 100
+):
+    """Get all Schadensmeldungen with optional filters"""
+    query = {}
+    if kunde_id:
+        query["kunde_id"] = kunde_id
+    if vertrag_id:
+        query["vertrag_id"] = vertrag_id
+    if status:
+        query["status"] = status.value
+    if schadentyp:
+        query["schadentyp"] = schadentyp.value
+    
+    schaeden = await db.schadensmeldungen.find(query).skip(skip).limit(limit).to_list(length=None)
+    return [Schadensmeldung(**parse_from_mongo(schaden)) for schaden in schaeden]
+
+
+@api_router.get("/schadensmeldungen/statistics")
+async def get_schadensmeldungen_statistics():
+    """Get statistics about Schadensmeldungen"""
+    total = await db.schadensmeldungen.count_documents({})
+    
+    # Count by status
+    status_counts = {}
+    for status in SchadenStatus:
+        count = await db.schadensmeldungen.count_documents({"status": status.value})
+        status_counts[status.value] = count
+    
+    # Count by type
+    type_counts = {}
+    for typ in SchadenTyp:
+        count = await db.schadensmeldungen.count_documents({"schadentyp": typ.value})
+        type_counts[typ.value] = count
+    
+    # Calculate total amounts
+    all_schaeden = await db.schadensmeldungen.find({}).to_list(length=None)
+    total_geschaetzt = sum(s.get('schadenhoehe_geschaetzt', 0) or 0 for s in all_schaeden)
+    total_reguliert = sum(s.get('schadenhoehe_reguliert', 0) or 0 for s in all_schaeden)
+    total_ausgezahlt = sum(s.get('auszahlungsbetrag', 0) or 0 for s in all_schaeden)
+    
+    # Get recent Schadensmeldungen
+    recent = await (await db.schadensmeldungen.find({})).sort("meldedatum", -1).limit(5).to_list(length=None)
+    
+    # Count open cases needing action
+    offene_faelle = await db.schadensmeldungen.count_documents({
+        "status": {"$in": [
+            SchadenStatus.GEMELDET.value,
+            SchadenStatus.IN_BEARBEITUNG.value,
+            SchadenStatus.DOKUMENTE_ANGEFORDERT.value
+        ]}
+    })
+    
+    return {
+        "total_schadensmeldungen": total,
+        "status_verteilung": status_counts,
+        "typ_verteilung": type_counts,
+        "schadenhoehe_geschaetzt_gesamt": round(total_geschaetzt, 2),
+        "schadenhoehe_reguliert_gesamt": round(total_reguliert, 2),
+        "auszahlungsbetrag_gesamt": round(total_ausgezahlt, 2),
+        "offene_faelle": offene_faelle,
+        "letzte_schadensmeldungen": [Schadensmeldung(**parse_from_mongo(s)) for s in recent]
+    }
+
+
+@api_router.get("/schadensmeldungen/{schaden_id}", response_model=Schadensmeldung)
+async def get_schadensmeldung(schaden_id: str):
+    """Get a specific Schadensmeldung by ID"""
+    schaden = await db.schadensmeldungen.find_one({"id": schaden_id})
+    if schaden is None:
+        raise HTTPException(status_code=404, detail="Schadensmeldung nicht gefunden")
+    return Schadensmeldung(**parse_from_mongo(schaden))
+
+
+@api_router.put("/schadensmeldungen/{schaden_id}", response_model=Schadensmeldung)
+async def update_schadensmeldung(schaden_id: str, schaden_update: SchadensmeldungUpdate):
+    """Update a Schadensmeldung"""
+    update_dict = prepare_for_mongo(schaden_update.dict(exclude_unset=True))
+    update_dict["updated_at"] = datetime.utcnow()
+    
+    # Update letzte_kommunikation if status changes
+    if 'status' in update_dict:
+        update_dict['letzte_kommunikation'] = datetime.utcnow()
+    
+    result = await db.schadensmeldungen.update_one(
+        {"id": schaden_id},
+        {"$set": update_dict}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Schadensmeldung nicht gefunden")
+    
+    updated_schaden = await db.schadensmeldungen.find_one({"id": schaden_id})
+    return Schadensmeldung(**parse_from_mongo(updated_schaden))
+
+
+@api_router.delete("/schadensmeldungen/{schaden_id}")
+async def delete_schadensmeldung(schaden_id: str):
+    """Delete a Schadensmeldung"""
+    result = await db.schadensmeldungen.delete_one({"id": schaden_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Schadensmeldung nicht gefunden")
+    return {"message": "Schadensmeldung erfolgreich gelöscht"}
+
+
+@api_router.post("/schadensmeldungen/{schaden_id}/dokumente")
+async def add_dokument_to_schadensmeldung(schaden_id: str, dokument_id: str):
+    """Add a document to a Schadensmeldung"""
+    schaden = await db.schadensmeldungen.find_one({"id": schaden_id})
+    if schaden is None:
+        raise HTTPException(status_code=404, detail="Schadensmeldung nicht gefunden")
+    
+    # Check if document exists
+    dokument = await db.documents.find_one({"id": dokument_id})
+    if dokument is None:
+        raise HTTPException(status_code=404, detail="Dokument nicht gefunden")
+    
+    # Add document ID to Schadensmeldung
+    dokumente_ids = schaden.get('dokumente_ids', [])
+    if dokument_id not in dokumente_ids:
+        dokumente_ids.append(dokument_id)
+        
+        result = await db.schadensmeldungen.update_one(
+            {"id": schaden_id},
+            {"$set": {
+                "dokumente_ids": dokumente_ids,
+                "updated_at": datetime.utcnow()
+            }}
+        )
+    
+    return {"message": "Dokument erfolgreich hinzugefügt"}
+
+
+@api_router.get("/kunden/{kunde_id}/schadensmeldungen", response_model=List[Schadensmeldung])
+async def get_kunde_schadensmeldungen(kunde_id: str):
+    """Get all Schadensmeldungen for a specific customer"""
+    schaeden = await db.schadensmeldungen.find({"kunde_id": kunde_id}).to_list(length=None)
+    return [Schadensmeldung(**parse_from_mongo(schaden)) for schaden in schaeden]
+
+
+@api_router.get("/vertraege/{vertrag_id}/schadensmeldungen", response_model=List[Schadensmeldung])
+async def get_vertrag_schadensmeldungen(vertrag_id: str):
+    """Get all Schadensmeldungen for a specific contract"""
+    schaeden = await db.schadensmeldungen.find({"vertrag_id": vertrag_id}).to_list(length=None)
+    return [Schadensmeldung(**parse_from_mongo(schaden)) for schaden in schaeden]
+
+
 @api_router.post("/documents/upload")
 async def upload_document_file(
     kunde_id: Optional[str] = Form(None),
@@ -1189,6 +1491,208 @@ async def upload_document_file(
 
 
 
+
+
+# Contract Renewal and Reminder Endpoints
+@api_router.get("/vertraege/renewals/upcoming")
+async def get_upcoming_renewals(days_ahead: int = 90):
+    """Get contracts that need renewal in the next X days"""
+    today = datetime.utcnow().date()
+    target_date = today + timedelta(days=days_ahead)
+    
+    all_contracts = await db.vertraege.find({"vertragsstatus": "aktiv"}).to_list(length=None)
+    upcoming_renewals = []
+    
+    for contract in all_contracts:
+        ablauf = contract.get('ablauf')
+        if ablauf:
+            try:
+                if isinstance(ablauf, str):
+                    ablauf_date = datetime.fromisoformat(ablauf).date()
+                else:
+                    ablauf_date = ablauf
+                    
+                if today <= ablauf_date <= target_date:
+                    days_until = (ablauf_date - today).days
+                    
+                    # Get customer info
+                    kunde = await db.kunden.find_one({"id": contract.get('kunde_id')})
+                    
+                    upcoming_renewals.append({
+                        "vertrag": Vertrag(**parse_from_mongo(contract)),
+                        "kunde": Kunde(**parse_from_mongo(kunde)) if kunde else None,
+                        "ablaufdatum": ablauf_date.isoformat(),
+                        "tage_bis_ablauf": days_until,
+                        "prioritaet": "hoch" if days_until <= 30 else "mittel" if days_until <= 60 else "niedrig",
+                        "empfohlene_aktion": "Kündigungserinnerung senden" if days_until <= 90 else "Verlängerungsangebot vorbereiten"
+                    })
+            except:
+                continue
+    
+    # Sort by days until expiry
+    upcoming_renewals.sort(key=lambda x: x['tage_bis_ablauf'])
+    
+    return {
+        "total": len(upcoming_renewals),
+        "renewals": upcoming_renewals,
+        "summary": {
+            "next_30_days": len([r for r in upcoming_renewals if r['tage_bis_ablauf'] <= 30]),
+            "next_60_days": len([r for r in upcoming_renewals if r['tage_bis_ablauf'] <= 60]),
+            "next_90_days": len([r for r in upcoming_renewals if r['tage_bis_ablauf'] <= 90])
+        }
+    }
+
+
+@api_router.post("/vertraege/{vertrag_id}/send-reminder")
+async def send_renewal_reminder(vertrag_id: str, reminder_type: str = "renewal"):
+    """Send a renewal/cancellation reminder for a contract"""
+    vertrag = await db.vertraege.find_one({"id": vertrag_id})
+    if not vertrag:
+        raise HTTPException(status_code=404, detail="Vertrag nicht gefunden")
+    
+    kunde = await db.kunden.find_one({"id": vertrag.get('kunde_id')})
+    if not kunde:
+        raise HTTPException(status_code=404, detail="Kunde nicht gefunden")
+    
+    # Here you would integrate with email service
+    # For now, we just log the reminder
+    reminder = {
+        "id": str(uuid.uuid4()),
+        "vertrag_id": vertrag_id,
+        "kunde_id": vertrag.get('kunde_id'),
+        "type": reminder_type,
+        "sent_at": datetime.utcnow(),
+        "recipient_email": kunde.get('telefon', {}).get('email') if kunde else None,
+        "status": "sent" if kunde.get('telefon', {}).get('email') else "no_email"
+    }
+    
+    # Store reminder in contract metadata
+    reminders = vertrag.get('reminders', [])
+    reminders.append(reminder)
+    
+    await db.vertraege.update_one(
+        {"id": vertrag_id},
+        {"$set": {
+            "reminders": reminders,
+            "last_reminder_sent": datetime.utcnow(),
+            "updated_at": datetime.utcnow()
+        }}
+    )
+    
+    return {
+        "success": True,
+        "reminder": reminder,
+        "message": f"{reminder_type.capitalize()} reminder {'sent' if reminder['status'] == 'sent' else 'logged (no email address)'}"
+    }
+
+
+@api_router.post("/vertraege/{vertrag_id}/auto-renew")
+async def auto_renew_contract(vertrag_id: str, extend_years: int = 1):
+    """Automatically renew a contract"""
+    vertrag = await db.vertraege.find_one({"id": vertrag_id})
+    if not vertrag:
+        raise HTTPException(status_code=404, detail="Vertrag nicht gefunden")
+    
+    # Get current dates
+    beginn = vertrag.get('beginn')
+    ablauf = vertrag.get('ablauf')
+    
+    if not ablauf:
+        raise HTTPException(status_code=400, detail="Vertrag hat kein Ablaufdatum")
+    
+    # Parse and extend dates
+    try:
+        if isinstance(ablauf, str):
+            ablauf_date = datetime.fromisoformat(ablauf).date()
+        else:
+            ablauf_date = ablauf
+            
+        new_beginn = ablauf_date + timedelta(days=1)
+        new_ablauf = date(ablauf_date.year + extend_years, ablauf_date.month, ablauf_date.day)
+        
+        # Create renewal record
+        renewal = {
+            "id": str(uuid.uuid4()),
+            "original_vertrag_id": vertrag_id,
+            "renewed_at": datetime.utcnow(),
+            "old_ablauf": ablauf_date.isoformat(),
+            "new_beginn": new_beginn.isoformat(),
+            "new_ablauf": new_ablauf.isoformat(),
+            "extend_years": extend_years
+        }
+        
+        # Update contract
+        await db.vertraege.update_one(
+            {"id": vertrag_id},
+            {"$set": {
+                "beginn": new_beginn.isoformat(),
+                "ablauf": new_ablauf.isoformat(),
+                "auto_renewed": True,
+                "renewal_history": vertrag.get('renewal_history', []) + [renewal],
+                "updated_at": datetime.utcnow()
+            }}
+        )
+        
+        return {
+            "success": True,
+            "renewal": renewal,
+            "message": f"Vertrag wurde um {extend_years} Jahr(e) verlängert"
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Fehler bei der Verlängerung: {str(e)}")
+
+
+@api_router.get("/reminders/schedule")
+async def get_reminder_schedule():
+    """Get scheduled reminders for all contracts"""
+    all_contracts = await db.vertraege.find({"vertragsstatus": "aktiv"}).to_list(length=None)
+    today = datetime.utcnow().date()
+    
+    reminders = []
+    
+    for contract in all_contracts:
+        ablauf = contract.get('ablauf')
+        if not ablauf:
+            continue
+            
+        try:
+            if isinstance(ablauf, str):
+                ablauf_date = datetime.fromisoformat(ablauf).date()
+            else:
+                ablauf_date = ablauf
+                
+            days_until = (ablauf_date - today).days
+            
+            # Define reminder schedule
+            reminder_schedule = [
+                (90, "Erste Erinnerung - 3 Monate vor Ablauf"),
+                (60, "Zweite Erinnerung - 2 Monate vor Ablauf"),
+                (30, "Dringende Erinnerung - 1 Monat vor Ablauf"),
+                (14, "Letzte Chance - 2 Wochen vor Ablauf")
+            ]
+            
+            for days_before, description in reminder_schedule:
+                if days_until == days_before:
+                    kunde = await db.kunden.find_one({"id": contract.get('kunde_id')})
+                    reminders.append({
+                        "vertrag_id": contract.get('id'),
+                        "vertragsnummer": contract.get('vertragsnummer'),
+                        "kunde_name": f"{kunde.get('vorname', '')} {kunde.get('name', '')}" if kunde else "Unbekannt",
+                        "ablaufdatum": ablauf_date.isoformat(),
+                        "reminder_type": description,
+                        "days_until": days_until,
+                        "scheduled_for": today.isoformat()
+                    })
+                    
+        except:
+            continue
+    
+    return {
+        "date": today.isoformat(),
+        "total_reminders": len(reminders),
+        "reminders": reminders
+    }
 
 
 # Data cleanup endpoints for development/testing
@@ -1518,6 +2022,278 @@ async def create_contract_from_pdf(
         logger.error(f"Error creating contract from PDF: {e}")
         raise HTTPException(status_code=500, detail=f"Error creating contract: {str(e)}")
 
+# Dashboard Statistics Endpoints
+@api_router.get("/dashboard/statistics")
+async def get_dashboard_statistics():
+    """
+    Get comprehensive dashboard statistics including KPIs, trends, and alerts
+    """
+    from datetime import timedelta
+    
+    # Basic counts
+    total_customers = await db.kunden.count_documents({})
+    total_contracts = await db.vertraege.count_documents({})
+    active_contracts = await db.vertraege.count_documents({"vertragsstatus": "aktiv"})
+    total_vus = await db.vus.count_documents({})
+    total_documents = await db.documents.count_documents({})
+    
+    # Contract status distribution
+    status_distribution = []
+    for status in ["aktiv", "gekündigt", "ruhend", "storniert"]:
+        count = await db.vertraege.count_documents({"vertragsstatus": status})
+        status_distribution.append({"status": status, "count": count})
+    
+    # Contracts by product type (Sparte)
+    all_contracts = await db.vertraege.find({}).to_list(length=None)
+    sparten_count = {}
+    for contract in all_contracts:
+        sparte = contract.get('produkt_sparte', 'Unbekannt')
+        if sparte:
+            sparten_count[sparte] = sparten_count.get(sparte, 0) + 1
+    
+    # Calculate total premiums
+    total_brutto = 0
+    total_netto = 0
+    for contract in all_contracts:
+        if contract.get('vertragsstatus') == 'aktiv':
+            brutto = contract.get('beitrag_brutto')
+            netto = contract.get('beitrag_netto')
+            if isinstance(brutto, (int, float)):
+                total_brutto += brutto
+            if isinstance(netto, (int, float)):
+                total_netto += netto
+    
+    # Expiring contracts (next 30, 60, 90 days)
+    today = datetime.utcnow().date()
+    expiring_30 = []
+    expiring_60 = []
+    expiring_90 = []
+    
+    for contract in all_contracts:
+        ablauf = contract.get('ablauf')
+        if ablauf and contract.get('vertragsstatus') == 'aktiv':
+            try:
+                if isinstance(ablauf, str):
+                    ablauf_date = datetime.fromisoformat(ablauf).date()
+                else:
+                    ablauf_date = ablauf
+                    
+                days_until = (ablauf_date - today).days
+                
+                if 0 <= days_until <= 30:
+                    expiring_30.append({
+                        "id": contract.get('id'),
+                        "vertragsnummer": contract.get('vertragsnummer'),
+                        "ablauf": ablauf_date.isoformat(),
+                        "days_remaining": days_until,
+                        "kunde_id": contract.get('kunde_id'),
+                        "gesellschaft": contract.get('gesellschaft')
+                    })
+                elif 30 < days_until <= 60:
+                    expiring_60.append({
+                        "id": contract.get('id'),
+                        "vertragsnummer": contract.get('vertragsnummer'),
+                        "ablauf": ablauf_date.isoformat(),
+                        "days_remaining": days_until,
+                        "kunde_id": contract.get('kunde_id'),
+                        "gesellschaft": contract.get('gesellschaft')
+                    })
+                elif 60 < days_until <= 90:
+                    expiring_90.append({
+                        "id": contract.get('id'),
+                        "vertragsnummer": contract.get('vertragsnummer'),
+                        "ablauf": ablauf_date.isoformat(),
+                        "days_remaining": days_until,
+                        "kunde_id": contract.get('kunde_id'),
+                        "gesellschaft": contract.get('gesellschaft')
+                    })
+            except:
+                continue
+    
+    # Recent activities (last 10 created/updated items)
+    recent_customers = await (await db.kunden.find({})).sort("created_at", -1).limit(5).to_list(length=None)
+    recent_contracts = await (await db.vertraege.find({})).sort("created_at", -1).limit(5).to_list(length=None)
+    
+    recent_activities = []
+    for customer in recent_customers:
+        recent_activities.append({
+            "type": "customer",
+            "action": "created",
+            "id": customer.get('id'),
+            "name": f"{customer.get('vorname', '')} {customer.get('name', '')}".strip(),
+            "timestamp": customer.get('created_at')
+        })
+    
+    for contract in recent_contracts:
+        recent_activities.append({
+            "type": "contract",
+            "action": "created",
+            "id": contract.get('id'),
+            "vertragsnummer": contract.get('vertragsnummer'),
+            "timestamp": contract.get('created_at')
+        })
+    
+    # Sort activities by timestamp
+    recent_activities.sort(key=lambda x: x.get('timestamp') or datetime.min, reverse=True)
+    recent_activities = recent_activities[:10]
+    
+    # Monthly trend (contracts created per month for last 6 months)
+    monthly_trend = []
+    for i in range(6):
+        month_start = datetime.utcnow().replace(day=1) - timedelta(days=30*i)
+        month_end = (month_start + timedelta(days=32)).replace(day=1)
+        
+        count = 0
+        for contract in all_contracts:
+            created = contract.get('created_at')
+            if created:
+                if isinstance(created, str):
+                    try:
+                        created = datetime.fromisoformat(created)
+                    except:
+                        continue
+                if month_start <= created < month_end:
+                    count += 1
+        
+        monthly_trend.append({
+            "month": month_start.strftime("%Y-%m"),
+            "contracts": count
+        })
+    
+    monthly_trend.reverse()
+    
+    return {
+        "overview": {
+            "total_customers": total_customers,
+            "total_contracts": total_contracts,
+            "active_contracts": active_contracts,
+            "total_vus": total_vus,
+            "total_documents": total_documents,
+            "total_premium_brutto": round(total_brutto, 2),
+            "total_premium_netto": round(total_netto, 2)
+        },
+        "contract_status_distribution": status_distribution,
+        "contracts_by_sparte": [{"sparte": k, "count": v} for k, v in sparten_count.items()],
+        "expiring_contracts": {
+            "next_30_days": expiring_30,
+            "next_60_days": expiring_60,
+            "next_90_days": expiring_90,
+            "total_expiring": len(expiring_30) + len(expiring_60) + len(expiring_90)
+        },
+        "recent_activities": recent_activities,
+        "monthly_trend": monthly_trend
+    }
+
+@api_router.get("/dashboard/alerts")
+async def get_dashboard_alerts():
+    """
+    Get important alerts and notifications for the dashboard
+    """
+    alerts = []
+    
+    # Check for contracts expiring soon
+    today = datetime.utcnow().date()
+    all_contracts = await db.vertraege.find({"vertragsstatus": "aktiv"}).to_list(length=None)
+    
+    critical_expiring = 0
+    warning_expiring = 0
+    
+    for contract in all_contracts:
+        ablauf = contract.get('ablauf')
+        if ablauf:
+            try:
+                if isinstance(ablauf, str):
+                    ablauf_date = datetime.fromisoformat(ablauf).date()
+                else:
+                    ablauf_date = ablauf
+                    
+                days_until = (ablauf_date - today).days
+                
+                if 0 <= days_until <= 14:
+                    critical_expiring += 1
+                elif 14 < days_until <= 30:
+                    warning_expiring += 1
+            except:
+                continue
+    
+    if critical_expiring > 0:
+        alerts.append({
+            "type": "critical",
+            "category": "contract_expiry",
+            "message": f"{critical_expiring} Verträge laufen in den nächsten 14 Tagen ab!",
+            "count": critical_expiring,
+            "action": "review_contracts"
+        })
+    
+    if warning_expiring > 0:
+        alerts.append({
+            "type": "warning",
+            "category": "contract_expiry",
+            "message": f"{warning_expiring} Verträge laufen in den nächsten 30 Tagen ab",
+            "count": warning_expiring,
+            "action": "review_contracts"
+        })
+    
+    # Check for customers without contracts
+    all_customers = await db.kunden.find({}).to_list(length=None)
+    customers_without_contracts = 0
+    
+    for customer in all_customers:
+        customer_contracts = await db.vertraege.count_documents({"kunde_id": customer.get('id')})
+        if customer_contracts == 0:
+            customers_without_contracts += 1
+    
+    if customers_without_contracts > 0:
+        alerts.append({
+            "type": "info",
+            "category": "customer_management",
+            "message": f"{customers_without_contracts} Kunden ohne aktive Verträge",
+            "count": customers_without_contracts,
+            "action": "contact_customers"
+        })
+    
+    # Check for contracts without VU assignment
+    contracts_without_vu = await db.vertraege.count_documents({
+        "$or": [
+            {"vu_id": {"$exists": False}},
+            {"vu_id": None},
+            {"vu_id": ""}
+        ]
+    })
+    
+    if contracts_without_vu > 0:
+        alerts.append({
+            "type": "warning",
+            "category": "data_quality",
+            "message": f"{contracts_without_vu} Verträge ohne VU-Zuordnung",
+            "count": contracts_without_vu,
+            "action": "assign_vu"
+        })
+    
+    # Check for incomplete customer profiles
+    incomplete_customers = 0
+    for customer in all_customers:
+        if not customer.get('telefon') or not customer.get('telefon', {}).get('email'):
+            incomplete_customers += 1
+    
+    if incomplete_customers > 0:
+        alerts.append({
+            "type": "info",
+            "category": "data_quality",
+            "message": f"{incomplete_customers} Kundenprofile unvollständig (fehlende Kontaktdaten)",
+            "count": incomplete_customers,
+            "action": "complete_profiles"
+        })
+    
+    return {
+        "alerts": alerts,
+        "summary": {
+            "critical": len([a for a in alerts if a["type"] == "critical"]),
+            "warning": len([a for a in alerts if a["type"] == "warning"]),
+            "info": len([a for a in alerts if a["type"] == "info"])
+        }
+    }
+
 # Basic status endpoint
 @api_router.get("/")
 async def root():
@@ -1525,6 +2301,14 @@ async def root():
 
 # Include the router in the main app
 app.include_router(api_router)
+
+# Include extended features
+try:
+    from extended_features import extended_router, init_extended_collections
+    app.include_router(extended_router)
+    init_extended_collections(db)
+except ImportError:
+    logger.warning("Extended features module not found")
 
 app.add_middleware(
     CORSMiddleware,

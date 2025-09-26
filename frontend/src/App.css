@@ -1402,7 +1402,7 @@ textarea {
 
 /* Search Modal */
 .search-modal-overlay {
-  position: fixed;
+  position: absolute;
   top: 0;
   left: 0;
   right: 0;
@@ -1415,7 +1415,7 @@ textarea {
 
 .search-window.modal {
   z-index: 9999;
-  position: fixed;
+  position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);

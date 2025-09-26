@@ -2,13 +2,14 @@ import React, { useState, useEffect, useRef } from "react";
 import "./App.css";
 import axios from "axios";
 import { API_BASE } from "./config";
+import Dashboard from "./components/Dashboard";
 import { 
   Search, Users, FileText, Home, Building2, Upload, 
   X, Plus, Edit, Trash2, Eye, Download, ChevronRight,
   AlertCircle, CheckCircle, Clock, TrendingUp, Package,
   DollarSign, Calendar, Mail, Phone, MapPin, User,
   FolderOpen, File, Filter, RefreshCw, Settings,
-  Database, Shield, Activity, BarChart3, PieChart
+  Database, Shield, Activity, BarChart3, PieChart, LayoutDashboard
 } from "lucide-react";
 
 const API = `${API_BASE ? API_BASE : ""}/api`;
@@ -2616,86 +2617,7 @@ const App = () => {
                 if (currentTab.type === 'dashboard') {
                   return (
                     <div className="dashboard-tab-content" data-testid="dashboard-tab-content">
-                      <div className="dashboard-header">
-                        <h2><BarChart3 size={24} style={{display: 'inline', marginRight: '8px'}} />Dashboard - Übersicht</h2>
-                        <div className="dashboard-time">
-                          {new Date().toLocaleString('de-DE')}
-                        </div>
-                      </div>
-                      
-                      <div className="dashboard-stats-grid">
-                        <div className="dashboard-stat-card">
-                          <div className="stat-icon"><Users size={32} /></div>
-                          <div className="stat-content">
-                            <div className="stat-number">{dashboardStats.totalCustomers}</div>
-                            <div className="stat-label">Kunden gesamt</div>
-                          </div>
-                        </div>
-                        
-                        <div className="dashboard-stat-card">
-                          <div className="stat-icon"><FileText size={32} /></div>
-                          <div className="stat-content">
-                            <div className="stat-number">{dashboardStats.totalContracts}</div>
-                            <div className="stat-label">Verträge gesamt</div>
-                          </div>
-                        </div>
-                        
-                        <div className="dashboard-stat-card">
-                          <div className="stat-icon"><DollarSign size={32} /></div>
-                          <div className="stat-content">
-                            <div className="stat-number">{dashboardStats.totalPremium.toLocaleString('de-DE')}€</div>
-                            <div className="stat-label">Gesamtprämien</div>
-                          </div>
-                        </div>
-                        
-                        <div className="dashboard-stat-card">
-                          <div className="stat-icon"><Plus size={32} /></div>
-                          <div className="stat-content">
-                            <div className="stat-number">{dashboardStats.newContractsThisMonth}</div>
-                            <div className="stat-label">Neue Verträge</div>
-                          </div>
-                        </div>
-                        
-                        <div className="dashboard-stat-card warning">
-                          <div className="stat-icon"><AlertCircle size={32} /></div>
-                          <div className="stat-content">
-                            <div className="stat-number">{dashboardStats.expiringContracts}</div>
-                            <div className="stat-label">Ablaufende Verträge</div>
-                          </div>
-                        </div>
-                        
-                        <div className="dashboard-stat-card">
-                          <div className="stat-icon"><Building2 size={32} /></div>
-                          <div className="stat-content">
-                            <div className="stat-number">{allVUs.length}</div>
-                            <div className="stat-label">Versicherer</div>
-                          </div>
-                        </div>
-                      </div>
-                      
-                      <div className="dashboard-actions">
-                        <button 
-                          className="dashboard-action-btn"
-                          onClick={() => {setSelectedSidebarItem('search'); openSearchWithNewTab();}}
-                        >
-                          <Search size={16} />
-                          <span>Kunde suchen</span>
-                        </button>
-                        <button 
-                          className="dashboard-action-btn"
-                          onClick={() => setCustomerFormVisible(true)}
-                        >
-                          <User size={16} />
-                          <span>Neuer Kunde</span>
-                        </button>
-                        <button 
-                          className="dashboard-action-btn"
-                          onClick={() => loadDashboardStats()}
-                        >
-                          <RefreshCw size={16} />
-                          <span>Aktualisieren</span>
-                        </button>
-                      </div>
+                      <Dashboard />
                     </div>
                   );
                 }
